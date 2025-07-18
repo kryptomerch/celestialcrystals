@@ -1,0 +1,68 @@
+name: Email Automation
+
+on:
+  schedule:
+    # Weekly newsletter - Every Monday at 9 AM UTC
+    - cron: '0 9 * * 1'
+    # Birthday discounts - Every day at 8 AM UTC
+    - cron: '0 8 * * *'
+    # Winback campaign - Every Sunday at 10 AM UTC
+    - cron: '0 10 * * 0'
+    # Seasonal promotions - First day of each season at 9 AM UTC
+    - cron: '0 9 1 3,6,9,12 *'
+  
+  # Allow manual triggering
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Email automation action to run'
+        required: true
+        default: 'weekly-newsletter'
+        type: choice
+        options:
+          - weekly-newsletter
+          - birthday-discounts
+          - winback-campaign
+          - seasonal-promotion
+
+jobs:
+  email-automation:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Determine action based on schedule
+        id: determine-action
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "action=${{ github.event.inputs.action }}" >> $GITHUB_OUTPUT
+          else
+            # Determine action based on cron schedule
+            current_hour=$(date -u +%H)
+            current_day=$(date -u +%u)  # 1=Monday, 7=Sunday
+            current_date=$(date -u +%d)
+            current_month=$(date -u +%m)
+            
+            if [ "$current_day" = "1" ] && [ "$current_hour" = "9" ]; then
+              echo "action=weekly-newsletter" >> $GITHUB_OUTPUT
+            elif [ "$current_hour" = "8" ]; then
+              echo "action=birthday-discounts" >> $GITHUB_OUTPUT
+            elif [ "$current_day" = "7" ] && [ "$current_hour" = "10" ]; then
+              echo "action=winback-campaign" >> $GITHUB_OUTPUT
+            elif [ "$current_date" = "1" ] && [ "$current_hour" = "9" ] && ([ "$current_month" = "3" ] || [ "$current_month" = "6" ] || [ "$current_month" = "9" ] || [ "$current_month" = "12" ]); then
+              echo "action=seasonal-promotion" >> $GITHUB_OUTPUT
+            else
+              echo "action=weekly-newsletter" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+      - name: Send email automation request
+        run: |
+          curl -X POST "${{ secrets.SITE_URL }}/api/cron/email-automation" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -d '{"action": "${{ steps.determine-action.outputs.action }}"}'
+
+      - name: Log completion
+        run: |
+          echo "Email automation completed for action: ${{ steps.determine-action.outputs.action }}"
+          echo "Timestamp: $(date -u)"
