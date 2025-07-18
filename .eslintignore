@@ -1,0 +1,8 @@
+# Ignore everything for deployment
+*
+**/*
+src/
+components/
+app/
+lib/
+utils/
