@@ -13,7 +13,7 @@ export default function Header() {
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-3">
+          <Link href="/" className="flex items-center space-x-1">
             <img
               src="/images/logo-design.png"
               alt="Celestial Crystals Logo"
@@ -22,7 +22,7 @@ export default function Header() {
             <img
               src="/images/logo-name.png"
               alt="Celestial"
-              className="h-15 sm:h-20 object-contain"
+              className="h-8 sm:h-12 object-contain"
             />
           </Link>
 

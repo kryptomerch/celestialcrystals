@@ -109,7 +109,7 @@ function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="col-span-1 md:col-span-2">
-            <div className="flex items-center space-x-3 mb-4">
+            <div className="flex items-center space-x-2 mb-4">
               <img
                 src="/images/logo-design.png"
                 alt="Celestial Crystals Logo"
@@ -118,7 +118,7 @@ function Footer() {
               <img
                 src="/images/logo-name.png"
                 alt="Celestial"
-                className="h-20 object-contain brightness-0 invert"
+                className="h-12 object-contain brightness-0 invert"
               />
             </div>
             <p className="text-gray-300 mb-4 max-w-md">
