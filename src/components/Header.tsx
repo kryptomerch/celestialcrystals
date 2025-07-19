@@ -22,7 +22,7 @@ export default function Header() {
             <img
               src="/images/logo-name.png"
               alt="Celestial"
-              className="h-6 sm:h-8 object-contain"
+              className="h-15 sm:h-20 object-contain"
             />
           </Link>
 

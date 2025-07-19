@@ -118,7 +118,7 @@ function Footer() {
               <img
                 src="/images/logo-name.png"
                 alt="Celestial"
-                className="h-8 object-contain brightness-0 invert"
+                className="h-20 object-contain brightness-0 invert"
               />
             </div>
             <p className="text-gray-300 mb-4 max-w-md">
