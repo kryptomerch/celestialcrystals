@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Sparkles, User, Menu, X } from 'lucide-react';
+import { User, Menu, X } from 'lucide-react';
 import Link from 'next/link';
 import CartButton from '@/components/CartButton';
 
@@ -13,11 +13,17 @@ export default function Header() {
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
-            <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-gray-900" />
-            <span className="text-xl sm:text-2xl font-light text-gray-900 tracking-wide">
-              CELESTIAL
-            </span>
+          <Link href="/" className="flex items-center space-x-3">
+            <img
+              src="/images/logo-design.png"
+              alt="Celestial Crystals Logo"
+              className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
+            />
+            <img
+              src="/images/logo-name.png"
+              alt="Celestial"
+              className="h-6 sm:h-8 object-contain"
+            />
           </Link>
 
           {/* Desktop Navigation */}
@@ -51,7 +57,7 @@ export default function Header() {
             <Link href="/auth/signin" className="p-2 text-gray-700 hover:text-gray-900 transition-colors">
               <User className="w-5 h-5 sm:w-6 sm:h-6" />
             </Link>
-            <button 
+            <button
               className="lg:hidden p-2 text-gray-700 hover:text-gray-900 transition-colors"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
@@ -64,50 +70,50 @@ export default function Header() {
         {isMobileMenuOpen && (
           <div className="lg:hidden border-t border-gray-200 bg-white">
             <div className="px-2 pt-2 pb-3 space-y-1">
-              <Link 
-                href="/" 
+              <Link
+                href="/"
                 className="block px-3 py-2 text-gray-700 hover:text-gray-900 hover:bg-gray-50 font-medium transition-colors text-sm uppercase tracking-wide"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Home
               </Link>
-              <Link 
-                href="/crystals" 
+              <Link
+                href="/crystals"
                 className="block px-3 py-2 text-gray-700 hover:text-gray-900 hover:bg-gray-50 font-medium transition-colors text-sm uppercase tracking-wide"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 All Crystals
               </Link>
-              <Link 
-                href="/categories" 
+              <Link
+                href="/categories"
                 className="block px-3 py-2 text-gray-700 hover:text-gray-900 hover:bg-gray-50 font-medium transition-colors text-sm uppercase tracking-wide"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Categories
               </Link>
-              <Link 
-                href="/birthdate-guide" 
+              <Link
+                href="/birthdate-guide"
                 className="block px-3 py-2 text-gray-700 hover:text-gray-900 hover:bg-gray-50 font-medium transition-colors text-sm uppercase tracking-wide"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Birthdate Guide
               </Link>
-              <Link 
-                href="/crystal-care" 
+              <Link
+                href="/crystal-care"
                 className="block px-3 py-2 text-gray-700 hover:text-gray-900 hover:bg-gray-50 font-medium transition-colors text-sm uppercase tracking-wide"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Crystal Care
               </Link>
-              <Link 
-                href="/about" 
+              <Link
+                href="/about"
                 className="block px-3 py-2 text-gray-700 hover:text-gray-900 hover:bg-gray-50 font-medium transition-colors text-sm uppercase tracking-wide"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 About
               </Link>
-              <Link 
-                href="/contact" 
+              <Link
+                href="/contact"
                 className="block px-3 py-2 text-gray-700 hover:text-gray-900 hover:bg-gray-50 font-medium transition-colors text-sm uppercase tracking-wide"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
