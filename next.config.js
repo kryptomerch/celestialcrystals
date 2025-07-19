@@ -88,8 +88,6 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  // Skip all static checks
-  swcMinify: true,
 
   // Environment variables
   env: {
