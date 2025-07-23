@@ -25,9 +25,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate password strength
-    if (password.length < 8) {
+    if (password.length < 6) {
       return NextResponse.json(
-        { error: 'Password must be at least 8 characters long' },
+        { error: 'Password must be at least 6 characters long' },
         { status: 400 }
       )
     }
@@ -53,38 +53,33 @@ export async function POST(request: NextRequest) {
         email,
         password: hashedPassword,
         firstName,
-        lastName,
-        birthDate: birthDate ? new Date(birthDate) : null,
-      },
-      select: {
-        id: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-        createdAt: true,
+        lastName: lastName || '',
+        birthDate: birthDate ? new Date(birthDate) : undefined,
+        role: 'USER',
+        emailVerified: null
       }
     })
 
     // Add to email subscribers
     try {
-      await prisma.emailSubscriber.create({
-        data: {
-          email,
-          firstName,
-          lastName,
-          source: 'registration',
-        }
+      await FirestoreService.createEmailSubscriber({
+        email,
+        firstName,
+        lastName: lastName || '',
+        source: 'registration',
       })
     } catch (error) {
       // Email subscriber might already exist, that's okay
       console.log('Email subscriber already exists or failed to create:', error)
     }
 
-    // Send welcome email
+    // Send welcome email with discount code
     try {
+      const discountCode = EmailAutomationService.generateDiscountCode('WELCOME');
       await EmailAutomationService.sendWelcomeEmail({
         firstName,
         email,
+        discountCode,
       })
     } catch (error) {
       console.error('Failed to send welcome email:', error)
@@ -97,8 +92,15 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     console.error('Registration error:', error)
+
+    // Return more specific error information in development
+    const errorMessage = error instanceof Error ? error.message : 'Internal server error';
+
     return NextResponse.json(
-      { error: 'Internal server error' },
+      {
+        error: 'Registration failed',
+        details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
+      },
       { status: 500 }
     )
   }

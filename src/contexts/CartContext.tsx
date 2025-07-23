@@ -46,6 +46,9 @@ interface CartContextType {
     removeDiscountCode: () => void;
     getDiscountAmount: () => number;
     getFinalTotal: () => number;
+    shippingRate: any;
+    setShippingRate: (rate: any) => void;
+    getShippingCost: () => number;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -55,6 +58,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const [isOpen, setIsOpen] = useState(false);
     const [isLoaded, setIsLoaded] = useState(false);
     const [discountCode, setDiscountCode] = useState<DiscountCode | null>(null);
+    const [shippingRate, setShippingRate] = useState<any>(null);
 
     // Load cart from localStorage on mount
     useEffect(() => {
@@ -194,11 +198,20 @@ export function CartProvider({ children }: { children: ReactNode }) {
         return (subtotal * discountCode.percentage) / 100;
     };
 
+    const getShippingCost = () => {
+        if (!shippingRate) {
+            // Free shipping over $75, otherwise fallback rate
+            const subtotal = getTotalPrice();
+            return subtotal >= 75 ? 0 : 12.99;
+        }
+        return shippingRate.price;
+    };
+
     const getFinalTotal = () => {
         const subtotal = getTotalPrice();
         const discount = getDiscountAmount();
-        const shipping = subtotal >= 50 ? 0 : 5.99;
-        const tax = (subtotal - discount) * 0.08; // 8% tax on discounted amount
+        const shipping = getShippingCost();
+        const tax = (subtotal - discount + shipping) * 0.13; // 13% HST in Ontario
         return subtotal - discount + shipping + tax;
     };
 
@@ -217,6 +230,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
         removeDiscountCode,
         getDiscountAmount,
         getFinalTotal,
+        shippingRate,
+        setShippingRate,
+        getShippingCost,
     };
 
     return (

@@ -268,8 +268,7 @@ export async function POST(request: NextRequest) {
       where: {
         isActive: true,
         name: {
-          contains: query,
-          mode: 'insensitive'
+          contains: query
         }
       },
       select: {
@@ -287,9 +286,11 @@ export async function POST(request: NextRequest) {
       where: {
         isActive: true,
         category: {
-          contains: query,
-          mode: 'insensitive'
+          contains: query
         }
+      },
+      orderBy: {
+        category: 'asc'
       },
       take: 3
     })

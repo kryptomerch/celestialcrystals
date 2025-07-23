@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Package, Calendar, CreditCard, Truck, CheckCircle, Clock, X, ChevronRight } from 'lucide-react';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface Order {
   id: string;
@@ -31,6 +32,7 @@ interface Order {
 export default function OrdersPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const { isDark } = useTheme();
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -51,7 +53,7 @@ export default function OrdersPage() {
     try {
       const params = new URLSearchParams();
       if (selectedStatus) params.append('status', selectedStatus);
-      
+
       const response = await fetch(`/api/user/orders?${params}`);
       if (response.ok) {
         const data = await response.json();
@@ -104,23 +106,23 @@ export default function OrdersPage() {
 
   if (status === 'loading' || isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+      <div className={`min-h-screen flex items-center justify-center ${isDark ? 'bg-gray-950' : 'bg-gray-50'}`}>
+        <div className={`animate-spin rounded-full h-12 w-12 border-b-2 ${isDark ? 'border-white' : 'border-gray-900'}`}></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className={`min-h-screen py-8 ${isDark ? 'bg-gray-950' : 'bg-gray-50'}`}>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center space-x-3 mb-4">
-            <Package className="w-8 h-8 text-gray-600" />
-            <h1 className="text-3xl font-light text-gray-900">Order History</h1>
+            <Package className={`w-8 h-8 ${isDark ? 'text-white' : 'text-gray-600'}`} />
+            <h1 className={`text-3xl font-light ${isDark ? 'text-white' : 'text-gray-900'}`}>Order History</h1>
           </div>
-          <p className="text-gray-600">
-            {orders.length > 0 
+          <p className={`${isDark ? 'text-white' : 'text-gray-600'}`}>
+            {orders.length > 0
               ? `${orders.length} order${orders.length === 1 ? '' : 's'} found`
               : 'No orders found'
             }
@@ -132,11 +134,10 @@ export default function OrdersPage() {
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setSelectedStatus('')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                selectedStatus === '' 
-                  ? 'bg-gray-900 text-white' 
-                  : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-              }`}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${selectedStatus === ''
+                ? (isDark ? 'bg-purple-600 text-white' : 'bg-gray-900 text-white')
+                : (isDark ? 'bg-gray-800 text-white border border-gray-600 hover:bg-gray-700' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50')
+                }`}
             >
               All Orders
             </button>
@@ -144,11 +145,10 @@ export default function OrdersPage() {
               <button
                 key={status}
                 onClick={() => setSelectedStatus(status)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  selectedStatus === status 
-                    ? 'bg-gray-900 text-white' 
-                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-                }`}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${selectedStatus === status
+                  ? (isDark ? 'bg-purple-600 text-white' : 'bg-gray-900 text-white')
+                  : (isDark ? 'bg-gray-800 text-white border border-gray-600 hover:bg-gray-700' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50')
+                  }`}
               >
                 {status.charAt(0) + status.slice(1).toLowerCase()}
               </button>
@@ -157,17 +157,20 @@ export default function OrdersPage() {
         </div>
 
         {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
-            <p className="text-red-800">{error}</p>
+          <div className={`mb-6 border rounded-lg p-4 ${isDark
+            ? 'bg-red-900/50 border-red-700'
+            : 'bg-red-50 border-red-200'
+            }`}>
+            <p className={`${isDark ? 'text-red-300' : 'text-red-800'}`}>{error}</p>
           </div>
         )}
 
         {orders.length === 0 ? (
           <div className="text-center py-16">
-            <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h2 className="text-2xl font-medium text-gray-900 mb-4">No orders found</h2>
-            <p className="text-gray-600 mb-8">
-              {selectedStatus 
+            <Package className={`w-16 h-16 mx-auto mb-4 ${isDark ? 'text-gray-600' : 'text-gray-300'}`} />
+            <h2 className={`text-2xl font-medium mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>No orders found</h2>
+            <p className={`mb-8 ${isDark ? 'text-white' : 'text-gray-600'}`}>
+              {selectedStatus
                 ? `No orders with status "${selectedStatus.toLowerCase()}" found.`
                 : "You haven't placed any orders yet."
               }
@@ -196,7 +199,7 @@ export default function OrdersPage() {
                       </p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center space-x-4">
                     <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.status)}`}>
                       {order.status.charAt(0) + order.status.slice(1).toLowerCase()}
@@ -243,7 +246,7 @@ export default function OrdersPage() {
                         {order.paymentMethod === 'stripe' ? 'Credit Card' : order.paymentMethod}
                       </span>
                     </div>
-                    
+
                     {order.trackingNumber && (
                       <div className="flex items-center space-x-2">
                         <Truck className="w-4 h-4 text-gray-400" />
@@ -253,7 +256,7 @@ export default function OrdersPage() {
                         </span>
                       </div>
                     )}
-                    
+
                     {order.deliveredAt && (
                       <div className="flex items-center space-x-2">
                         <Calendar className="w-4 h-4 text-gray-400" />
@@ -276,7 +279,7 @@ export default function OrdersPage() {
                       <span>View Details</span>
                       <ChevronRight className="w-4 h-4" />
                     </button>
-                    
+
                     {order.status === 'DELIVERED' && (
                       <button
                         onClick={() => router.push(`/orders/${order.id}/review`)}
@@ -285,7 +288,7 @@ export default function OrdersPage() {
                         Write Review
                       </button>
                     )}
-                    
+
                     {order.status === 'DELIVERED' && (
                       <button
                         onClick={() => router.push('/crystals')}

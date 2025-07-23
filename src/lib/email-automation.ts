@@ -1,4 +1,4 @@
-import { prisma } from './prisma'
+import { FirestoreService } from './firestore'
 import { sendEmail, createEmailTemplate } from './email'
 import { generateWelcomeEmail, WelcomeEmailData } from './email-templates/welcome';
 import { generateOrderConfirmationEmail, OrderConfirmationData } from './email-templates/order-confirmation';
@@ -143,25 +143,29 @@ export class EmailAutomationService {
     return tips[weekNumber % tips.length];
   }
 
-  // Store discount code (placeholder - implement with your database)
+  // Store discount code in database
   private static async storeDiscountCode(
     code: string,
     email: string,
     percentage: number,
     validDays: number
   ): Promise<void> {
-    // In a real application, store this in your database
-    console.log(`Storing discount code: ${code} for ${email}, ${percentage}% off, valid for ${validDays} days`);
+    try {
+      const expiryDate = new Date(Date.now() + validDays * 24 * 60 * 60 * 1000);
 
-    // Example structure for database storage:
-    // {
-    //   code,
-    //   email,
-    //   percentage,
-    //   expiryDate: new Date(Date.now() + validDays * 24 * 60 * 60 * 1000),
-    //   used: false,
-    //   createdAt: new Date()
-    // }
+      await FirestoreService.createDiscountCode({
+        code,
+        email,
+        percentage,
+        expiryDate,
+        reason: 'welcome',
+      });
+
+      console.log(`Discount code stored: ${code} for ${email}, ${percentage}% off, expires ${expiryDate.toISOString()}`);
+    } catch (error) {
+      console.error('Failed to store discount code:', error);
+      // Don't throw error - email sending should still succeed
+    }
   }
 
   // Calculate days until expiry

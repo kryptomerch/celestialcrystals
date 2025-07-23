@@ -5,6 +5,8 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/contexts/CartContext';
 import { Heart, ShoppingBag, Trash2, Sparkles } from 'lucide-react';
+import { getColorHex } from '@/utils/colors';
+import { getCrystalGlowClass } from '@/utils/crystal-glow';
 
 interface WishlistItem {
   id: string;
@@ -99,7 +101,7 @@ export default function WishlistPage() {
             <h1 className="text-3xl font-light text-gray-900">My Wishlist</h1>
           </div>
           <p className="text-gray-600">
-            {wishlistItems.length > 0 
+            {wishlistItems.length > 0
               ? `${wishlistItems.length} item${wishlistItems.length === 1 ? '' : 's'} saved for later`
               : 'Your wishlist is empty'
             }
@@ -129,13 +131,13 @@ export default function WishlistPage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {wishlistItems.map((item) => (
-              <div key={item.id} className="celestial-card overflow-hidden">
+              <div key={item.id} className={`celestial-card overflow-hidden ${getCrystalGlowClass(item.crystal.colors)}`}>
                 {/* Crystal Image */}
                 <div className="relative h-48 bg-gray-100">
                   <div className="absolute inset-0 flex items-center justify-center">
                     <Sparkles className="w-16 h-16 text-gray-400" />
                   </div>
-                  
+
                   {/* Remove from Wishlist Button */}
                   <button
                     onClick={() => removeFromWishlist(item.crystal.id)}
@@ -167,7 +169,7 @@ export default function WishlistPage() {
                   <h3 className="text-lg font-medium text-gray-900 mb-2 line-clamp-2">
                     {item.crystal.name}
                   </h3>
-                  
+
                   <p className="text-gray-600 text-sm mb-3 line-clamp-2">
                     {item.crystal.description}
                   </p>
@@ -215,8 +217,8 @@ export default function WishlistPage() {
                     >
                       <ShoppingBag className="w-4 h-4" />
                       <span>
-                        {!item.crystal.isActive || item.crystal.stockQuantity === 0 
-                          ? 'Out of Stock' 
+                        {!item.crystal.isActive || item.crystal.stockQuantity === 0
+                          ? 'Out of Stock'
                           : 'Add to Cart'
                         }
                       </span>
@@ -258,23 +260,4 @@ export default function WishlistPage() {
   );
 }
 
-// Helper function to get color hex values
-function getColorHex(color: string): string {
-  const colorMap: { [key: string]: string } = {
-    'Clear': '#ffffff',
-    'White': '#ffffff',
-    'Black': '#000000',
-    'Purple': '#8b5cf6',
-    'Pink': '#ec4899',
-    'Green': '#10b981',
-    'Blue': '#3b82f6',
-    'Yellow': '#f59e0b',
-    'Orange': '#f97316',
-    'Red': '#ef4444',
-    'Brown': '#92400e',
-    'Gray': '#6b7280',
-    'Grey': '#6b7280',
-  };
-  
-  return colorMap[color] || '#6b7280';
-}
+

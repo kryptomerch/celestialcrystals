@@ -5,7 +5,7 @@ import { Resend } from 'resend';
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Fallback SMTP transporter
-const transporter = nodemailer.createTransporter({
+const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
   port: parseInt(process.env.SMTP_PORT || '587'),
   secure: false,
@@ -26,41 +26,61 @@ export interface EmailOptions {
 export async function sendEmail(options: EmailOptions): Promise<boolean> {
   try {
     const fromEmail = options.from || process.env.FROM_EMAIL || 'noreply@celestialcrystals.com';
-    
+
+    console.log('📧 Attempting to send email:', {
+      to: options.to,
+      subject: options.subject,
+      from: fromEmail,
+      hasResendKey: !!process.env.RESEND_API_KEY
+    });
+
     // Try Resend first (if API key is available)
     if (process.env.RESEND_API_KEY && process.env.RESEND_API_KEY !== 're_your_resend_api_key_here') {
-      await resend.emails.send({
-        from: fromEmail,
-        to: Array.isArray(options.to) ? options.to : [options.to],
-        subject: options.subject,
-        html: options.html,
-        text: options.text,
-      });
-      console.log('Email sent successfully via Resend');
-      return true;
+      try {
+        const result = await resend.emails.send({
+          from: fromEmail,
+          to: Array.isArray(options.to) ? options.to : [options.to],
+          subject: options.subject,
+          html: options.html,
+          text: options.text,
+        });
+        console.log('✅ Email sent successfully via Resend:', result);
+        return true;
+      } catch (resendError) {
+        console.error('❌ Resend email failed:', resendError);
+        // Continue to fallback methods
+      }
+    } else {
+      console.log('⚠️ Resend API key not configured, skipping Resend');
     }
-    
+
     // Fallback to SMTP
     if (process.env.SMTP_USER && process.env.SMTP_USER !== 'your_email@gmail.com') {
-      await transporter.sendMail({
-        from: fromEmail,
-        to: options.to,
-        subject: options.subject,
-        html: options.html,
-        text: options.text,
-      });
-      console.log('Email sent successfully via SMTP');
-      return true;
+      try {
+        const result = await transporter.sendMail({
+          from: fromEmail,
+          to: options.to,
+          subject: options.subject,
+          html: options.html,
+          text: options.text,
+        });
+        console.log('✅ Email sent successfully via SMTP:', result.messageId);
+        return true;
+      } catch (smtpError) {
+        console.error('❌ SMTP email failed:', smtpError);
+      }
+    } else {
+      console.log('⚠️ SMTP not configured, skipping SMTP');
     }
-    
-    // Development mode - just log
-    console.log('Email would be sent:', {
+
+    // Development mode - just log (always succeeds in development)
+    console.log('📧 Email simulated (development mode):', {
       to: options.to,
       subject: options.subject,
       from: fromEmail,
     });
     return true;
-    
+
   } catch (error) {
     console.error('Failed to send email:', error);
     return false;

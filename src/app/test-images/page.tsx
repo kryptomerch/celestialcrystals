@@ -1,26 +1,30 @@
 'use client'
 
+import { crystalDatabase } from '@/data/crystals'
+
 export default function TestImages() {
-  const testImages = [
-    '/images/crystals/TIGER_EYE/TG1.png',
-    '/images/crystals/AQUAMARINE/AQ1.png',
-    '/images/crystals/CITRINE/CI1.png',
-    '/images/crystals/GREEN_JADE/GJ1.png',
-    '/images/crystals/TURQUOISE/TU1.png',
-    '/images/crystals/RHODOCHROSITE/RW1.png',
-    '/images/crystals/HOWLITE/HW2.png',
-    '/images/crystals/TREE_AGATE/TG1.png'
-  ]
+  // Get all unique images from the crystal database
+  const allImages = crystalDatabase.reduce((acc, crystal) => {
+    if (crystal.images) {
+      acc.push(...crystal.images)
+    } else if (crystal.image) {
+      acc.push(crystal.image)
+    }
+    return acc
+  }, [] as string[])
+
+  // Remove duplicates
+  const uniqueImages = [...new Set(allImages)]
 
   return (
     <div className="min-h-screen bg-gray-900 p-8">
       <h1 className="text-3xl font-bold text-white mb-8">Crystal Images Test</h1>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-        {testImages.map((imagePath, index) => (
+        {allImages.map((imagePath, index) => (
           <div key={index} className="bg-gray-800 p-4 rounded-lg">
             <h3 className="text-white text-sm mb-2">{imagePath.split('/').pop()}</h3>
-            <img 
-              src={imagePath} 
+            <img
+              src={imagePath}
               alt={`Crystal ${index + 1}`}
               className="w-full h-48 object-cover rounded"
               onError={(e) => {

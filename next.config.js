@@ -10,7 +10,13 @@ const nextConfig = {
     formats: ['image/webp', 'image/avif'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-    domains: ['celestialcrystals.com'],
+    domains: ['celestialcrystals.com', 'images.unsplash.com', 'via.placeholder.com'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
+    ],
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
@@ -80,13 +86,13 @@ const nextConfig = {
   // Production optimizations
   poweredByHeader: false,
 
-  // Completely disable linting and TypeScript errors during build
+  // Enable linting and TypeScript checking during build
   eslint: {
-    ignoreDuringBuilds: true,
-    dirs: [], // Don't lint any directories
+    ignoreDuringBuilds: false,
+    dirs: ['src'], // Lint the src directory
   },
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
 
   // Environment variables

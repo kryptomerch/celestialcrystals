@@ -2,19 +2,26 @@
 
 import { useState } from 'react';
 import { crystalDatabase, getRecommendedCrystals, Crystal } from '@/data/crystals';
-import { Sparkles, Calendar, Search, ShoppingBag, Star, Heart, Mail, Shield, Zap, Sun, Moon, Gem, Flower2, Mountain, Waves } from 'lucide-react';
+import { Sparkles, Calendar, Search, ShoppingBag, Star, Heart, Mail, Shield, Zap, Sun, Moon, Gem, Flower2, Mountain, Waves, ArrowUpDown, Truck } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import ContactModal from '@/components/ContactModal';
 import CrystalModal from '@/components/CrystalModal';
 import NewsletterSignup from '@/components/NewsletterSignup';
+import SlidingBanner from '@/components/SlidingBanner';
 import { useCart } from '@/contexts/CartContext';
+import { getColorHex } from '@/utils/colors';
+import { getCrystalGlowClass } from '@/utils/crystal-glow';
+import { useTheme } from '@/contexts/ThemeContext';
 
 export default function HomePage() {
+  const { addToCart } = useCart();
+  const { isDark } = useTheme();
   const [birthDate, setBirthDate] = useState('');
   const [recommendations, setRecommendations] = useState<Crystal[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [sortBy, setSortBy] = useState('name-asc');
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [selectedCrystal, setSelectedCrystal] = useState<Crystal | null>(null);
 
@@ -45,43 +52,86 @@ export default function HomePage() {
       crystal.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
       crystal.properties.some(prop => prop.toLowerCase().includes(searchQuery.toLowerCase()));
 
-    const matchesCategory = selectedCategory === 'All' || crystal.category === selectedCategory;
+    const matchesCategory = selectedCategory === 'All' ||
+      crystal.category === selectedCategory ||
+      // Handle special property-based categories
+      (selectedCategory === 'Energy' && crystal.properties.some(prop => prop.toLowerCase().includes('energy'))) ||
+      (selectedCategory === 'Grounding' && crystal.properties.some(prop => prop.toLowerCase().includes('grounding'))) ||
+      (selectedCategory === 'Intuition' && crystal.properties.some(prop => prop.toLowerCase().includes('intuition')));
 
     return matchesSearch && matchesCategory;
+  }).sort((a, b) => {
+    switch (sortBy) {
+      case 'name-asc':
+        // Clean names by removing "Bracelet" and everything after " - "
+        const nameA = a.name.replace(/\s+Bracelet(\s+-.*)?$/i, '').trim().toLowerCase();
+        const nameB = b.name.replace(/\s+Bracelet(\s+-.*)?$/i, '').trim().toLowerCase();
+        return nameA.localeCompare(nameB, 'en', { numeric: true, sensitivity: 'base' });
+      case 'name-desc':
+        const nameA2 = a.name.replace(/\s+Bracelet(\s+-.*)?$/i, '').trim().toLowerCase();
+        const nameB2 = b.name.replace(/\s+Bracelet(\s+-.*)?$/i, '').trim().toLowerCase();
+        return nameB2.localeCompare(nameA2, 'en', { numeric: true, sensitivity: 'base' });
+      case 'price-low':
+        return a.price - b.price;
+      case 'price-high':
+        return b.price - a.price;
+      case 'category-asc':
+        return a.category.localeCompare(b.category, 'en', { sensitivity: 'base' });
+      case 'rarity-rare':
+        const rarityOrder = { 'Very Rare': 4, 'Rare': 3, 'Uncommon': 2, 'Common': 1 };
+        return (rarityOrder[b.rarity as keyof typeof rarityOrder] || 0) - (rarityOrder[a.rarity as keyof typeof rarityOrder] || 0);
+      default:
+        return 0;
+    }
   });
 
   const featuredCrystals = crystalDatabase.slice(0, 6);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background text-foreground">
+      {/* Sliding Banner */}
+      <SlidingBanner />
+
       {/* Hero Section */}
-      <section className="py-12 sm:py-16 lg:py-20 px-4 text-center bg-gray-50">
+      <section className="px-4 text-center -mt-8 bg-surface">
         <div className="max-w-6xl mx-auto">
-          <div className="flex items-center justify-center mb-4 sm:mb-6">
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-light text-black tracking-tight">
-              CELESTIAL
-            </h1>
+          <div className="flex items-center justify-center -mb-24">
+            <img
+              src="/images/logo-name.png"
+              alt="Celestial"
+              className={`h-64 sm:h-80 lg:h-96 object-contain ${isDark ? 'brightness-0 invert' : ''}`}
+            />
           </div>
-          <p className="text-base sm:text-lg lg:text-xl text-gray-600 mb-6 sm:mb-8 max-w-3xl mx-auto font-light leading-relaxed">
+          <p className="text-base sm:text-lg lg:text-xl mb-6 sm:mb-8 max-w-3xl mx-auto font-light leading-relaxed text-foreground/70">
             Discover the power of natural crystal bracelets. Find your perfect crystal companion based on your birthdate or explore our curated collection.
           </p>
 
           {/* Birth Date Form */}
           <div className="celestial-card p-4 sm:p-6 lg:p-8 max-w-sm sm:max-w-md mx-auto mb-8 sm:mb-12">
             <div className="flex items-center justify-center mb-3 sm:mb-4">
-              <h3 className="text-base sm:text-lg font-medium text-gray-900">Find Your Crystal Match</h3>
+              <h3 className={`text-base sm:text-lg font-medium ${isDark
+                ? 'text-white'
+                : 'text-gray-900'
+                }`}>Find Your Crystal Match</h3>
             </div>
             <form onSubmit={handleBirthDateSubmit} className="space-y-3 sm:space-y-4">
               <input
                 type="date"
                 value={birthDate}
                 onChange={(e) => setBirthDate(e.target.value)}
-                className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 text-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400 text-sm sm:text-base"
+                className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 border focus:outline-none focus:ring-1 text-sm sm:text-base ${isDark
+                  ? 'border-gray-600 bg-gray-800 text-white focus:ring-purple-500 focus:border-purple-500'
+                  : 'border-gray-300 bg-white text-gray-900 focus:ring-gray-400 focus:border-gray-400'
+                  }`}
                 required
               />
               <button
                 type="submit"
-                className="w-full celestial-button text-sm sm:text-base py-2.5 sm:py-3"
+                className={`w-full py-2.5 sm:py-3 px-4 font-medium transition-all duration-200 text-sm sm:text-base uppercase tracking-wide ${
+                  isDark 
+                    ? 'bg-purple-600 hover:bg-purple-700 text-white' 
+                    : 'bg-gray-900 hover:bg-gray-800 text-white'
+                }`}
               >
                 Get My Recommendations
               </button>
@@ -91,7 +141,10 @@ export default function HomePage() {
           {/* Contact Button */}
           <button
             onClick={() => setIsContactModalOpen(true)}
-            className="celestial-card text-gray-900 px-6 py-3 font-medium hover:bg-gray-50 transition-all duration-200 flex items-center space-x-2 mx-auto"
+            className={`celestial-card px-6 py-3 font-medium transition-all duration-200 flex items-center space-x-2 mx-auto ${isDark
+              ? 'text-white hover:bg-gray-800'
+              : 'text-gray-900 hover:bg-gray-50'
+              }`}
           >
             <Mail className="w-5 h-5" />
             <span>Contact Us</span>
@@ -101,9 +154,9 @@ export default function HomePage() {
 
       {/* Recommendations Section */}
       {recommendations.length > 0 && (
-        <section className="py-16 px-4 bg-white">
+        <section className={`py-16 px-4 ${isDark ? 'bg-gray-950' : 'bg-white'}`}>
           <div className="max-w-6xl mx-auto">
-            <h2 className="text-3xl font-light text-center mb-12 text-gray-900">
+            <h2 className={`text-3xl font-light text-center mb-12 ${isDark ? 'text-white' : 'text-gray-900'}`}>
               Your Personalized Crystal Recommendations
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
@@ -120,22 +173,47 @@ export default function HomePage() {
       )}
 
       {/* Search and Filter Section */}
-      <section className="py-16 px-4 bg-white">
+      <section className={`py-16 px-4 ${isDark ? 'bg-gray-950' : 'bg-white'}`}>
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-light text-center mb-12 text-gray-900">
+          <h2 className={`text-3xl font-light text-center mb-12 ${isDark ? 'text-white' : 'text-gray-900'}`}>
             Explore Our Crystal Collection
           </h2>
 
-          {/* Search Bar */}
-          <div className="relative max-w-md mx-auto mb-8">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <input
-              type="text"
-              placeholder="Search crystals..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400"
-            />
+          {/* Search Bar and Sort */}
+          <div className="flex flex-col sm:flex-row gap-4 max-w-2xl mx-auto mb-8">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <input
+                type="text"
+                placeholder="Search crystals..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400"
+              />
+            </div>
+            <div className="relative">
+              <ArrowUpDown className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className={`pl-10 pr-8 py-3 border rounded focus:outline-none focus:ring-1 appearance-none cursor-pointer min-w-[200px] ${isDark
+                  ? 'border-gray-600 bg-gray-800 text-white focus:ring-purple-500 focus:border-purple-500'
+                  : 'border-gray-300 bg-white text-gray-900 focus:ring-gray-400 focus:border-gray-400'
+                  }`}
+              >
+                <option value="name-asc">Name: A to Z</option>
+                <option value="name-desc">Name: Z to A</option>
+                <option value="price-low">Price: Low to High</option>
+                <option value="price-high">Price: High to Low</option>
+                <option value="category-asc">Category: A to Z</option>
+                <option value="rarity-rare">Rarity: Rare First</option>
+              </select>
+              <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
           </div>
 
           {/* Category Filter */}
@@ -148,7 +226,9 @@ export default function HomePage() {
                   onClick={() => setSelectedCategory(category.name)}
                   className={`px-4 py-3 rounded font-medium transition-all duration-200 text-sm flex items-center space-x-2 ${selectedCategory === category.name
                     ? 'bg-black text-white'
-                    : 'celestial-card text-gray-700 hover:bg-gray-50'
+                    : isDark 
+                      ? 'celestial-card text-white hover:bg-gray-800' 
+                      : 'celestial-card text-gray-700 hover:bg-gray-50'
                     }`}
                 >
                   <IconComponent className="w-4 h-4" />
@@ -156,6 +236,11 @@ export default function HomePage() {
                 </button>
               );
             })}
+          </div>
+
+          {/* Results Count */}
+          <div className="mb-6 text-center">
+            <p className="text-gray-600">{filteredCrystals.length} crystals found</p>
           </div>
 
           {/* Crystal Grid */}
@@ -172,9 +257,9 @@ export default function HomePage() {
       </section>
 
       {/* Featured Section */}
-      <section className="py-16 px-4 bg-gray-50">
+      <section className={`py-16 px-4 ${isDark ? 'bg-gray-950' : 'bg-gray-50'}`}>
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-light text-center mb-12 text-gray-900">
+          <h2 className={`text-3xl font-light text-center mb-12 ${isDark ? 'text-white' : 'text-gray-900'}`}>
             Featured Crystals
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
@@ -191,30 +276,30 @@ export default function HomePage() {
       </section>
 
       {/* About Section */}
-      <section className="py-16 px-4 bg-white">
+      <section className={`py-16 px-4 ${isDark ? 'bg-gray-950' : 'bg-white'}`}>
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl font-light mb-8 text-gray-900">
+          <h2 className={`text-3xl font-light mb-8 ${isDark ? 'text-white' : 'text-gray-900'}`}>
             Why Choose Celestial Crystals?
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
             <div className="celestial-card p-4 sm:p-6">
-              <Star className="w-10 h-10 sm:w-12 sm:h-12 text-gray-600 mx-auto mb-3 sm:mb-4" />
-              <h3 className="text-lg sm:text-xl font-medium mb-2 text-gray-900">Authentic Crystals</h3>
-              <p className="text-gray-600 text-sm sm:text-base">
+              <Star className={`w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3 sm:mb-4 ${isDark ? 'text-white' : 'text-gray-600'}`} />
+              <h3 className={`text-lg sm:text-xl font-medium mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>Authentic Crystals</h3>
+              <p className={`text-sm sm:text-base ${isDark ? 'text-white' : 'text-gray-600'}`}>
                 Each crystal is carefully sourced and authenticated for genuine healing properties.
               </p>
             </div>
             <div className="celestial-card p-4 sm:p-6">
-              <Heart className="w-10 h-10 sm:w-12 sm:h-12 text-gray-600 mx-auto mb-3 sm:mb-4" />
-              <h3 className="text-lg sm:text-xl font-medium mb-2 text-gray-900">Personalized Selection</h3>
-              <p className="text-gray-600 text-sm sm:text-base">
+              <Heart className={`w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3 sm:mb-4 ${isDark ? 'text-white' : 'text-gray-600'}`} />
+              <h3 className={`text-lg sm:text-xl font-medium mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>Personalized Selection</h3>
+              <p className={`text-sm sm:text-base ${isDark ? 'text-white' : 'text-gray-600'}`}>
                 Find crystals perfectly aligned with your birth date and personal needs.
               </p>
             </div>
             <div className="celestial-card p-4 sm:p-6 sm:col-span-2 lg:col-span-1">
-              <Sparkles className="w-10 h-10 sm:w-12 sm:h-12 text-gray-600 mx-auto mb-3 sm:mb-4" />
-              <h3 className="text-lg sm:text-xl font-medium mb-2 text-gray-900">Expert Knowledge</h3>
-              <p className="text-gray-600 text-sm sm:text-base">
+              <Sparkles className={`w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3 sm:mb-4 ${isDark ? 'text-white' : 'text-gray-600'}`} />
+              <h3 className={`text-lg sm:text-xl font-medium mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>Expert Knowledge</h3>
+              <p className={`text-sm sm:text-base ${isDark ? 'text-white' : 'text-gray-600'}`}>
                 Detailed information about each crystal's properties and healing benefits.
               </p>
             </div>
@@ -223,7 +308,7 @@ export default function HomePage() {
       </section>
 
       {/* Newsletter Signup */}
-      <section className="py-16 px-4 bg-white">
+      <section className={`py-16 px-4 ${isDark ? 'bg-gray-950' : 'bg-white'}`}>
         <div className="max-w-4xl mx-auto">
           <NewsletterSignup />
         </div>
@@ -293,6 +378,7 @@ function CrystalCard({
   onCrystalClick?: (crystal: Crystal) => void;
 }) {
   const { addToCart } = useCart();
+  const { isDark } = useTheme();
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent modal from opening when clicking add to cart
@@ -307,40 +393,58 @@ function CrystalCard({
 
   return (
     <div
-      className={`celestial-card overflow-hidden cursor-pointer flex flex-col h-full ${featured ? 'ring-2 ring-gray-400' : ''
+      className={`celestial-card overflow-hidden cursor-pointer flex flex-col h-full ${getCrystalGlowClass(crystal.colors)} ${featured ? 'ring-2 ring-gray-400' : ''
         }`}
       onClick={handleCardClick}
     >
-      <div className="relative h-40 sm:h-48 bg-gray-100">
-        {/* Placeholder for crystal image */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <Sparkles className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400" />
+      <div className={`relative aspect-[3/2] ${isDark ? 'bg-gray-800' : 'bg-gray-100'}`}>
+        {crystal.image ? (
+          <img
+            src={crystal.image}
+            alt={crystal.name}
+            className="w-full h-full object-contain"
+            onError={(e) => {
+              // Fallback to placeholder if image fails to load
+              e.currentTarget.style.display = 'none';
+              e.currentTarget.nextElementSibling?.classList.remove('hidden');
+            }}
+          />
+        ) : null}
+        {/* Fallback placeholder */}
+        <div className={`absolute inset-0 flex items-center justify-center ${crystal.image ? 'hidden' : ''}`}>
+          <Sparkles className={`w-12 h-12 sm:w-16 sm:h-16 ${isDark ? 'text-gray-500' : 'text-gray-400'}`} />
         </div>
         {featured && (
           <div className="absolute top-1.5 sm:top-2 right-1.5 sm:right-2 bg-black text-white px-1.5 sm:px-2 py-0.5 sm:py-1 text-xs font-medium">
             Featured
           </div>
         )}
-        <div className="absolute bottom-1.5 sm:bottom-2 left-1.5 sm:left-2 bg-white px-1.5 sm:px-2 py-0.5 sm:py-1 text-xs font-medium text-gray-900">
+        <div className={`absolute bottom-1.5 sm:bottom-2 left-1.5 sm:left-2 px-1.5 sm:px-2 py-0.5 sm:py-1 text-xs font-medium ${isDark
+          ? 'bg-gray-900 text-white'
+          : 'bg-white text-gray-900'
+          }`}>
           ${crystal.price}
         </div>
       </div>
 
       <div className="p-3 sm:p-4 lg:p-6 flex flex-col h-full">
-        <h3 className="text-base sm:text-lg font-medium mb-1.5 sm:mb-2 text-gray-900 line-clamp-2">{crystal.name}</h3>
-        <p className="text-gray-600 text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-2 flex-grow">{crystal.description}</p>
+        <h3 className={`text-base sm:text-lg font-medium mb-1.5 sm:mb-2 line-clamp-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>{crystal.name}</h3>
+        <p className={`text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-2 flex-grow ${isDark ? 'text-white' : 'text-gray-600'}`}>{crystal.description}</p>
 
         <div className="flex flex-wrap gap-1 mb-3 sm:mb-4">
           {crystal.properties.slice(0, 2).map((property, index) => (
             <span
               key={index}
-              className="bg-gray-100 text-gray-700 px-1.5 sm:px-2 py-0.5 sm:py-1 text-xs border border-gray-200"
+              className={`px-1.5 sm:px-2 py-0.5 sm:py-1 text-xs border ${isDark
+                ? 'bg-gray-800 text-white border-gray-600'
+                : 'bg-gray-100 text-gray-700 border-gray-200'
+                }`}
             >
               {property}
             </span>
           ))}
           {crystal.properties.length > 2 && (
-            <span className="text-gray-500 text-xs">+{crystal.properties.length - 2} more</span>
+            <span className={`text-xs ${isDark ? 'text-gray-300' : 'text-gray-500'}`}>+{crystal.properties.length - 2} more</span>
           )}
         </div>
 
@@ -368,36 +472,3 @@ function CrystalCard({
   );
 }
 
-function getColorHex(colorName: string): string {
-  const colorMap: { [key: string]: string } = {
-    'Black': '#000000',
-    'Brown': '#8B4513',
-    'Golden': '#FFD700',
-    'Light Blue': '#87CEEB',
-    'Blue-Green': '#0D98BA',
-    'Blue': '#0000FF',
-    'Red': '#FF0000',
-    'Orange': '#FFA500',
-    'Yellow': '#FFFF00',
-    'Green': '#008000',
-    'Indigo': '#4B0082',
-    'Violet': '#8A2BE2',
-    'White': '#FFFFFF',
-    'Cream': '#F5F5DC',
-    'Pink': '#FFC0CB',
-    'Rose': '#FF69B4',
-    'Purple': '#800080',
-    'Clear': '#F0F8FF',
-    'Deep Blue': '#00008B',
-    'Blue with Gold': '#1E90FF',
-    'Metallic Gray': '#C0C0C0',
-    'Deep Purple': '#663399',
-    'Lavender': '#E6E6FA',
-    'Dark Green': '#006400',
-    'Peach': '#FFCBA4',
-    'Gray': '#808080',
-    'Teal': '#008080'
-  };
-
-  return colorMap[colorName] || '#9CA3AF';
-}

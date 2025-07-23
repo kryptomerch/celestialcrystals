@@ -4,7 +4,7 @@ import { crystalDatabase } from '@/data/crystals';
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    
+
     // Get query parameters
     const category = searchParams.get('category');
     const search = searchParams.get('search');
@@ -27,10 +27,10 @@ export async function GET(request: NextRequest) {
         const searchLower = search.toLowerCase();
         const matchesName = crystal.name.toLowerCase().includes(searchLower);
         const matchesDescription = crystal.description.toLowerCase().includes(searchLower);
-        const matchesProperties = crystal.properties.some(prop => 
+        const matchesProperties = crystal.properties.some(prop =>
           prop.toLowerCase().includes(searchLower)
         );
-        
+
         if (!matchesName && !matchesDescription && !matchesProperties) {
           return false;
         }
@@ -62,8 +62,8 @@ export async function GET(request: NextRequest) {
         case 'name':
           return a.name.localeCompare(b.name);
         case 'rarity':
-          const rarityOrder = { 'Common': 1, 'Uncommon': 2, 'Rare': 3, 'Very Rare': 4 };
-          return rarityOrder[b.rarity] - rarityOrder[a.rarity];
+          const rarityOrder: Record<string, number> = { 'Common': 1, 'Uncommon': 2, 'Rare': 3, 'Very Rare': 4 };
+          return (rarityOrder[b.rarity] || 0) - (rarityOrder[a.rarity] || 0);
         default:
           return 0;
       }

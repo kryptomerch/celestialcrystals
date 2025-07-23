@@ -1,12 +1,11 @@
 import { NextAuthOptions } from 'next-auth'
-import { PrismaAdapter } from '@next-auth/prisma-adapter'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import GoogleProvider from 'next-auth/providers/google'
 import bcrypt from 'bcryptjs'
 import { prisma } from './prisma'
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma),
+  // Remove adapter to use JWT strategy instead of database sessions
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -24,9 +23,7 @@ export const authOptions: NextAuthOptions = {
         }
 
         const user = await prisma.user.findUnique({
-          where: {
-            email: credentials.email
-          }
+          where: { email: credentials.email }
         })
 
         if (!user || !user.password) {
@@ -45,9 +42,11 @@ export const authOptions: NextAuthOptions = {
         return {
           id: user.id,
           email: user.email,
+          name: `${user.firstName} ${user.lastName}`.trim(),
           firstName: user.firstName,
           lastName: user.lastName,
           image: user.image,
+          role: user.role,
         }
       }
     })
@@ -60,6 +59,7 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.firstName = user.firstName
         token.lastName = user.lastName
+        token.role = user.role
       }
       return token
     },
@@ -68,13 +68,13 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.sub!
         session.user.firstName = token.firstName as string
         session.user.lastName = token.lastName as string
+        session.user.role = token.role as string
       }
       return session
     }
   },
   pages: {
     signIn: '/auth/signin',
-    signUp: '/auth/signup',
   }
 }
 
@@ -82,8 +82,9 @@ declare module 'next-auth' {
   interface User {
     firstName?: string | null
     lastName?: string | null
+    role?: string | null
   }
-  
+
   interface Session {
     user: {
       id: string
@@ -91,6 +92,7 @@ declare module 'next-auth' {
       firstName?: string | null
       lastName?: string | null
       image?: string | null
+      role?: string | null
     }
   }
 }
@@ -99,5 +101,35 @@ declare module 'next-auth/jwt' {
   interface JWT {
     firstName?: string | null
     lastName?: string | null
+    role?: string | null
   }
+}
+
+// Admin authorization functions
+export const ADMIN_EMAILS = [
+  'dhruvaparik@gmail.com',
+  'kryptomerch.io@gmail.com'
+];
+
+export function isAdminEmail(email: string): boolean {
+  return ADMIN_EMAILS.includes(email.toLowerCase());
+}
+
+export async function isUserAdmin(userId: string): Promise<boolean> {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { email: true, role: true }
+    });
+
+    return user ? (user.role === 'ADMIN' || isAdminEmail(user.email)) : false;
+  } catch (error) {
+    console.error('Error checking admin status:', error);
+    return false;
+  }
+}
+
+export async function requireAdmin(userId?: string): Promise<boolean> {
+  if (!userId) return false;
+  return await isUserAdmin(userId);
 }

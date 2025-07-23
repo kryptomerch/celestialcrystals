@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useCart } from '@/contexts/CartContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { Tag, Check, X, Loader } from 'lucide-react';
 
 interface DiscountCodeInputProps {
@@ -9,11 +10,12 @@ interface DiscountCodeInputProps {
   showLabel?: boolean;
 }
 
-export default function DiscountCodeInput({ 
-  className = '', 
-  showLabel = true 
+export default function DiscountCodeInput({
+  className = '',
+  showLabel = true
 }: DiscountCodeInputProps) {
   const { discountCode, applyDiscountCode, removeDiscountCode } = useCart();
+  const { isDark } = useTheme();
   const [inputCode, setInputCode] = useState('');
   const [isApplying, setIsApplying] = useState(false);
 
@@ -23,7 +25,7 @@ export default function DiscountCodeInput({
 
     setIsApplying(true);
     const success = await applyDiscountCode(inputCode.trim().toUpperCase());
-    
+
     if (success) {
       setInputCode('');
     }
@@ -111,12 +113,7 @@ export default function DiscountCodeInput({
         </div>
       )}
 
-      {/* Common Discount Codes Hint */}
-      {!discountCode && (
-        <div className="text-xs text-gray-500">
-          <p>Try: WELCOME15, BDAY20, or check your email for exclusive codes</p>
-        </div>
-      )}
+
     </div>
   );
 }

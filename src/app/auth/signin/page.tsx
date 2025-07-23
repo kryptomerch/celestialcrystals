@@ -4,7 +4,9 @@ import { useState } from 'react';
 import { signIn, getSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Mail, Lock, Eye, EyeOff, Sparkles } from 'lucide-react';
+import Image from 'next/image';
+import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { useTheme } from '@/contexts/ThemeContext';
 
 export default function SignInPage() {
   const [email, setEmail] = useState('');
@@ -13,6 +15,7 @@ export default function SignInPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
+  const { isDark } = useTheme();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,62 +55,76 @@ export default function SignInPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className={`min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 ${isDark ? 'bg-gray-950' : 'bg-gray-50'}`}>
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <div className="flex items-center justify-center mb-6">
-            <Sparkles className="w-12 h-12 text-gray-600 mr-3" />
-            <h1 className="text-4xl font-light text-gray-900">CELESTIAL</h1>
+            <Image
+              src={isDark ? "/images/logo-white.png" : "/images/logo-dark.png"}
+              alt="Celestial Crystals"
+              width={200}
+              height={60}
+              className="h-12 w-auto"
+            />
           </div>
-          <h2 className="text-2xl font-medium text-gray-900 mb-2">Welcome Back</h2>
-          <p className="text-gray-600">Sign in to your crystal journey</p>
+          <h2 className={`text-2xl font-medium mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>Welcome Back</h2>
+          <p className={`${isDark ? 'text-white' : 'text-gray-600'}`}>Sign in to your crystal journey</p>
         </div>
 
         <div className="celestial-card p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 text-sm">
+              <div className={`border px-4 py-3 text-sm ${isDark
+                ? 'bg-red-900/50 border-red-700 text-red-300'
+                : 'bg-red-50 border-red-200 text-red-700'
+                }`}>
                 {error}
               </div>
             )}
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="email" className={`block text-sm font-medium mb-2 ${isDark ? 'text-white' : 'text-gray-700'}`}>
                 Email Address
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <Mail className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 ${isDark ? 'text-gray-400' : 'text-gray-400'}`} />
                 <input
                   id="email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 text-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400 transition-colors"
+                  className={`w-full pl-10 pr-4 py-3 border focus:outline-none focus:ring-1 transition-colors ${isDark
+                    ? 'border-gray-600 bg-gray-800 text-white focus:ring-purple-500 focus:border-purple-500'
+                    : 'border-gray-300 bg-white text-gray-900 focus:ring-gray-400 focus:border-gray-400'
+                    }`}
                   placeholder="your@email.com"
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="password" className={`block text-sm font-medium mb-2 ${isDark ? 'text-white' : 'text-gray-700'}`}>
                 Password
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <Lock className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 ${isDark ? 'text-gray-400' : 'text-gray-400'}`} />
                 <input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full pl-10 pr-12 py-3 border border-gray-300 text-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400 transition-colors"
+                  className={`w-full pl-10 pr-12 py-3 border focus:outline-none focus:ring-1 transition-colors ${isDark
+                    ? 'border-gray-600 bg-gray-800 text-white focus:ring-purple-500 focus:border-purple-500'
+                    : 'border-gray-300 bg-white text-gray-900 focus:ring-gray-400 focus:border-gray-400'
+                    }`}
                   placeholder="Enter your password"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className={`absolute right-3 top-1/2 transform -translate-y-1/2 ${isDark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'}`}
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -126,17 +143,20 @@ export default function SignInPage() {
           <div className="mt-6">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300" />
+                <div className={`w-full border-t ${isDark ? 'border-gray-600' : 'border-gray-300'}`} />
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">Or continue with</span>
+                <span className={`px-2 ${isDark ? 'bg-gray-800 text-gray-400' : 'bg-white text-gray-500'}`}>Or continue with</span>
               </div>
             </div>
 
             <button
               onClick={handleGoogleSignIn}
               disabled={isLoading}
-              className="mt-4 w-full bg-white text-gray-700 py-3 px-6 border border-gray-300 font-medium hover:bg-gray-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 text-sm uppercase tracking-wide"
+              className={`mt-4 w-full py-3 px-6 border font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 text-sm uppercase tracking-wide ${isDark
+                ? 'bg-gray-800 text-white border-gray-600 hover:bg-gray-700'
+                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                }`}
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -149,9 +169,9 @@ export default function SignInPage() {
           </div>
 
           <div className="mt-6 text-center">
-            <p className="text-gray-600 text-sm">
+            <p className={`text-sm ${isDark ? 'text-white' : 'text-gray-600'}`}>
               Don't have an account?{' '}
-              <Link href="/auth/signup" className="text-gray-900 font-medium hover:text-gray-700 transition-colors underline">
+              <Link href="/auth/signup" className={`font-medium transition-colors underline ${isDark ? 'text-white hover:text-gray-300' : 'text-gray-900 hover:text-gray-700'}`}>
                 Sign up here
               </Link>
             </p>
@@ -161,7 +181,7 @@ export default function SignInPage() {
         <div className="text-center">
           <Link
             href="/"
-            className="text-gray-600 hover:text-gray-900 transition-colors text-sm"
+            className={`transition-colors text-sm ${isDark ? 'text-white hover:text-gray-300' : 'text-gray-600 hover:text-gray-900'}`}
           >
             ← Back to Home
           </Link>

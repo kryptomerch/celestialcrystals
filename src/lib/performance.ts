@@ -10,13 +10,13 @@ export class PerformanceMonitor {
 
     // Monitor Core Web Vitals
     this.observeWebVitals()
-    
+
     // Monitor resource loading
     this.observeResourceTiming()
-    
+
     // Monitor navigation timing
     this.observeNavigationTiming()
-    
+
     // Monitor long tasks
     this.observeLongTasks()
   }
@@ -153,8 +153,8 @@ export class PerformanceMonitor {
   // Report metric to analytics
   private static reportMetric(name: string, value: number) {
     // Send to Google Analytics 4
-    if (typeof gtag !== 'undefined') {
-      gtag('event', 'web_vital', {
+    if (typeof window !== 'undefined' && (window as any).gtag) {
+      (window as any).gtag('event', 'web_vital', {
         name,
         value: Math.round(value),
         event_category: 'Performance'
@@ -287,20 +287,20 @@ export class CodeSplitter {
     }
 
     const startTime = performance.now()
-    
+
     try {
       const module = await importFn()
       const loadTime = performance.now() - startTime
-      
+
       this.loadedModules.add(moduleName)
-      
+
       // Report dynamic import performance
       PerformanceMonitor['sendToAnalytics']('dynamic_import', {
         module: moduleName,
         loadTime: Math.round(loadTime),
         timestamp: Date.now()
       })
-      
+
       return module.default
     } catch (error) {
       console.error(`Failed to load module ${moduleName}:`, error)
@@ -333,12 +333,12 @@ export class BundleAnalyzer {
 
     // Get all script tags
     const scripts = Array.from(document.querySelectorAll('script[src]'))
-    
+
     scripts.forEach(async (script: any) => {
       try {
         const response = await fetch(script.src, { method: 'HEAD' })
         const size = parseInt(response.headers.get('content-length') || '0')
-        
+
         if (size > 100000) { // Report bundles > 100KB
           console.warn(`Large bundle detected: ${script.src} (${Math.round(size / 1024)}KB)`)
         }

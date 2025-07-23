@@ -119,11 +119,10 @@ export default function ProductReviews({ crystalId, crystalName }: ProductReview
             disabled={!interactive}
           >
             <Star
-              className={`w-5 h-5 ${
-                star <= rating
+              className={`w-5 h-5 ${star <= rating
                   ? 'text-yellow-400 fill-current'
                   : 'text-gray-300'
-              }`}
+                }`}
             />
           </button>
         ))}
@@ -211,7 +210,7 @@ export default function ProductReviews({ crystalId, crystalName }: ProductReview
       {showReviewForm && (
         <div className="border border-gray-200 rounded-lg p-6 bg-gray-50">
           <h4 className="text-lg font-medium text-gray-900 mb-4">Write a Review for {crystalName}</h4>
-          
+
           {error && (
             <div className="mb-4 bg-red-50 border border-red-200 rounded-lg p-3">
               <p className="text-red-800 text-sm">{error}</p>
@@ -223,7 +222,7 @@ export default function ProductReviews({ crystalId, crystalName }: ProductReview
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Rating *
               </label>
-              {renderStars(reviewForm.rating, true, (rating) => 
+              {renderStars(reviewForm.rating, true, (rating) =>
                 setReviewForm(prev => ({ ...prev, rating }))
               )}
             </div>
@@ -308,7 +307,7 @@ export default function ProductReviews({ crystalId, crystalName }: ProductReview
                     <div className="flex items-center space-x-2">
                       <span className="font-medium text-gray-900">{review.user.name}</span>
                       {review.isVerified && (
-                        <CheckCircle className="w-4 h-4 text-green-500" title="Verified Purchase" />
+                        <CheckCircle className="w-4 h-4 text-green-500" />
                       )}
                     </div>
                     <div className="flex items-center space-x-2">

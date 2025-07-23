@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
     }
 
     // In a real app, get subscribers from database
-    const subscribers = [
+    const subscribers: { email: string; firstName: string }[] = [
       // { email: 'subscriber1@example.com', firstName: 'John' },
       // { email: 'subscriber2@example.com', firstName: 'Jane' },
     ];

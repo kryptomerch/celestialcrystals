@@ -8,12 +8,12 @@ import { prisma } from '@/lib/prisma'
 function verifyCronSecret(request: NextRequest): boolean {
   const authHeader = request.headers.get('authorization')
   const cronSecret = process.env.CRON_SECRET
-  
+
   if (!cronSecret) {
     console.error('CRON_SECRET not configured')
     return false
   }
-  
+
   return authHeader === `Bearer ${cronSecret}`
 }
 
@@ -33,31 +33,31 @@ export async function POST(request: NextRequest) {
       case 'inventory-check':
         await runInventoryCheck()
         break
-        
+
       case 'abandoned-cart':
         await runAbandonedCartRecovery()
         break
-        
+
       case 'weekly-newsletter':
         await runWeeklyNewsletter()
         break
-        
+
       case 'cleanup-old-data':
         await runDataCleanup()
         break
-        
+
       case 'birthday-emails':
         await runBirthdayEmails()
         break
-        
+
       case 'restock-notifications':
         await runRestockNotifications()
         break
-        
+
       case 'analytics-summary':
         await runAnalyticsSummary()
         break
-        
+
       default:
         return NextResponse.json(
           { error: 'Unknown job type' },
@@ -65,8 +65,8 @@ export async function POST(request: NextRequest) {
         )
     }
 
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       job,
       timestamp: new Date().toISOString()
     })
@@ -102,31 +102,31 @@ async function runWeeklyNewsletter() {
 // Monthly data cleanup
 async function runDataCleanup() {
   console.log('Running data cleanup...')
-  
+
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
   const sixMonthsAgo = new Date(Date.now() - 180 * 24 * 60 * 60 * 1000)
-  
+
   // Clean up old page views
   await prisma.pageView.deleteMany({
     where: {
       createdAt: { lt: thirtyDaysAgo }
     }
   })
-  
+
   // Clean up old product views (keep only last 90 days)
   await prisma.productView.deleteMany({
     where: {
       createdAt: { lt: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000) }
     }
   })
-  
+
   // Clean up old email logs (keep only last 6 months)
   await prisma.emailLog.deleteMany({
     where: {
       sentAt: { lt: sixMonthsAgo }
     }
   })
-  
+
   // Clean up expired discount codes
   await prisma.discountCode.updateMany({
     where: {
@@ -135,18 +135,18 @@ async function runDataCleanup() {
     },
     data: { isActive: false }
   })
-  
+
   console.log('Data cleanup completed')
 }
 
 // Daily birthday emails
 async function runBirthdayEmails() {
   console.log('Sending birthday emails...')
-  
+
   const today = new Date()
   const todayMonth = today.getMonth() + 1
   const todayDay = today.getDate()
-  
+
   // Find users with birthdays today
   const birthdayUsers = await prisma.user.findMany({
     where: {
@@ -156,13 +156,13 @@ async function runBirthdayEmails() {
       marketingEmails: true
     }
   })
-  
+
   const todayBirthdays = birthdayUsers.filter(user => {
     if (!user.birthDate) return false
     const birthDate = new Date(user.birthDate)
     return birthDate.getMonth() + 1 === todayMonth && birthDate.getDate() === todayDay
   })
-  
+
   for (const user of todayBirthdays) {
     try {
       await sendBirthdayEmail(user)
@@ -170,29 +170,34 @@ async function runBirthdayEmails() {
       console.error(`Failed to send birthday email to ${user.email}:`, error)
     }
   }
-  
+
   console.log(`Sent birthday emails to ${todayBirthdays.length} users`)
 }
 
 // Send birthday email with special discount
 async function sendBirthdayEmail(user: any) {
   const discountCode = `BIRTHDAY${user.id.slice(-4).toUpperCase()}`
-  
+
   // Create birthday discount code
   await prisma.discountCode.create({
     data: {
       code: discountCode,
+      email: user.email,
+      percentage: 20, // 20% off
+      isValid: true,
+      expiryDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+      reason: 'birthday',
       type: 'PERCENTAGE',
-      value: 20, // 20% off
+      value: 20,
       usageLimit: 1,
       userUsageLimit: 1,
       isActive: true,
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       description: `Birthday discount for ${user.firstName}`,
       internalNote: 'Auto-generated birthday discount'
     }
   })
-  
+
   // Send birthday email (implement in EmailAutomationService)
   // await EmailAutomationService.sendBirthdayEmail(user, discountCode)
 }
@@ -200,7 +205,7 @@ async function sendBirthdayEmail(user: any) {
 // Restock notifications for waitlisted items
 async function runRestockNotifications() {
   console.log('Checking for restock notifications...')
-  
+
   // Find crystals that were out of stock but now have inventory
   const restockedCrystals = await prisma.crystal.findMany({
     where: {
@@ -223,12 +228,12 @@ async function runRestockNotifications() {
       }
     }
   })
-  
+
   for (const crystal of restockedCrystals) {
     const interestedUsers = crystal.wishlistItems
       .filter(item => item.user.marketingEmails)
       .map(item => item.user)
-    
+
     for (const user of interestedUsers) {
       try {
         await sendRestockNotification(user, crystal)
@@ -248,9 +253,9 @@ async function sendRestockNotification(user: any, crystal: any) {
 // Weekly analytics summary for admin
 async function runAnalyticsSummary() {
   console.log('Generating analytics summary...')
-  
+
   const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-  
+
   // Get weekly metrics
   const [
     weeklyRevenue,
@@ -266,18 +271,18 @@ async function runAnalyticsSummary() {
       },
       _sum: { totalAmount: true }
     }),
-    
+
     prisma.order.count({
       where: {
         createdAt: { gte: oneWeekAgo },
         status: { in: ['PROCESSING', 'SHIPPED', 'DELIVERED'] }
       }
     }),
-    
+
     prisma.user.count({
       where: { createdAt: { gte: oneWeekAgo } }
     }),
-    
+
     prisma.orderItem.groupBy({
       by: ['crystalId'],
       where: {
@@ -290,7 +295,7 @@ async function runAnalyticsSummary() {
       orderBy: { _sum: { quantity: 'desc' } },
       take: 5
     }),
-    
+
     prisma.crystal.count({
       where: {
         isActive: true,
@@ -298,7 +303,7 @@ async function runAnalyticsSummary() {
       }
     })
   ])
-  
+
   // Send summary email to admin
   // await EmailAutomationService.sendWeeklyAnalyticsSummary({
   //   revenue: weeklyRevenue._sum.totalAmount || 0,
@@ -307,6 +312,6 @@ async function runAnalyticsSummary() {
   //   topProducts,
   //   lowStockItems
   // })
-  
+
   console.log('Analytics summary sent')
 }

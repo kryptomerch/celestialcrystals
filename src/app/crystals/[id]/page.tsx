@@ -4,12 +4,13 @@ import { crystalDatabase } from '@/data/crystals';
 import CrystalDetailPage from '@/components/CrystalDetailPage';
 
 interface Props {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const crystal = crystalDatabase.find(c => c.id === params.id);
-  
+  const resolvedParams = await params;
+  const crystal = crystalDatabase.find(c => c.id === resolvedParams.id);
+
   if (!crystal) {
     return {
       title: 'Crystal Not Found',
@@ -36,7 +37,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title,
       description,
-      type: 'product',
+      type: 'website',
       url: `https://celestialcrystals.com/crystals/${crystal.id}`,
       images: [
         {
@@ -65,9 +66,10 @@ export async function generateStaticParams() {
   }));
 }
 
-export default function CrystalPage({ params }: Props) {
-  const crystal = crystalDatabase.find(c => c.id === params.id);
-  
+export default async function CrystalPage({ params }: Props) {
+  const resolvedParams = await params;
+  const crystal = crystalDatabase.find(c => c.id === resolvedParams.id);
+
   if (!crystal) {
     notFound();
   }

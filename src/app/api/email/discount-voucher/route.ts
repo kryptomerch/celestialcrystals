@@ -4,12 +4,12 @@ import { DiscountVoucherData } from '@/lib/email-templates/discount-voucher';
 
 export async function POST(request: NextRequest) {
   try {
-    const { 
-      email, 
-      firstName, 
-      discountPercentage = 15, 
+    const {
+      email,
+      firstName,
+      discountPercentage = 15,
       reason = 'loyalty',
-      minOrderAmount 
+      minOrderAmount
     } = await request.json();
 
     if (!email || !firstName) {
@@ -27,16 +27,16 @@ export async function POST(request: NextRequest) {
     }
 
     const discountCode = EmailAutomationService.generateDiscountCode(
-      reason === 'birthday' ? 'BDAY' : 
-      reason === 'winback' ? 'BACK' : 
-      reason === 'seasonal' ? 'SEASON' : 'SAVE'
+      reason === 'birthday' ? 'BDAY' :
+        reason === 'winback' ? 'BACK' :
+          reason === 'seasonal' ? 'SEASON' : 'SAVE'
     );
 
     // Set expiry date based on reason
-    const expiryDays = reason === 'birthday' ? 14 : 
-                      reason === 'winback' ? 30 : 
-                      reason === 'seasonal' ? 7 : 14;
-    
+    const expiryDays = reason === 'birthday' ? 14 :
+      reason === 'winback' ? 30 :
+        reason === 'seasonal' ? 7 : 14;
+
     const expiryDate = new Date(Date.now() + expiryDays * 24 * 60 * 60 * 1000);
 
     const voucherData: DiscountVoucherData = {
@@ -84,7 +84,7 @@ export async function GET(request: NextRequest) {
     }
 
     // In a real app, query database for users with birthdays today
-    const birthdayUsers = [
+    const birthdayUsers: { email: string; firstName: string; birthDate: string }[] = [
       // Example structure:
       // { email: 'user@example.com', firstName: 'John', birthDate: '1990-01-15' }
     ];

@@ -3,10 +3,11 @@ import { crystalDatabase } from '@/data/crystals';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const resolvedParams = await params;
+    const { id } = resolvedParams;
 
     // Find the crystal by ID
     const crystal = crystalDatabase.find(c => c.id === id);
@@ -20,7 +21,7 @@ export async function GET(
 
     // Get related crystals (same category or similar properties)
     const relatedCrystals = crystalDatabase
-      .filter(c => 
+      .filter(c =>
         c.id !== crystal.id && (
           c.category === crystal.category ||
           c.properties.some(prop => crystal.properties.includes(prop))

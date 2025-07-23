@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
+
+// TODO: Replace with real Firestore/database integration
+// For now, return empty orders until real database is connected
 
 // Get user's order history
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
-    
+
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Unauthorized' },
@@ -16,59 +18,18 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url)
-    const page = parseInt(searchParams.get('page') || '1')
-    const limit = parseInt(searchParams.get('limit') || '10')
     const status = searchParams.get('status')
 
-    const skip = (page - 1) * limit
-
-    // Build where clause
-    const where: any = { userId: session.user.id }
-    if (status) {
-      where.status = status
-    }
-
-    // Get orders with pagination
-    const [orders, totalCount] = await Promise.all([
-      prisma.order.findMany({
-        where,
-        include: {
-          items: {
-            include: {
-              crystal: {
-                select: {
-                  id: true,
-                  name: true,
-                  image: true,
-                  properties: true,
-                }
-              }
-            }
-          },
-          shippingAddress: true,
-          statusHistory: {
-            orderBy: { createdAt: 'desc' },
-            take: 1
-          }
-        },
-        orderBy: { createdAt: 'desc' },
-        skip,
-        take: limit
-      }),
-      prisma.order.count({ where })
-    ])
-
-    const totalPages = Math.ceil(totalCount / limit)
-
+    // Return empty orders array - real orders will come from Firestore/database
     return NextResponse.json({
-      orders,
+      orders: [],
       pagination: {
-        page,
-        limit,
-        totalCount,
-        totalPages,
-        hasNext: page < totalPages,
-        hasPrev: page > 1
+        page: 1,
+        limit: 10,
+        totalCount: 0,
+        totalPages: 0,
+        hasNext: false,
+        hasPrev: false
       }
     })
   } catch (error) {
@@ -84,7 +45,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
-    
+
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Unauthorized' },
@@ -101,41 +62,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const order = await prisma.order.findFirst({
-      where: {
-        id: orderId,
-        userId: session.user.id // Ensure user can only access their own orders
-      },
-      include: {
-        items: {
-          include: {
-            crystal: {
-              select: {
-                id: true,
-                name: true,
-                description: true,
-                image: true,
-                properties: true,
-                colors: true,
-              }
-            }
-          }
-        },
-        shippingAddress: true,
-        statusHistory: {
-          orderBy: { createdAt: 'asc' }
-        }
-      }
-    })
-
-    if (!order) {
-      return NextResponse.json(
-        { error: 'Order not found' },
-        { status: 404 }
-      )
-    }
-
-    return NextResponse.json({ order })
+    // Return order not found - real orders will come from Firestore/database
+    return NextResponse.json(
+      { error: 'Order not found' },
+      { status: 404 }
+    )
   } catch (error) {
     console.error('Order details fetch error:', error)
     return NextResponse.json(

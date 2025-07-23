@@ -74,11 +74,11 @@ export default function SEOHead({
           '@type': 'Offer',
           price: price?.toString(),
           priceCurrency: currency,
-          availability: availability === 'in stock' 
+          availability: availability === 'in stock'
             ? 'https://schema.org/InStock'
             : availability === 'out of stock'
-            ? 'https://schema.org/OutOfStock'
-            : 'https://schema.org/PreOrder',
+              ? 'https://schema.org/OutOfStock'
+              : 'https://schema.org/PreOrder',
           seller: {
             '@type': 'Organization',
             name: brand
@@ -157,8 +157,8 @@ export default function SEOHead({
       <meta name="twitter:title" content={title} />
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image" content={fullImageUrl} />
-      <meta name="twitter:site" content="@celestialcrystals" />
-      <meta name="twitter:creator" content="@celestialcrystals" />
+      <meta name="twitter:site" content="@Celesti95282006" />
+      <meta name="twitter:creator" content="@Celesti95282006" />
 
       {/* Product-specific meta tags */}
       {type === 'product' && price && (
@@ -231,9 +231,8 @@ export default function SEOHead({
               availableLanguage: 'English'
             },
             sameAs: [
-              'https://facebook.com/celestialcrystals',
-              'https://instagram.com/celestialcrystals',
-              'https://twitter.com/celestialcrystals'
+              'https://www.instagram.com/zenwithcelestial/profilecard/?igsh=MWRscW9sbmk2MGFsZw==',
+              'https://x.com/Celesti95282006?t=6LRLq3UIPAT-xinuQfw8yw&s=09'
             ]
           })
         }}

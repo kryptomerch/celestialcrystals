@@ -6,7 +6,7 @@ import { prisma } from '@/lib/prisma'
 // Get reviews for a crystal
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { searchParams } = new URL(request.url)
@@ -17,8 +17,9 @@ export async function GET(
     const skip = (page - 1) * limit
 
     // Build where clause
+    const resolvedParams = await params
     const where: any = {
-      crystalId: params.id,
+      crystalId: resolvedParams.id,
       isApproved: true
     }
 
@@ -45,7 +46,7 @@ export async function GET(
       }),
       prisma.review.count({ where }),
       prisma.review.aggregate({
-        where: { crystalId: params.id, isApproved: true },
+        where: { crystalId: resolvedParams.id, isApproved: true },
         _avg: { rating: true },
         _count: { rating: true }
       })
@@ -54,7 +55,7 @@ export async function GET(
     // Get rating distribution
     const ratingDistribution = await prisma.review.groupBy({
       by: ['rating'],
-      where: { crystalId: params.id, isApproved: true },
+      where: { crystalId: resolvedParams.id, isApproved: true },
       _count: { rating: true },
       orderBy: { rating: 'desc' }
     })
@@ -70,8 +71,8 @@ export async function GET(
         isVerified: review.isVerified,
         createdAt: review.createdAt,
         user: {
-          name: review.user.firstName ? 
-            `${review.user.firstName} ${review.user.lastName?.charAt(0) || ''}.` : 
+          name: review.user.firstName ?
+            `${review.user.firstName} ${review.user.lastName?.charAt(0) || ''}.` :
             'Anonymous',
           image: review.user.image
         }
@@ -105,11 +106,11 @@ export async function GET(
 // Create a new review
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
-    
+
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Unauthorized' },
@@ -135,8 +136,9 @@ export async function POST(
     }
 
     // Check if crystal exists
+    const resolvedParams = await params
     const crystal = await prisma.crystal.findUnique({
-      where: { id: params.id }
+      where: { id: resolvedParams.id }
     })
 
     if (!crystal) {
@@ -151,7 +153,7 @@ export async function POST(
       where: {
         userId_crystalId: {
           userId: session.user.id,
-          crystalId: params.id
+          crystalId: resolvedParams.id
         }
       }
     })
@@ -166,7 +168,7 @@ export async function POST(
     // Check if user has purchased this crystal (for verified reviews)
     const hasPurchased = await prisma.orderItem.findFirst({
       where: {
-        crystalId: params.id,
+        crystalId: resolvedParams.id,
         order: {
           userId: session.user.id,
           status: 'DELIVERED'
@@ -178,7 +180,7 @@ export async function POST(
     const review = await prisma.review.create({
       data: {
         userId: session.user.id,
-        crystalId: params.id,
+        crystalId: resolvedParams.id,
         rating,
         title: title?.trim(),
         comment: comment.trim(),
@@ -206,8 +208,8 @@ export async function POST(
         isVerified: review.isVerified,
         createdAt: review.createdAt,
         user: {
-          name: review.user.firstName ? 
-            `${review.user.firstName} ${review.user.lastName?.charAt(0) || ''}.` : 
+          name: review.user.firstName ?
+            `${review.user.firstName} ${review.user.lastName?.charAt(0) || ''}.` :
             'Anonymous',
           image: review.user.image
         }
@@ -225,11 +227,11 @@ export async function POST(
 // Update a review
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
-    
+
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Unauthorized' },
@@ -237,6 +239,7 @@ export async function PUT(
       )
     }
 
+    const resolvedParams = await params
     const { reviewId, rating, title, comment } = await request.json()
 
     if (!reviewId) {
@@ -266,7 +269,7 @@ export async function PUT(
       where: {
         id: reviewId,
         userId: session.user.id,
-        crystalId: params.id
+        crystalId: resolvedParams.id
       }
     })
 
@@ -308,8 +311,8 @@ export async function PUT(
         createdAt: updatedReview.createdAt,
         updatedAt: updatedReview.updatedAt,
         user: {
-          name: updatedReview.user.firstName ? 
-            `${updatedReview.user.firstName} ${updatedReview.user.lastName?.charAt(0) || ''}.` : 
+          name: updatedReview.user.firstName ?
+            `${updatedReview.user.firstName} ${updatedReview.user.lastName?.charAt(0) || ''}.` :
             'Anonymous',
           image: updatedReview.user.image
         }

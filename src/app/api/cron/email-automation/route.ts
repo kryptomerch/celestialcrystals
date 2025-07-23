@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
     // Verify the request is from authorized source
     const authHeader = request.headers.get('authorization');
     const cronSecret = process.env.CRON_SECRET || 'your-cron-secret-key';
-    
+
     if (!authHeader || authHeader !== `Bearer ${cronSecret}`) {
       return NextResponse.json(
         { error: 'Unauthorized' },
@@ -23,19 +23,19 @@ export async function POST(request: NextRequest) {
       case 'weekly-newsletter':
         result = await sendWeeklyNewsletter();
         break;
-      
+
       case 'birthday-discounts':
         result = await sendBirthdayDiscounts();
         break;
-      
+
       case 'winback-campaign':
         result = await sendWinbackCampaign();
         break;
-      
+
       case 'seasonal-promotion':
         result = await sendSeasonalPromotion();
         break;
-      
+
       default:
         return NextResponse.json(
           { error: 'Invalid action' },
@@ -61,15 +61,15 @@ export async function POST(request: NextRequest) {
 
 async function sendWeeklyNewsletter() {
   console.log('Starting weekly newsletter send...');
-  
+
   // In a real app, get subscribers from database
-  const subscribers = [
+  const subscribers: { email: string; firstName: string }[] = [
     // Example: { email: 'user@example.com', firstName: 'John' }
   ];
 
   const weekNumber = Math.floor(Date.now() / (7 * 24 * 60 * 60 * 1000));
   const featuredCrystal = crystalDatabase[weekNumber % crystalDatabase.length];
-  
+
   let successCount = 0;
   let failureCount = 0;
 
@@ -99,7 +99,7 @@ async function sendWeeklyNewsletter() {
       const success = await EmailAutomationService.sendNewsletterEmail(newsletterData);
       if (success) successCount++;
       else failureCount++;
-      
+
     } catch (error) {
       console.error(`Failed to send newsletter to ${subscriber.email}:`, error);
       failureCount++;
@@ -117,9 +117,9 @@ async function sendWeeklyNewsletter() {
 
 async function sendBirthdayDiscounts() {
   console.log('Checking for birthday discounts...');
-  
+
   // In a real app, query database for users with birthdays today
-  const birthdayUsers = [
+  const birthdayUsers: { email: string; firstName: string; birthDate: string }[] = [
     // Example: { email: 'user@example.com', firstName: 'John', birthDate: '1990-01-15' }
   ];
 
@@ -141,7 +141,7 @@ async function sendBirthdayDiscounts() {
 
       if (success) successCount++;
       else failureCount++;
-      
+
     } catch (error) {
       console.error(`Failed to send birthday discount to ${user.email}:`, error);
       failureCount++;
@@ -158,9 +158,9 @@ async function sendBirthdayDiscounts() {
 
 async function sendWinbackCampaign() {
   console.log('Starting winback campaign...');
-  
+
   // In a real app, query for users who haven't purchased in 60+ days
-  const inactiveUsers = [
+  const inactiveUsers: { email: string; firstName: string; lastPurchase: string }[] = [
     // Example: { email: 'user@example.com', firstName: 'John', lastPurchase: '2023-01-15' }
   ];
 
@@ -183,7 +183,7 @@ async function sendWinbackCampaign() {
 
       if (success) successCount++;
       else failureCount++;
-      
+
     } catch (error) {
       console.error(`Failed to send winback email to ${user.email}:`, error);
       failureCount++;
@@ -200,16 +200,16 @@ async function sendWinbackCampaign() {
 
 async function sendSeasonalPromotion() {
   console.log('Starting seasonal promotion...');
-  
+
   // In a real app, get all active subscribers
-  const subscribers = [
+  const subscribers: { email: string; firstName: string }[] = [
     // Example: { email: 'user@example.com', firstName: 'John' }
   ];
 
   const currentMonth = new Date().getMonth();
   const seasonName = currentMonth >= 2 && currentMonth <= 4 ? 'Spring' :
-                    currentMonth >= 5 && currentMonth <= 7 ? 'Summer' :
-                    currentMonth >= 8 && currentMonth <= 10 ? 'Fall' : 'Winter';
+    currentMonth >= 5 && currentMonth <= 7 ? 'Summer' :
+      currentMonth >= 8 && currentMonth <= 10 ? 'Fall' : 'Winter';
 
   let successCount = 0;
   let failureCount = 0;
@@ -229,7 +229,7 @@ async function sendSeasonalPromotion() {
 
       if (success) successCount++;
       else failureCount++;
-      
+
     } catch (error) {
       console.error(`Failed to send seasonal promotion to ${subscriber.email}:`, error);
       failureCount++;

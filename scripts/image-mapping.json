@@ -1,0 +1,136 @@
+{
+  "7 CHAKRA": [
+    "/images/crystals/7 CHAKRA/LV1.png",
+    "/images/crystals/7 CHAKRA/LV2.png",
+    "/images/crystals/7 CHAKRA/LV3.png",
+    "/images/crystals/7 CHAKRA/LV4.png",
+    "/images/crystals/7 CHAKRA/LV5.png"
+  ],
+  "AMETHYST": [
+    "/images/crystals/AMETHYST/AM1.png",
+    "/images/crystals/AMETHYST/AM2.png",
+    "/images/crystals/AMETHYST/AM3.png",
+    "/images/crystals/AMETHYST/AM4.png",
+    "/images/crystals/AMETHYST/AM5.png"
+  ],
+  "AQUAMARINE": [
+    "/images/crystals/AQUAMARINE/AQ1.png",
+    "/images/crystals/AQUAMARINE/AQ2.png",
+    "/images/crystals/AQUAMARINE/AQ3.png",
+    "/images/crystals/AQUAMARINE/AQ4.png",
+    "/images/crystals/AQUAMARINE/AQ5.png"
+  ],
+  "BLUE APATITE": [
+    "/images/crystals/BLUE APATITE/BA1.png",
+    "/images/crystals/BLUE APATITE/BA2.png",
+    "/images/crystals/BLUE APATITE/BA3.png",
+    "/images/crystals/BLUE APATITE/BA4.png",
+    "/images/crystals/BLUE APATITE/BA5.png"
+  ],
+  "CITRINE": [
+    "/images/crystals/CITRINE/CI.png",
+    "/images/crystals/CITRINE/CI1.png",
+    "/images/crystals/CITRINE/CI2.png",
+    "/images/crystals/CITRINE/CI3.png",
+    "/images/crystals/CITRINE/CI4.png",
+    "/images/crystals/CITRINE/CI6.png"
+  ],
+  "DALMATIAN": [
+    "/images/crystals/DALMATIAN/DM1.png",
+    "/images/crystals/DALMATIAN/DM2.png",
+    "/images/crystals/DALMATIAN/DM3.png",
+    "/images/crystals/DALMATIAN/DM4.png",
+    "/images/crystals/DALMATIAN/DM5.png",
+    "/images/crystals/DALMATIAN/DM6.png"
+  ],
+  "GREEN AQUAMARINE": [
+    "/images/crystals/GREEN AQUAMARINE/GW1.png",
+    "/images/crystals/GREEN AQUAMARINE/GW2.png",
+    "/images/crystals/GREEN AQUAMARINE/GW3.png",
+    "/images/crystals/GREEN AQUAMARINE/GW4.png",
+    "/images/crystals/GREEN AQUAMARINE/GW5.png"
+  ],
+  "GREEN JADE": [
+    "/images/crystals/GREEN JADE/GJ1.png",
+    "/images/crystals/GREEN JADE/GJ2.png",
+    "/images/crystals/GREEN JADE/GJ3.png",
+    "/images/crystals/GREEN JADE/GJ4.png",
+    "/images/crystals/GREEN JADE/GJ5.png"
+  ],
+  "HEALTH MAGNET BRACELET": [
+    "/images/crystals/HEALTH MAGNET BRACELET/HM1.png",
+    "/images/crystals/HEALTH MAGNET BRACELET/HM2.png",
+    "/images/crystals/HEALTH MAGNET BRACELET/HM3.png",
+    "/images/crystals/HEALTH MAGNET BRACELET/HM4.png",
+    "/images/crystals/HEALTH MAGNET BRACELET/HM5.png"
+  ],
+  "HOWLITE": [
+    "/images/crystals/HOWLITE/HW1.png",
+    "/images/crystals/HOWLITE/HW2.png",
+    "/images/crystals/HOWLITE/HW3.png",
+    "/images/crystals/HOWLITE/HW4.png",
+    "/images/crystals/HOWLITE/HW5.png"
+  ],
+  "LAPIS LAZULI": [
+    "/images/crystals/LAPIS LAZULI/LL1.png",
+    "/images/crystals/LAPIS LAZULI/LL2.png",
+    "/images/crystals/LAPIS LAZULI/LL3.png",
+    "/images/crystals/LAPIS LAZULI/LL4.png",
+    "/images/crystals/LAPIS LAZULI/LL5.png"
+  ],
+  "MOONSTONE": [
+    "/images/crystals/MOONSTONE/MO1.png",
+    "/images/crystals/MOONSTONE/MO2.png",
+    "/images/crystals/MOONSTONE/MO3.png",
+    "/images/crystals/MOONSTONE/MO4.png",
+    "/images/crystals/MOONSTONE/MO5.png"
+  ],
+  "RHODOCHROSITE": [
+    "/images/crystals/RHODOCHROSITE/RH1.png",
+    "/images/crystals/RHODOCHROSITE/RH2.png",
+    "/images/crystals/RHODOCHROSITE/RH3.png",
+    "/images/crystals/RHODOCHROSITE/RH4.png",
+    "/images/crystals/RHODOCHROSITE/RH5.png",
+    "/images/crystals/RHODOCHROSITE/RW1.png",
+    "/images/crystals/RHODOCHROSITE/RW2.png",
+    "/images/crystals/RHODOCHROSITE/RW3.png",
+    "/images/crystals/RHODOCHROSITE/RW4.png",
+    "/images/crystals/RHODOCHROSITE/RW5.png"
+  ],
+  "ROSE": [
+    "/images/crystals/ROSE/RO2.png",
+    "/images/crystals/ROSE/RO3.png",
+    "/images/crystals/ROSE/RO4.png",
+    "/images/crystals/ROSE/RO5.png",
+    "/images/crystals/ROSE/RO6.png",
+    "/images/crystals/ROSE/ro1.png"
+  ],
+  "SELENITE": [
+    "/images/crystals/SELENITE/SL1.png",
+    "/images/crystals/SELENITE/SL2.png",
+    "/images/crystals/SELENITE/SL3.png",
+    "/images/crystals/SELENITE/SL4.png",
+    "/images/crystals/SELENITE/SL5.png"
+  ],
+  "TIGER EYE": [
+    "/images/crystals/TIGER EYE/TG1.png",
+    "/images/crystals/TIGER EYE/TG2.png",
+    "/images/crystals/TIGER EYE/TG3.png",
+    "/images/crystals/TIGER EYE/TG4.png",
+    "/images/crystals/TIGER EYE/TG5.png"
+  ],
+  "TREE AGATE": [
+    "/images/crystals/TREE AGATE/TG1.png",
+    "/images/crystals/TREE AGATE/TG2.png",
+    "/images/crystals/TREE AGATE/TG3.png",
+    "/images/crystals/TREE AGATE/TG4.png",
+    "/images/crystals/TREE AGATE/TG5.png"
+  ],
+  "TURQUOISE": [
+    "/images/crystals/TURQUOISE/TU1.png",
+    "/images/crystals/TURQUOISE/TU2.png",
+    "/images/crystals/TURQUOISE/TU3.png",
+    "/images/crystals/TURQUOISE/TU4.png",
+    "/images/crystals/TURQUOISE/TU5.png"
+  ]
+}

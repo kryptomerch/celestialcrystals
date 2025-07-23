@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { User, Mail, Phone, Calendar, Settings, Package, Heart, Star, Edit2, Save, X } from 'lucide-react';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface UserProfile {
   id: string;
@@ -26,6 +27,7 @@ interface UserProfile {
 export default function ProfilePage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const { isDark } = useTheme();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -146,24 +148,30 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className={`min-h-screen py-8 ${isDark ? 'bg-gray-950' : 'bg-gray-50'}`}>
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-light text-gray-900">My Profile</h1>
-          <p className="text-gray-600 mt-2">Manage your account settings and preferences</p>
+          <h1 className={`text-3xl font-light ${isDark ? 'text-white' : 'text-gray-900'}`}>My Profile</h1>
+          <p className={`mt-2 ${isDark ? 'text-white' : 'text-gray-600'}`}>Manage your account settings and preferences</p>
         </div>
 
         {/* Messages */}
         {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
-            <p className="text-red-800">{error}</p>
+          <div className={`mb-6 border rounded-lg p-4 ${isDark
+            ? 'bg-red-900/50 border-red-700'
+            : 'bg-red-50 border-red-200'
+            }`}>
+            <p className={`${isDark ? 'text-red-300' : 'text-red-800'}`}>{error}</p>
           </div>
         )}
 
         {success && (
-          <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4">
-            <p className="text-green-800">{success}</p>
+          <div className={`mb-6 border rounded-lg p-4 ${isDark
+            ? 'bg-green-900/50 border-green-700'
+            : 'bg-green-50 border-green-200'
+            }`}>
+            <p className={`${isDark ? 'text-green-300' : 'text-green-800'}`}>{success}</p>
           </div>
         )}
 
@@ -172,11 +180,11 @@ export default function ProfilePage() {
           <div className="lg:col-span-2">
             <div className="celestial-card p-6">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-medium text-gray-900">Personal Information</h2>
+                <h2 className={`text-xl font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>Personal Information</h2>
                 {!isEditing ? (
                   <button
                     onClick={() => setIsEditing(true)}
-                    className="flex items-center space-x-2 text-gray-600 hover:text-gray-900"
+                    className={`flex items-center space-x-2 ${isDark ? 'text-white hover:text-gray-300' : 'text-gray-600 hover:text-gray-900'}`}
                   >
                     <Edit2 className="w-4 h-4" />
                     <span>Edit</span>
@@ -186,14 +194,14 @@ export default function ProfilePage() {
                     <button
                       onClick={handleSave}
                       disabled={isSaving}
-                      className="flex items-center space-x-2 text-green-600 hover:text-green-700 disabled:opacity-50"
+                      className={`flex items-center space-x-2 disabled:opacity-50 ${isDark ? 'text-green-400 hover:text-green-300' : 'text-green-600 hover:text-green-700'}`}
                     >
                       <Save className="w-4 h-4" />
                       <span>{isSaving ? 'Saving...' : 'Save'}</span>
                     </button>
                     <button
                       onClick={handleCancel}
-                      className="flex items-center space-x-2 text-gray-600 hover:text-gray-900"
+                      className={`flex items-center space-x-2 ${isDark ? 'text-white hover:text-gray-300' : 'text-gray-600 hover:text-gray-900'}`}
                     >
                       <X className="w-4 h-4" />
                       <span>Cancel</span>
@@ -275,8 +283,8 @@ export default function ProfilePage() {
                     />
                   ) : (
                     <p className="text-gray-900">
-                      {profile.birthDate 
-                        ? new Date(profile.birthDate).toLocaleDateString() 
+                      {profile.birthDate
+                        ? new Date(profile.birthDate).toLocaleDateString()
                         : 'Not set'
                       }
                     </p>
@@ -290,7 +298,7 @@ export default function ProfilePage() {
 
                 <div className="space-y-3">
                   <h3 className="text-sm font-medium text-gray-700">Email Preferences</h3>
-                  
+
                   <label className="flex items-center space-x-3">
                     {isEditing ? (
                       <input
@@ -300,9 +308,8 @@ export default function ProfilePage() {
                         className="h-4 w-4 text-gray-900 focus:ring-gray-400 border-gray-300"
                       />
                     ) : (
-                      <div className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
-                        profile.newsletterSubscribed ? 'bg-gray-900 border-gray-900' : 'border-gray-300'
-                      }`}>
+                      <div className={`w-4 h-4 rounded border-2 flex items-center justify-center ${profile.newsletterSubscribed ? 'bg-gray-900 border-gray-900' : 'border-gray-300'
+                        }`}>
                         {profile.newsletterSubscribed && (
                           <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -322,9 +329,8 @@ export default function ProfilePage() {
                         className="h-4 w-4 text-gray-900 focus:ring-gray-400 border-gray-300"
                       />
                     ) : (
-                      <div className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
-                        profile.marketingEmails ? 'bg-gray-900 border-gray-900' : 'border-gray-300'
-                      }`}>
+                      <div className={`w-4 h-4 rounded border-2 flex items-center justify-center ${profile.marketingEmails ? 'bg-gray-900 border-gray-900' : 'border-gray-300'
+                        }`}>
                         {profile.marketingEmails && (
                           <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -343,7 +349,7 @@ export default function ProfilePage() {
           <div className="space-y-6">
             <div className="celestial-card p-6">
               <h3 className="text-lg font-medium text-gray-900 mb-4">Account Overview</h3>
-              
+
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
@@ -385,7 +391,7 @@ export default function ProfilePage() {
               >
                 View Order History
               </button>
-              
+
               <button
                 onClick={() => router.push('/wishlist')}
                 className="w-full celestial-button-outline"

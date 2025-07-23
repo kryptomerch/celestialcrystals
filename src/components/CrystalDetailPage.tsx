@@ -6,6 +6,8 @@ import { useCart } from '@/contexts/CartContext';
 import { ArrowLeft, ShoppingBag, Sparkles, Star, Heart, Share2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { getColorHex } from '@/utils/colors';
+import { getCrystalGlowClass } from '@/utils/crystal-glow';
 
 interface CrystalDetailPageProps {
   crystal: Crystal;
@@ -19,7 +21,7 @@ export default function CrystalDetailPage({ crystal }: CrystalDetailPageProps) {
 
   // Get related crystals
   const relatedCrystals = crystalDatabase
-    .filter(c => 
+    .filter(c =>
       c.id !== crystal.id && (
         c.category === crystal.category ||
         c.properties.some(prop => crystal.properties.includes(prop))
@@ -87,7 +89,7 @@ export default function CrystalDetailPage({ crystal }: CrystalDetailPageProps) {
             <div className="aspect-square bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-2xl flex items-center justify-center">
               <Sparkles className="w-32 h-32 text-purple-300" />
             </div>
-            
+
             {/* Thumbnail Gallery */}
             <div className="grid grid-cols-4 gap-2">
               {[1, 2, 3, 4].map((i) => (
@@ -110,7 +112,7 @@ export default function CrystalDetailPage({ crystal }: CrystalDetailPageProps) {
                   <Share2 className="w-5 h-5" />
                 </button>
               </div>
-              
+
               <div className="flex items-center space-x-4 mb-4">
                 <div className="flex items-center">
                   {[...Array(5)].map((_, i) => (
@@ -118,12 +120,11 @@ export default function CrystalDetailPage({ crystal }: CrystalDetailPageProps) {
                   ))}
                   <span className="ml-2 text-sm text-gray-600">(4.8) 127 reviews</span>
                 </div>
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                  crystal.rarity === 'Common' ? 'bg-green-100 text-green-800' :
+                <span className={`px-2 py-1 rounded-full text-xs font-medium ${crystal.rarity === 'Common' ? 'bg-green-100 text-green-800' :
                   crystal.rarity === 'Uncommon' ? 'bg-blue-100 text-blue-800' :
-                  crystal.rarity === 'Rare' ? 'bg-purple-100 text-purple-800' :
-                  'bg-yellow-100 text-yellow-800'
-                }`}>
+                    crystal.rarity === 'Rare' ? 'bg-purple-100 text-purple-800' :
+                      'bg-yellow-100 text-yellow-800'
+                  }`}>
                   {crystal.rarity}
                 </span>
               </div>
@@ -193,7 +194,7 @@ export default function CrystalDetailPage({ crystal }: CrystalDetailPageProps) {
                   <ShoppingBag className="w-5 h-5" />
                   <span>Add to Cart</span>
                 </button>
-                
+
                 <button className="p-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
                   <Heart className="w-5 h-5 text-gray-600" />
                 </button>
@@ -237,11 +238,10 @@ export default function CrystalDetailPage({ crystal }: CrystalDetailPageProps) {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                    activeTab === tab.id
-                      ? 'border-purple-500 text-purple-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
+                  className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === tab.id
+                    ? 'border-purple-500 text-purple-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    }`}
                 >
                   {tab.label}
                 </button>
@@ -254,7 +254,7 @@ export default function CrystalDetailPage({ crystal }: CrystalDetailPageProps) {
               <div className="prose prose-lg max-w-none">
                 <p className="text-gray-600 leading-relaxed">{crystal.description}</p>
                 <p className="text-gray-600 leading-relaxed mt-4">
-                  This beautiful {crystal.name} is perfect for those seeking {crystal.properties.slice(0, 3).join(', ').toLowerCase()}. 
+                  This beautiful {crystal.name} is perfect for those seeking {crystal.properties.slice(0, 3).join(', ').toLowerCase()}.
                   As a {crystal.chakra} chakra stone, it helps to balance and align your energy centers, promoting overall well-being and spiritual growth.
                 </p>
               </div>
@@ -323,16 +323,43 @@ export default function CrystalDetailPage({ crystal }: CrystalDetailPageProps) {
                   href={`/crystals/${relatedCrystal.id}`}
                   className="group"
                 >
-                  <div className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden">
-                    <div className="h-48 bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center">
-                      <Sparkles className="w-16 h-16 text-purple-300" />
+                  <div className={`celestial-card overflow-hidden ${getCrystalGlowClass(relatedCrystal.colors)}`}>
+                    <div className="relative h-48 bg-gray-100">
+                      {relatedCrystal.image ? (
+                        <img
+                          src={relatedCrystal.image}
+                          alt={relatedCrystal.name}
+                          className="w-full h-full object-contain"
+                          onError={(e) => {
+                            // Fallback to placeholder if image fails to load
+                            e.currentTarget.style.display = 'none';
+                            e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                          }}
+                        />
+                      ) : null}
+                      {/* Fallback placeholder */}
+                      <div className={`absolute inset-0 flex items-center justify-center ${relatedCrystal.image ? 'hidden' : ''}`}>
+                        <Sparkles className="w-16 h-16 text-gray-400" />
+                      </div>
                     </div>
                     <div className="p-4">
                       <h3 className="font-semibold text-gray-900 mb-2">{relatedCrystal.name}</h3>
                       <p className="text-gray-600 text-sm mb-3 line-clamp-2">{relatedCrystal.description}</p>
+
+                      {/* Colors */}
+                      <div className="flex items-center space-x-1 mb-3">
+                        {relatedCrystal.colors.slice(0, 3).map((color, index) => (
+                          <div
+                            key={index}
+                            className="w-3 h-3 rounded-full border border-gray-300 shadow-sm"
+                            style={{ backgroundColor: getColorHex(color) }}
+                          />
+                        ))}
+                      </div>
+
                       <div className="flex items-center justify-between">
-                        <span className="text-lg font-bold text-purple-600">${relatedCrystal.price}</span>
-                        <span className="text-purple-600 group-hover:text-purple-700 transition-colors text-sm font-medium">
+                        <span className="text-lg font-bold text-gray-900">${relatedCrystal.price}</span>
+                        <span className="text-gray-600 group-hover:text-gray-900 transition-colors text-sm font-medium">
                           View Details →
                         </span>
                       </div>

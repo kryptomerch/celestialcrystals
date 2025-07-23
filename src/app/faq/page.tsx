@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { ChevronDown, ChevronUp, HelpCircle, Sparkles, Shield, Truck } from 'lucide-react';
+import { useTheme } from '@/contexts/ThemeContext';
 
 export default function FAQPage() {
   const [openItems, setOpenItems] = useState<number[]>([]);
@@ -47,7 +48,7 @@ export default function FAQPage() {
         },
         {
           question: 'Do you offer free shipping?',
-          answer: 'Yes! We offer free standard shipping on all orders over $50 within the United States. For orders under $50, shipping is $5.99.'
+          answer: 'Yes! We offer free standard shipping on all orders over $75 within the United States. For orders under $75, shipping is $5.99.'
         },
         {
           question: 'Can I track my order?',
@@ -83,16 +84,18 @@ export default function FAQPage() {
     }
   ];
 
+  const { isDark } = useTheme();
+
   return (
-    <div className="min-h-screen bg-white">
+    <div className={`min-h-screen ${isDark ? 'bg-gray-950' : 'bg-white'}`}>
       {/* Header */}
-      <div className="py-16 bg-gray-50">
+      <div className={`py-16 ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="flex items-center justify-center mb-4">
-            <HelpCircle className="w-12 h-12 text-gray-600 mr-4" />
-            <h1 className="text-4xl font-light text-gray-900">Frequently Asked Questions</h1>
+            <HelpCircle className={`w-12 h-12 mr-4 ${isDark ? 'text-white' : 'text-gray-600'}`} />
+            <h1 className={`text-4xl font-light ${isDark ? 'text-white' : 'text-gray-900'}`}>Frequently Asked Questions</h1>
           </div>
-          <p className="text-xl text-gray-600">
+          <p className={`text-xl ${isDark ? 'text-white' : 'text-gray-600'}`}>
             Find answers to common questions about our crystals, orders, and services.
           </p>
         </div>
@@ -104,10 +107,10 @@ export default function FAQPage() {
           return (
             <div key={categoryIndex} className="mb-12">
               <div className="flex items-center mb-6">
-                <div className="w-10 h-10 bg-gray-100 flex items-center justify-center mr-3">
-                  <IconComponent className="w-6 h-6 text-gray-600" />
+                <div className={`w-10 h-10 flex items-center justify-center mr-3 ${isDark ? 'bg-gray-700' : 'bg-gray-100'}`}>
+                  <IconComponent className={`w-6 h-6 ${isDark ? 'text-white' : 'text-gray-600'}`} />
                 </div>
-                <h2 className="text-2xl font-medium text-gray-900">{category.title}</h2>
+                <h2 className={`text-2xl font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{category.title}</h2>
               </div>
 
               <div className="space-y-4">
@@ -122,20 +125,20 @@ export default function FAQPage() {
                     >
                       <button
                         onClick={() => toggleItem(itemIndex)}
-                        className="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-gray-50 transition-colors"
+                        className={`w-full px-6 py-4 text-left flex items-center justify-between transition-colors ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`}
                       >
-                        <span className="font-medium text-gray-900 pr-4">{faq.question}</span>
+                        <span className={`font-medium pr-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>{faq.question}</span>
                         {isOpen ? (
-                          <ChevronUp className="w-5 h-5 text-gray-500 flex-shrink-0" />
+                          <ChevronUp className={`w-5 h-5 flex-shrink-0 ${isDark ? 'text-gray-300' : 'text-gray-500'}`} />
                         ) : (
-                          <ChevronDown className="w-5 h-5 text-gray-500 flex-shrink-0" />
+                          <ChevronDown className={`w-5 h-5 flex-shrink-0 ${isDark ? 'text-gray-300' : 'text-gray-500'}`} />
                         )}
                       </button>
 
                       {isOpen && (
                         <div className="px-6 pb-4">
-                          <div className="border-t border-gray-100 pt-4">
-                            <p className="text-gray-600 leading-relaxed">{faq.answer}</p>
+                          <div className={`border-t pt-4 ${isDark ? 'border-gray-600' : 'border-gray-100'}`}>
+                            <p className={`leading-relaxed ${isDark ? 'text-white' : 'text-gray-600'}`}>{faq.answer}</p>
                           </div>
                         </div>
                       )}
