@@ -32,11 +32,23 @@ function CheckoutForm({ amount, onSuccess, onError, isProcessing, setIsProcessin
   const elements = useElements();
   const [clientSecret, setClientSecret] = useState('');
 
+  // Debug: Log component initialization
+  console.log('🚀 CheckoutForm initialized with:', { amount, stripe: !!stripe, elements: !!elements });
+
   useEffect(() => {
     // Debug: Log the payment initialization attempt
-    console.log('Initializing payment for amount:', amount);
+    console.log('🔄 Initializing payment for amount:', amount);
+    console.log('🔄 Order data:', orderData);
+
+    // Check if we have a valid amount
+    if (!amount || amount <= 0) {
+      console.error('❌ Invalid amount:', amount);
+      onError('Invalid payment amount');
+      return;
+    }
 
     // Create PaymentIntent as soon as the page loads
+    console.log('📡 Making API call to create payment intent...');
     fetch('/api/create-payment-intent', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -49,21 +61,23 @@ function CheckoutForm({ amount, onSuccess, onError, isProcessing, setIsProcessin
       }),
     })
       .then((res) => {
-        console.log('Payment intent response status:', res.status);
+        console.log('📡 Payment intent response status:', res.status);
+        console.log('📡 Response headers:', Object.fromEntries(res.headers.entries()));
         return res.json();
       })
       .then((data) => {
-        console.log('Payment intent response data:', data);
+        console.log('📡 Payment intent response data:', data);
         if (data.clientSecret) {
           setClientSecret(data.clientSecret);
-          console.log('✅ Payment intent created successfully');
+          console.log('✅ Payment intent created successfully:', data.clientSecret.substring(0, 20) + '...');
         } else {
           console.error('❌ No client secret in response:', data);
-          onError('Failed to initialize payment');
+          onError(data.error || 'Failed to initialize payment');
         }
       })
       .catch((error) => {
         console.error('❌ Payment intent creation failed:', error);
+        console.error('❌ Error details:', error.message, error.stack);
         onError('Failed to initialize payment');
       });
   }, [amount, onError, orderData]);
@@ -71,7 +85,20 @@ function CheckoutForm({ amount, onSuccess, onError, isProcessing, setIsProcessin
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    if (!stripe || !elements || !clientSecret) {
+    console.log('💳 Payment form submitted');
+    console.log('💳 Stripe loaded:', !!stripe);
+    console.log('💳 Elements loaded:', !!elements);
+    console.log('💳 Client secret:', clientSecret ? 'Available' : 'Missing');
+
+    if (!stripe || !elements) {
+      console.error('❌ Stripe or Elements not loaded');
+      onError('Payment system not ready');
+      return;
+    }
+
+    if (!clientSecret) {
+      console.error('❌ No client secret available');
+      onError('Payment not initialized');
       return;
     }
 
@@ -114,6 +141,23 @@ function CheckoutForm({ amount, onSuccess, onError, isProcessing, setIsProcessin
     },
     hidePostalCode: true,
   };
+
+  // Show loading state while payment intent is being created
+  if (!clientSecret) {
+    return (
+      <div className="space-y-4">
+        <div className="p-4 border border-gray-300 rounded-lg bg-gray-50">
+          <div className="flex items-center justify-center space-x-2 text-gray-600">
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-600"></div>
+            <span>Initializing payment...</span>
+          </div>
+        </div>
+        <div className="text-xs text-gray-500 text-center">
+          Setting up secure payment processing
+        </div>
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
