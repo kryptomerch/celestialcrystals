@@ -30,7 +30,10 @@ export default function robots(): MetadataRoute.Robots {
         ],
       },
     ],
-    sitemap: 'https://thecelestial.xyz/sitemap.xml',
+    sitemap: [
+      'https://thecelestial.xyz/sitemap.xml',
+      'https://thecelestial.xyz/sitemap-fresh.xml'
+    ],
     host: 'https://thecelestial.xyz',
   };
 }

@@ -3,6 +3,7 @@ Allow: /
 
 # Sitemaps
 Sitemap: https://thecelestial.xyz/sitemap.xml
+Sitemap: https://thecelestial.xyz/sitemap-fresh.xml
 
 # Disallow admin and API routes
 Disallow: /admin/

@@ -100,7 +100,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   try {
-    // Try to get database content with timeout for Google crawlers
+    // Try to get database content with shorter timeout for Google crawlers
     const [crystals, categories] = await Promise.race([
       Promise.all([
         prisma.crystal.findMany({
@@ -110,7 +110,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             slug: true,
             updatedAt: true
           },
-          take: 50, // Limit for faster response
+          take: 30, // Reduced limit for faster response
         }),
         prisma.crystal.groupBy({
           by: ['category'],
@@ -118,7 +118,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         })
       ]),
       new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Database timeout for sitemap')), 3000)
+        setTimeout(() => reject(new Error('Database timeout for sitemap')), 1500) // Reduced timeout
       )
     ]) as [Array<{ id: string; slug: string; updatedAt: Date | null }>, Array<{ category: string }>];
 
