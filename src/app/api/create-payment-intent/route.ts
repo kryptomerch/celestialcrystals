@@ -23,40 +23,43 @@ export async function POST(request: NextRequest) {
 
     const { amount, currency = 'usd', metadata = {}, orderData } = await request.json();
 
-    // Store order data in a temporary database record and reference it by ID
-    // This avoids Stripe's 500-character metadata limit
-    let orderDataId = null;
-    if (orderData) {
-      try {
-        // Store order data temporarily (we'll use this in the webhook)
-        const tempOrderData = {
-          id: `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          data: orderData,
-          createdAt: new Date(),
-          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
-        };
-
-        // Store in a simple JSON file or database (for now, we'll pass essential data only)
-        orderDataId = tempOrderData.id;
-
-        // Store in global variable temporarily (in production, use Redis or database)
-        global.tempOrderData = global.tempOrderData || {};
-        global.tempOrderData[orderDataId] = tempOrderData;
-
-        console.log('Stored temporary order data with ID:', orderDataId);
-      } catch (error) {
-        console.error('Failed to store order data:', error);
-      }
-    }
-
-    // Prepare metadata for Stripe (essential info only)
+    // Prepare metadata for Stripe with essential order data
+    // We'll store the full order data as a JSON string in metadata
+    // and split it across multiple metadata fields if needed
     const stripeMetadata = {
       ...metadata,
-      order_data_id: orderDataId || '',
       order_total: amount.toString(),
       customer_email: orderData?.customerInfo?.email || '',
       source: 'celestial-crystals-checkout'
     };
+
+    // Store order data in metadata (split if too large)
+    if (orderData) {
+      try {
+        const orderDataString = JSON.stringify(orderData);
+
+        // If order data is small enough, store directly
+        if (orderDataString.length <= 500) {
+          stripeMetadata.orderData = orderDataString;
+        } else {
+          // Split large order data across multiple metadata fields
+          const chunkSize = 500;
+          const chunks = [];
+          for (let i = 0; i < orderDataString.length; i += chunkSize) {
+            chunks.push(orderDataString.substring(i, i + chunkSize));
+          }
+
+          stripeMetadata.orderDataChunks = chunks.length.toString();
+          chunks.forEach((chunk, index) => {
+            stripeMetadata[`orderData_${index}`] = chunk;
+          });
+        }
+
+        console.log('Stored order data in Stripe metadata');
+      } catch (error) {
+        console.error('Failed to store order data:', error);
+      }
+    }
 
     // Remove undefined/empty values
     Object.keys(stripeMetadata).forEach(key => {

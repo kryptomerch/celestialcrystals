@@ -131,29 +131,37 @@ async function handlePaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
     const metadata = paymentIntent.metadata;
     console.log('Payment metadata:', metadata);
 
-    // Try to get order data from temporary storage first
+    // Try to get order data from metadata
     let orderData = null;
-    if (metadata.order_data_id) {
-      try {
-        // Retrieve from temporary storage
-        const tempData = global.tempOrderData?.[metadata.order_data_id];
-        if (tempData) {
-          orderData = tempData.data;
-          console.log('Retrieved order data from temporary storage:', orderData);
 
-          // Clean up temporary data
-          delete global.tempOrderData[metadata.order_data_id];
+    // Check if we have chunked data
+    if (metadata.orderDataChunks) {
+      try {
+        const chunkCount = parseInt(metadata.orderDataChunks);
+        let orderDataString = '';
+
+        // Reconstruct the order data from chunks
+        for (let i = 0; i < chunkCount; i++) {
+          const chunk = metadata[`orderData_${i}`];
+          if (chunk) {
+            orderDataString += chunk;
+          }
+        }
+
+        if (orderDataString) {
+          orderData = JSON.parse(orderDataString);
+          console.log('Retrieved order data from chunked metadata:', orderData);
         }
       } catch (error) {
-        console.error('Failed to retrieve temporary order data:', error);
+        console.error('Failed to parse chunked order data from metadata:', error);
       }
     }
 
-    // Fallback: try to parse from metadata (legacy)
+    // Fallback: try to parse from single metadata field
     if (!orderData && metadata.orderData) {
       try {
         orderData = JSON.parse(metadata.orderData);
-        console.log('Retrieved order data from metadata (legacy):', orderData);
+        console.log('Retrieved order data from metadata:', orderData);
       } catch (error) {
         console.error('Failed to parse order data from metadata:', error);
       }
