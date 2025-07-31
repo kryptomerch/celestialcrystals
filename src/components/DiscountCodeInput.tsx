@@ -54,7 +54,7 @@ export default function DiscountCodeInput({
               {discountCode.code}
             </span>
             <span className="text-sm text-green-600">
-              ({discountCode.percentage}% off)
+              {discountCode.freeShipping ? '(Free Delivery)' : `(${discountCode.percentage}% off)`}
             </span>
           </div>
           <button

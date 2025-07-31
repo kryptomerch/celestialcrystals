@@ -9,6 +9,8 @@ interface DiscountCode {
   minOrderAmount?: number;
   usageLimit?: number;
   usedCount?: number;
+  type?: string;
+  freeShipping?: boolean;
 }
 
 export async function POST(request: NextRequest) {
@@ -23,7 +25,7 @@ export async function POST(request: NextRequest) {
     }
 
     const normalizedCode = code.trim().toUpperCase();
-    
+
     // In a real app, this would query your database
     // For now, we'll validate against predefined patterns and codes
     const discountCode = await validateDiscountCode(normalizedCode);
@@ -70,6 +72,15 @@ async function validateDiscountCode(code: string): Promise<DiscountCode> {
       expiryDate: '2024-12-31',
       minOrderAmount: 50,
     },
+    'FREEDELIVERY': {
+      code: 'FREEDELIVERY',
+      percentage: 0,
+      isValid: true,
+      message: 'Free delivery applied!',
+      expiryDate: '2025-12-31',
+      type: 'FREE_SHIPPING',
+      freeShipping: true,
+    },
     'WEEKLY10': {
       code: 'WEEKLY10',
       percentage: 10,
@@ -89,7 +100,7 @@ async function validateDiscountCode(code: string): Promise<DiscountCode> {
   // Check static codes first
   if (staticCodes[code]) {
     const discountCode = staticCodes[code];
-    
+
     // Check if expired
     if (discountCode.expiryDate && new Date() > new Date(discountCode.expiryDate)) {
       return {

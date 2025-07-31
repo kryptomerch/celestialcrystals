@@ -29,6 +29,8 @@ interface DiscountCode {
     percentage: number;
     isValid: boolean;
     message?: string;
+    type?: string;
+    freeShipping?: boolean;
 }
 
 interface CartContextType {
@@ -199,6 +201,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
     };
 
     const getShippingCost = () => {
+        // Check if discount code provides free shipping
+        if (discountCode && discountCode.isValid && discountCode.freeShipping) {
+            return 0;
+        }
+
         if (!shippingRate) {
             // Free shipping over $75, otherwise fallback rate
             const subtotal = getTotalPrice();
