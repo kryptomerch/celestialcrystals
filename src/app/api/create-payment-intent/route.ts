@@ -1,12 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
+// Check if Stripe secret key exists
+if (!process.env.STRIPE_SECRET_KEY) {
+  throw new Error('STRIPE_SECRET_KEY is not set in environment variables');
+}
+
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-06-30.basil',
 });
 
 export async function POST(request: NextRequest) {
   try {
+    // Check if Stripe is properly configured
+    if (!process.env.STRIPE_SECRET_KEY) {
+      console.error('STRIPE_SECRET_KEY is not set');
+      return NextResponse.json(
+        { error: 'Stripe configuration error' },
+        { status: 500 }
+      );
+    }
+
     const { amount, currency = 'usd', metadata = {}, orderData } = await request.json();
 
     // Prepare metadata for Stripe
@@ -40,8 +54,18 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Error creating payment intent:', error);
+
+    // More detailed error logging
+    if (error instanceof Error) {
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+    }
+
     return NextResponse.json(
-      { error: 'Failed to create payment intent' },
+      {
+        error: 'Failed to create payment intent',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }
