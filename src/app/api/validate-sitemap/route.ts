@@ -62,6 +62,7 @@ export async function GET(request: NextRequest) {
     const nonXmlSitemaps = results.filter(r =>
       r.url.includes('sitemap') &&
       r.accessible &&
+      r.headers &&
       !r.headers['content-type']?.includes('xml')
     );
     if (nonXmlSitemaps.length > 0) {
