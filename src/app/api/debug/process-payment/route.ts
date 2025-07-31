@@ -9,7 +9,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 export async function POST(request: NextRequest) {
   try {
     const { paymentIntentId } = await request.json();
-    
+
     if (!paymentIntentId) {
       return NextResponse.json(
         { success: false, error: 'Payment Intent ID is required' },
@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
 
     // Retrieve the payment intent from Stripe
     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
-    
+
     console.log('💰 Payment Intent Details:', {
       id: paymentIntent.id,
       amount: paymentIntent.amount,
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
     // Get order data from metadata
     const metadata = paymentIntent.metadata;
     let orderData = null;
-    
+
     // Try to parse order data from metadata
     if (metadata.orderData) {
       try {
@@ -68,14 +68,14 @@ export async function POST(request: NextRequest) {
       try {
         const chunkCount = parseInt(metadata.orderDataChunks);
         let orderDataString = '';
-        
+
         for (let i = 0; i < chunkCount; i++) {
           const chunk = metadata[`orderData_${i}`];
           if (chunk) {
             orderDataString += chunk;
           }
         }
-        
+
         if (orderDataString) {
           orderData = JSON.parse(orderDataString);
         }
@@ -116,15 +116,17 @@ export async function POST(request: NextRequest) {
     }
 
     // Create shipping address
-    const shippingAddress = await prisma.shippingAddress.create({
+    const shippingAddress = await prisma.address.create({
       data: {
+        userId: userId,
         firstName: orderData.customerInfo.firstName,
         lastName: orderData.customerInfo.lastName,
-        address: orderData.customerInfo.address,
+        address1: orderData.customerInfo.address,
         city: orderData.customerInfo.city,
-        province: orderData.customerInfo.province,
-        postalCode: orderData.customerInfo.postalCode,
-        country: orderData.customerInfo.country || 'CA'
+        state: orderData.customerInfo.province || orderData.customerInfo.state || '',
+        zipCode: orderData.customerInfo.postalCode || orderData.customerInfo.zipCode || '',
+        country: orderData.customerInfo.country || 'CA',
+        isDefault: false
       }
     });
 
@@ -193,7 +195,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error processing payment:', error);
     return NextResponse.json(
-      { 
+      {
         success: false,
         error: 'Failed to process payment',
         details: error instanceof Error ? error.message : 'Unknown error'

@@ -17,15 +17,17 @@ export async function POST(request: NextRequest) {
     });
 
     // Create shipping address
-    const shippingAddress = await prisma.shippingAddress.create({
+    const shippingAddress = await prisma.address.create({
       data: {
+        userId: testUser.id,
         firstName: 'Test',
         lastName: 'Customer',
-        address: '123 Test Street',
+        address1: '123 Test Street',
         city: 'Test City',
-        province: 'ON',
-        postalCode: 'K1A 0A6',
-        country: 'CA'
+        state: 'ON',
+        zipCode: 'K1A 0A6',
+        country: 'CA',
+        isDefault: false
       }
     });
 
@@ -53,7 +55,7 @@ export async function POST(request: NextRequest) {
 
     // Get a crystal to add as order item
     const crystal = await prisma.crystal.findFirst();
-    
+
     if (crystal) {
       await prisma.orderItem.create({
         data: {
@@ -94,7 +96,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error creating test order:', error);
     return NextResponse.json(
-      { 
+      {
         success: false,
         error: 'Failed to create test order',
         details: error instanceof Error ? error.message : 'Unknown error'
