@@ -131,14 +131,54 @@ async function handlePaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
     const metadata = paymentIntent.metadata;
     console.log('Payment metadata:', metadata);
 
-    // If we don't have order data in metadata, we can't create the order
-    if (!metadata.orderData) {
-      console.error('No order data found in payment intent metadata');
-      return;
+    // Try to get order data from temporary storage first
+    let orderData = null;
+    if (metadata.order_data_id) {
+      try {
+        // Retrieve from temporary storage
+        const tempData = global.tempOrderData?.[metadata.order_data_id];
+        if (tempData) {
+          orderData = tempData.data;
+          console.log('Retrieved order data from temporary storage:', orderData);
+
+          // Clean up temporary data
+          delete global.tempOrderData[metadata.order_data_id];
+        }
+      } catch (error) {
+        console.error('Failed to retrieve temporary order data:', error);
+      }
     }
 
-    // Parse order data
-    const orderData = JSON.parse(metadata.orderData);
+    // Fallback: try to parse from metadata (legacy)
+    if (!orderData && metadata.orderData) {
+      try {
+        orderData = JSON.parse(metadata.orderData);
+        console.log('Retrieved order data from metadata (legacy):', orderData);
+      } catch (error) {
+        console.error('Failed to parse order data from metadata:', error);
+      }
+    }
+
+    // If we still don't have order data, create a minimal order
+    if (!orderData) {
+      console.warn('No order data found, creating minimal order from payment intent');
+      orderData = {
+        items: [{
+          id: 'unknown',
+          name: 'Crystal Order',
+          price: paymentIntent.amount / 100,
+          quantity: 1
+        }],
+        subtotal: paymentIntent.amount / 100,
+        total: paymentIntent.amount / 100,
+        customerInfo: {
+          email: metadata.customer_email || 'unknown@example.com',
+          firstName: 'Unknown',
+          lastName: 'Customer'
+        }
+      };
+    }
+
     console.log('Creating order from payment:', orderData);
 
     // Generate order number

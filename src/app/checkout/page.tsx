@@ -423,7 +423,7 @@ export default function CheckoutPage() {
                   <h3 className={`text-lg font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>Discount Code</h3>
                   {discountCode?.isValid && (
                     <span className="text-green-600 text-sm font-medium">
-                      ✅ {discountCode.percentage}% off applied
+                      ✅ {discountCode.freeShipping ? 'Free Delivery' : `${discountCode.percentage}% off`} applied
                     </span>
                   )}
                 </div>
@@ -573,12 +573,20 @@ export default function CheckoutPage() {
                 </div>
 
                 {/* Discount Row */}
-                {discountCode && discountCode.isValid && discountAmount > 0 && (
+                {discountCode && discountCode.isValid && (discountAmount > 0 || discountCode.freeShipping) && (
                   <div className="flex justify-between text-sm">
                     <span className="text-green-600">
-                      Discount ({discountCode.code} - {discountCode.percentage}% off)
+                      {discountCode.freeShipping
+                        ? `Discount (${discountCode.code} - Free Delivery)`
+                        : `Discount (${discountCode.code} - ${discountCode.percentage}% off)`
+                      }
                     </span>
-                    <span className="text-green-600">-{formatPrice(discountAmount)}</span>
+                    <span className="text-green-600">
+                      {discountCode.freeShipping
+                        ? `-${formatPrice(shipping)}`
+                        : `-${formatPrice(discountAmount)}`
+                      }
+                    </span>
                   </div>
                 )}
 
@@ -597,9 +605,9 @@ export default function CheckoutPage() {
                     <span className={isDark ? 'text-white' : 'text-gray-900'}>Total</span>
                     <span className={isDark ? 'text-white' : 'text-gray-900'}>{formatPrice(total)}</span>
                   </div>
-                  {discountCode && discountCode.isValid && discountAmount > 0 && (
+                  {discountCode && discountCode.isValid && (discountAmount > 0 || discountCode.freeShipping) && (
                     <div className="text-sm text-green-600 text-right mt-1">
-                      You saved {formatPrice(discountAmount)}! 🎉
+                      You saved {formatPrice(discountCode.freeShipping ? shipping : discountAmount)}! 🎉
                     </div>
                   )}
                 </div>

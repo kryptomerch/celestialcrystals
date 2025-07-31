@@ -23,24 +23,45 @@ export async function POST(request: NextRequest) {
 
     const { amount, currency = 'usd', metadata = {}, orderData } = await request.json();
 
-    // Prepare metadata for Stripe (limit to essential info due to 500 char limit per value)
+    // Store order data in a temporary database record and reference it by ID
+    // This avoids Stripe's 500-character metadata limit
+    let orderDataId = null;
+    if (orderData) {
+      try {
+        // Store order data temporarily (we'll use this in the webhook)
+        const tempOrderData = {
+          id: `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          data: orderData,
+          createdAt: new Date(),
+          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
+        };
+
+        // Store in a simple JSON file or database (for now, we'll pass essential data only)
+        orderDataId = tempOrderData.id;
+
+        // Store in global variable temporarily (in production, use Redis or database)
+        global.tempOrderData = global.tempOrderData || {};
+        global.tempOrderData[orderDataId] = tempOrderData;
+
+        console.log('Stored temporary order data with ID:', orderDataId);
+      } catch (error) {
+        console.error('Failed to store order data:', error);
+      }
+    }
+
+    // Prepare metadata for Stripe (essential info only)
     const stripeMetadata = {
       ...metadata,
-      // Store only essential order info (Stripe metadata values must be strings and under 500 chars)
-      order_total: orderData?.total?.toString() || amount.toString(),
-      order_items_count: orderData?.items?.length?.toString() || '0',
+      order_data_id: orderDataId || '',
+      order_total: amount.toString(),
       customer_email: orderData?.customerInfo?.email || '',
-      // Store first item name as sample (truncated to fit limit)
-      first_item: orderData?.items?.[0]?.name?.substring(0, 100) || '',
       source: 'celestial-crystals-checkout'
     };
 
-    // Remove undefined/empty values and ensure all values are under 500 chars
+    // Remove undefined/empty values
     Object.keys(stripeMetadata).forEach(key => {
       if (!stripeMetadata[key] || stripeMetadata[key] === 'undefined') {
         delete stripeMetadata[key];
-      } else if (stripeMetadata[key].length > 500) {
-        stripeMetadata[key] = stripeMetadata[key].substring(0, 497) + '...';
       }
     });
 
