@@ -10,7 +10,12 @@ import {
 } from '@stripe/react-stripe-js';
 import { Lock, CreditCard } from 'lucide-react';
 
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+// Debug: Log the Stripe key availability
+console.log('Stripe publishable key:', process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ? 'Available' : 'Missing');
+
+const stripePromise = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+  ? loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
+  : Promise.resolve(null);
 
 interface StripePaymentProps {
   amount: number;
@@ -27,6 +32,9 @@ function CheckoutForm({ amount, onSuccess, onError, isProcessing, setIsProcessin
   const [clientSecret, setClientSecret] = useState('');
 
   useEffect(() => {
+    // Debug: Log the payment initialization attempt
+    console.log('Initializing payment for amount:', amount);
+
     // Create PaymentIntent as soon as the page loads
     fetch('/api/create-payment-intent', {
       method: 'POST',
@@ -39,15 +47,24 @@ function CheckoutForm({ amount, onSuccess, onError, isProcessing, setIsProcessin
         orderData
       }),
     })
-      .then((res) => res.json())
+      .then((res) => {
+        console.log('Payment intent response status:', res.status);
+        return res.json();
+      })
       .then((data) => {
+        console.log('Payment intent response data:', data);
         if (data.clientSecret) {
           setClientSecret(data.clientSecret);
+          console.log('✅ Payment intent created successfully');
         } else {
+          console.error('❌ No client secret in response:', data);
           onError('Failed to initialize payment');
         }
       })
-      .catch(() => onError('Failed to initialize payment'));
+      .catch((error) => {
+        console.error('❌ Payment intent creation failed:', error);
+        onError('Failed to initialize payment');
+      });
   }, [amount, onError, orderData]);
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -125,6 +142,23 @@ function CheckoutForm({ amount, onSuccess, onError, isProcessing, setIsProcessin
 }
 
 export default function StripePayment(props: StripePaymentProps) {
+  // Check if Stripe is available
+  if (!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) {
+    return (
+      <div className="space-y-4">
+        <div className="bg-red-100 border border-red-300 rounded-lg p-4">
+          <h3 className="font-semibold text-red-800 mb-2">⚠️ Payment System Configuration Error</h3>
+          <p className="text-red-700 text-sm">
+            Stripe publishable key is not configured. Please contact support.
+          </p>
+          <div className="mt-2 text-xs text-red-600">
+            Debug: NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY = {process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || 'undefined'}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex items-center space-x-2 text-gray-700">
