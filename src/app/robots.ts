@@ -30,7 +30,7 @@ export default function robots(): MetadataRoute.Robots {
         ],
       },
     ],
-    sitemap: 'https://celestialcrystals.com/sitemap.xml',
-    host: 'https://celestialcrystals.com',
+    sitemap: 'https://thecelestial.xyz/sitemap.xml',
+    host: 'https://thecelestial.xyz',
   };
 }

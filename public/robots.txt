@@ -1,0 +1,25 @@
+User-agent: *
+Allow: /
+
+# Sitemaps
+Sitemap: https://thecelestial.xyz/sitemap.xml
+
+# Disallow admin and API routes
+Disallow: /admin/
+Disallow: /api/
+Disallow: /_next/
+Disallow: /test-*
+
+# Allow important pages
+Allow: /crystals
+Allow: /blog
+Allow: /natural-crystal-bracelet-*
+Allow: /birthdate-guide
+Allow: /about
+Allow: /contact
+Allow: /shipping
+Allow: /privacy
+Allow: /terms
+
+# Crawl delay
+Crawl-delay: 1

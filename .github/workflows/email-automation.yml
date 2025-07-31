@@ -57,10 +57,35 @@ jobs:
 
       - name: Send email automation request
         run: |
-          curl -X POST "${{ secrets.SITE_URL }}/api/cron/email-automation" \
+          # Check if required secrets are available
+          if [ -z "${{ secrets.SITE_URL }}" ] || [ -z "${{ secrets.CRON_SECRET }}" ]; then
+            echo "⚠️ Missing required secrets (SITE_URL or CRON_SECRET)"
+            echo "Skipping email automation - please add secrets to GitHub repository"
+            exit 0
+          fi
+
+          echo "Sending email automation request for action: ${{ steps.determine-action.outputs.action }}"
+
+          response=$(curl -s -w "%{http_code}" -X POST "${{ secrets.SITE_URL }}/api/cron/email-automation" \
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
-            -d '{"action": "${{ steps.determine-action.outputs.action }}"}'
+            -d '{"action": "${{ steps.determine-action.outputs.action }}"}' \
+            --max-time 30)
+
+          http_code="${response: -3}"
+          response_body="${response%???}"
+
+          echo "HTTP Status: $http_code"
+          echo "Response: $response_body"
+
+          if [ "$http_code" -ge 200 ] && [ "$http_code" -lt 300 ]; then
+            echo "✅ Email automation request successful"
+          else
+            echo "❌ Email automation request failed with status $http_code"
+            echo "Response body: $response_body"
+            echo "This might be due to missing environment variables or API endpoint issues"
+            exit 1
+          fi
 
       - name: Log completion
         run: |

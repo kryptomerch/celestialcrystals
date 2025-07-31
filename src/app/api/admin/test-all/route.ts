@@ -1,29 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { testFirebaseConnection } from '@/lib/firebase-config';
 
 export async function GET(request: NextRequest) {
   try {
     console.log('🧪 Testing all admin panel features...');
-    
-    const results = {
-      firebase: null,
+
+    const results: any = {
       inventory: null,
       products: null,
       orders: null,
       gemini: null,
       stripe: null
     };
-
-    // Test Firebase
-    try {
-      results.firebase = await testFirebaseConnection();
-    } catch (error) {
-      results.firebase = {
-        success: false,
-        error: 'Firebase test failed',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      };
-    }
 
     // Test Inventory Management
     try {
@@ -76,7 +63,7 @@ export async function GET(request: NextRequest) {
         available: true,
         features: [
           'Real-time stock updates',
-          'Low stock alerts', 
+          'Low stock alerts',
           'Inventory history tracking',
           'Bulk inventory updates',
           'Stock adjustment logging'
@@ -128,14 +115,12 @@ export async function GET(request: NextRequest) {
       results,
       adminFeatures,
       recommendations: {
-        firebase: results.firebase?.success ? '✅ Ready' : '⚠️ Needs configuration',
         inventory: results.inventory?.success ? '✅ Working' : '⚠️ Check database connection',
         stripe: results.stripe?.success ? '✅ Ready for payments' : '⚠️ Check API keys',
         gemini: results.gemini?.success ? '✅ AI content ready' : '⚠️ Check API key',
-        overall: 'Admin panel is fully functional with comprehensive features'
+        overall: 'Admin panel is fully functional with PostgreSQL database'
       },
       nextSteps: [
-        'Configure Firebase for real-time data',
         'Test inventory updates',
         'Test product price changes',
         'Verify order management',
@@ -145,7 +130,7 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('Admin panel test failed:', error);
-    
+
     return NextResponse.json({
       success: false,
       error: 'Admin panel test failed',

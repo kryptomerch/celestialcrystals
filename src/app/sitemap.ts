@@ -1,95 +1,163 @@
 import { MetadataRoute } from 'next';
-import { crystalDatabase } from '@/data/crystals';
+import { prisma } from '@/lib/prisma';
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://celestialcrystals.com';
-  
-  // Static pages
-  const staticPages = [
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const baseUrl = 'https://thecelestial.xyz';
+  const currentDate = new Date();
+
+  // Static pages that always exist (failsafe)
+  const staticPages: MetadataRoute.Sitemap = [
     {
       url: baseUrl,
-      lastModified: new Date(),
-      changeFrequency: 'daily' as const,
-      priority: 1,
+      lastModified: currentDate,
+      changeFrequency: 'daily',
+      priority: 1.0,
     },
     {
       url: `${baseUrl}/crystals`,
       lastModified: new Date(),
-      changeFrequency: 'daily' as const,
+      changeFrequency: 'daily',
       priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/natural-crystal-bracelet-north-america`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 1.0,
+    },
+    {
+      url: `${baseUrl}/natural-crystal-bracelet-usa`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/natural-crystal-bracelet-canada`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/blog`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/blog/natural-crystal-bracelets-canada-guide`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/blog/natural-crystal-bracelets-usa-guide`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.8,
     },
     {
       url: `${baseUrl}/categories`,
       lastModified: new Date(),
-      changeFrequency: 'weekly' as const,
-      priority: 0.8,
+      changeFrequency: 'weekly',
+      priority: 0.7,
     },
     {
       url: `${baseUrl}/birthdate-guide`,
       lastModified: new Date(),
-      changeFrequency: 'monthly' as const,
-      priority: 0.8,
+      changeFrequency: 'monthly',
+      priority: 0.7,
     },
     {
       url: `${baseUrl}/about`,
       lastModified: new Date(),
-      changeFrequency: 'monthly' as const,
-      priority: 0.7,
+      changeFrequency: 'monthly',
+      priority: 0.6,
     },
     {
       url: `${baseUrl}/contact`,
       lastModified: new Date(),
-      changeFrequency: 'monthly' as const,
+      changeFrequency: 'monthly',
       priority: 0.6,
     },
     {
-      url: `${baseUrl}/faq`,
+      url: `${baseUrl}/track-order`,
       lastModified: new Date(),
-      changeFrequency: 'monthly' as const,
-      priority: 0.5,
-    },
-    {
-      url: `${baseUrl}/shipping`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly' as const,
-      priority: 0.5,
-    },
-    {
-      url: `${baseUrl}/returns`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly' as const,
+      changeFrequency: 'monthly',
       priority: 0.5,
     },
     {
       url: `${baseUrl}/privacy`,
       lastModified: new Date(),
-      changeFrequency: 'yearly' as const,
+      changeFrequency: 'yearly',
       priority: 0.3,
     },
     {
       url: `${baseUrl}/terms`,
       lastModified: new Date(),
-      changeFrequency: 'yearly' as const,
+      changeFrequency: 'yearly',
       priority: 0.3,
     },
   ];
 
-  // Dynamic crystal pages
-  const crystalPages = crystalDatabase.map((crystal) => ({
-    url: `${baseUrl}/crystals/${crystal.id}`,
-    lastModified: new Date(),
-    changeFrequency: 'weekly' as const,
-    priority: 0.7,
-  }));
+  try {
+    // Try to get database content with timeout for Google crawlers
+    const [crystals, categories] = await Promise.race([
+      Promise.all([
+        prisma.crystal.findMany({
+          where: { isActive: true },
+          select: {
+            id: true,
+            slug: true,
+            updatedAt: true
+          },
+          take: 50, // Limit for faster response
+        }),
+        prisma.crystal.groupBy({
+          by: ['category'],
+          where: { isActive: true }
+        })
+      ]),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Database timeout for sitemap')), 3000)
+      )
+    ]) as [Array<{ id: string; slug: string; updatedAt: Date | null }>, Array<{ category: string }>];
 
-  // Category pages
-  const categories = [...new Set(crystalDatabase.map(crystal => crystal.category))];
-  const categoryPages = categories.map((category) => ({
-    url: `${baseUrl}/categories/${encodeURIComponent(category.toLowerCase().replace(/\s+/g, '-'))}`,
-    lastModified: new Date(),
-    changeFrequency: 'weekly' as const,
-    priority: 0.6,
-  }));
+    // Add database content if available
+    let allPages = [...staticPages];
 
-  return [...staticPages, ...crystalPages, ...categoryPages];
+    // Add crystal product pages if database is available
+    if (crystals && crystals.length > 0) {
+      const crystalPages: MetadataRoute.Sitemap = crystals.map((crystal) => ({
+        url: `${baseUrl}/crystals/${crystal.slug || crystal.id}`,
+        lastModified: crystal.updatedAt,
+        changeFrequency: 'weekly' as const,
+        priority: 0.8,
+      }));
+      allPages = [...allPages, ...crystalPages];
+    }
+
+    // Add category pages if database is available
+    if (categories && categories.length > 0) {
+      const categoryPages: MetadataRoute.Sitemap = categories.map((category) => ({
+        url: `${baseUrl}/crystals/category/${encodeURIComponent(category.category.toLowerCase())}`,
+        lastModified: new Date(),
+        changeFrequency: 'weekly' as const,
+        priority: 0.7,
+      }));
+      allPages = [...allPages, ...categoryPages];
+    }
+
+    return allPages;
+
+  } catch (error) {
+    console.error('Sitemap database error:', error);
+    // Return static pages if database fails
+    return staticPages;
+  } finally {
+    try {
+      await prisma.$disconnect();
+    } catch (disconnectError) {
+      console.error('Prisma disconnect error:', disconnectError);
+    }
+  }
 }

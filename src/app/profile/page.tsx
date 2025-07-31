@@ -17,7 +17,7 @@ interface UserProfile {
   newsletterSubscribed: boolean;
   marketingEmails: boolean;
   createdAt: string;
-  _count: {
+  _count?: {
     orders: number;
     reviews: number;
     wishlistItems: number;
@@ -356,7 +356,7 @@ export default function ProfilePage() {
                     <Package className="w-5 h-5 text-gray-600" />
                     <span className="text-gray-700">Orders</span>
                   </div>
-                  <span className="font-medium text-gray-900">{profile._count.orders}</span>
+                  <span className="font-medium text-gray-900">{profile._count?.orders || 0}</span>
                 </div>
 
                 <div className="flex items-center justify-between">
@@ -364,7 +364,7 @@ export default function ProfilePage() {
                     <Star className="w-5 h-5 text-gray-600" />
                     <span className="text-gray-700">Reviews</span>
                   </div>
-                  <span className="font-medium text-gray-900">{profile._count.reviews}</span>
+                  <span className="font-medium text-gray-900">{profile._count?.reviews || 0}</span>
                 </div>
 
                 <div className="flex items-center justify-between">
@@ -372,7 +372,7 @@ export default function ProfilePage() {
                     <Heart className="w-5 h-5 text-gray-600" />
                     <span className="text-gray-700">Wishlist Items</span>
                   </div>
-                  <span className="font-medium text-gray-900">{profile._count.wishlistItems}</span>
+                  <span className="font-medium text-gray-900">{profile._count?.wishlistItems || 0}</span>
                 </div>
 
                 <div className="pt-4 border-t border-gray-200">

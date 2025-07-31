@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import Link from 'next/link';
+import { Suspense } from 'react';
 import './globals.css';
 import { SessionProvider } from '@/components/SessionProvider';
 import { CartProvider } from '@/contexts/CartContext';
@@ -8,25 +9,60 @@ import { ThemeProvider } from '@/contexts/ThemeContext';
 import ShoppingCart from '@/components/ShoppingCart';
 import Header from '@/components/Header';
 import AnalyticsTracker from '@/components/AnalyticsTracker';
+import GoogleAnalytics from '@/components/GoogleAnalytics';
+import WebVitalsReporter from '@/components/WebVitalsReporter';
 
 
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'CELESTIAL - Natural Crystal Bracelets | Healing Crystals & Gemstones',
-  description: 'Discover authentic natural crystal bracelets for healing, protection, and spiritual growth across North America. Find your perfect crystal match based on your birthdate. Fast shipping to USA & Canada. Shop Tiger Eye, Amethyst, Rose Quartz, and more.',
-  keywords: 'crystal bracelets USA, healing crystals Canada, natural gemstones North America, birthstone jewelry, chakra bracelets, spiritual jewelry, crystal healing, metaphysical stones, tiger eye bracelet, amethyst jewelry, rose quartz bracelet, authentic crystals USA, gemstone bracelets Canada',
-  authors: [{ name: 'Celestial Crystals' }],
-  creator: 'Celestial Crystals',
-  publisher: 'Celestial Crystals',
-  robots: 'index, follow',
+  metadataBase: new URL('https://thecelestial.xyz'),
+  title: {
+    default: 'CELESTIAL - #1 Natural Crystal Bracelets North America | USA & Canada',
+    template: '%s | CELESTIAL - Natural Crystal Bracelets North America'
+  },
+  description: 'North America\'s #1 natural crystal bracelet store. Authentic healing crystals with fast shipping across USA and Canada. Premium Tiger Eye, Amethyst, Rose Quartz bracelets. Shop genuine gemstone jewelry at CELESTIAL.',
+  keywords: [
+    'natural crystal bracelet north america',
+    'crystal bracelet usa canada',
+    'healing crystals north america',
+    'natural crystal bracelet usa',
+    'natural crystal bracelet canada',
+    'crystal bracelets america',
+    'gemstone bracelets usa canada',
+    'chakra bracelets north america',
+    'spiritual jewelry america',
+    'tiger eye bracelet usa canada',
+    'amethyst bracelet north america',
+    'rose quartz bracelet usa',
+    'crystal healing north america',
+    'authentic crystals usa canada',
+    'crystal shop north america',
+    'best crystal bracelets america',
+    'thecelestial.xyz'
+  ],
+  authors: [{ name: 'CELESTIAL', url: 'https://thecelestial.xyz' }],
+  creator: 'CELESTIAL',
+  publisher: 'CELESTIAL',
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
   openGraph: {
     type: 'website',
     locale: 'en_US',
+    alternateLocale: ['en_CA'],
     url: 'https://thecelestial.xyz',
-    siteName: 'CELESTIAL - Natural Crystal Bracelets',
-    title: 'CELESTIAL - Natural Crystal Bracelets | Healing Crystals & Gemstones',
-    description: 'Discover authentic natural crystal bracelets for healing, protection, and spiritual growth across North America. Find your perfect crystal match based on your birthdate. Fast shipping to USA & Canada.',
+    siteName: 'CELESTIAL - #1 Natural Crystal Bracelets North America',
+    title: 'CELESTIAL - #1 Natural Crystal Bracelets North America | USA & Canada',
+    description: 'North America\'s #1 natural crystal bracelet store. Authentic healing crystals with fast shipping across USA and Canada. Premium Tiger Eye, Amethyst, Rose Quartz bracelets.',
     images: [
       {
         url: '/og-image.jpg',
@@ -55,6 +91,75 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        {/* Google Analytics */}
+        <script
+          async
+          src="https://www.googletagmanager.com/gtag/js?id=G-LB6Y0RG4JQ"
+        />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-LB6Y0RG4JQ', {
+                    page_location: window.location.href,
+                    page_title: document.title,
+                    anonymize_ip: true,
+                    allow_google_signals: false,
+                    allow_ad_personalization_signals: false
+                  });
+
+                  // Track crystal views
+                  window.trackCrystalView = function(crystalId, crystalName, category, price) {
+                    gtag('event', 'view_item', {
+                      currency: 'CAD',
+                      value: price,
+                      items: [{
+                        item_id: crystalId,
+                        item_name: crystalName,
+                        item_category: category,
+                        price: price,
+                        quantity: 1
+                      }]
+                    });
+                  };
+
+                  // Track add to cart
+                  window.trackAddToCart = function(crystalId, crystalName, category, price, quantity = 1) {
+                    gtag('event', 'add_to_cart', {
+                      currency: 'CAD',
+                      value: price * quantity,
+                      items: [{
+                        item_id: crystalId,
+                        item_name: crystalName,
+                        item_category: category,
+                        price: price,
+                        quantity: quantity
+                      }]
+                    });
+                  };
+
+                  // Track purchases
+                  window.trackPurchase = function(transactionId, items, total) {
+                    gtag('event', 'purchase', {
+                      transaction_id: transactionId,
+                      currency: 'CAD',
+                      value: total,
+                      items: items
+                    });
+                  };
+
+                  // Track search
+                  window.trackSearch = function(searchTerm) {
+                    gtag('event', 'search', {
+                      search_term: searchTerm
+                    });
+                  };
+                `,
+          }}
+        />
+
         <link rel="canonical" href="https://thecelestial.xyz" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="theme-color" content="#9333ea" />
@@ -75,9 +180,9 @@ export default function RootLayout({
               "@type": "Store",
               "name": "CELESTIAL",
               "description": "Natural crystal bracelets for healing, protection, and spiritual growth",
-              "url": "https://celestialcrystals.com",
-              "logo": "https://celestialcrystals.com/logo.png",
-              "image": "https://celestialcrystals.com/og-image.jpg",
+              "url": "https://thecelestial.xyz",
+              "logo": "https://thecelestial.xyz/logo.png",
+              "image": "https://thecelestial.xyz/og-image.jpg",
               "priceRange": "$25-$55",
               "address": {
                 "@type": "PostalAddress",
@@ -95,6 +200,8 @@ export default function RootLayout({
         <ThemeProvider>
           <SessionProvider>
             <CartProvider>
+              <GoogleAnalytics />
+              <WebVitalsReporter />
               <AnalyticsTracker />
               <Header />
               <main className="min-h-screen bg-background">{children}</main>
@@ -104,7 +211,7 @@ export default function RootLayout({
           </SessionProvider>
         </ThemeProvider>
       </body>
-    </html>
+    </html >
   );
 }
 

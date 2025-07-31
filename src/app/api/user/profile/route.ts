@@ -81,8 +81,8 @@ export async function PUT(request: NextRequest) {
     const updatedUser = {
       id: session.user.id,
       email: session.user.email || 'user@example.com',
-      firstName: firstName || session.user.name?.split(' ')[0] || 'Crystal',
-      lastName: lastName || session.user.name?.split(' ')[1] || 'Enthusiast',
+      firstName: firstName || 'Crystal',
+      lastName: lastName || 'Enthusiast',
       birthDate: birthDate || null,
       phone: phone || null,
       image: session.user.image,

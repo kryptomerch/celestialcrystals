@@ -3,6 +3,7 @@ import CredentialsProvider from 'next-auth/providers/credentials'
 import GoogleProvider from 'next-auth/providers/google'
 import bcrypt from 'bcryptjs'
 import { prisma } from './prisma'
+import { EmailAutomationService } from './email-automation'
 
 export const authOptions: NextAuthOptions = {
   // Remove adapter to use JWT strategy instead of database sessions
@@ -55,6 +56,34 @@ export const authOptions: NextAuthOptions = {
     strategy: 'jwt'
   },
   callbacks: {
+    async signIn({ user, account, profile }) {
+      if (account?.provider === 'google' && user.email) {
+        try {
+          // Check if user is new (first time signing in)
+          const existingUser = await prisma.user.findUnique({
+            where: { email: user.email }
+          });
+
+          // If new user, send welcome email
+          if (!existingUser) {
+            const firstName = user.name?.split(' ')[0] || 'Crystal Enthusiast';
+            const discountCode = EmailAutomationService.generateDiscountCode('WELCOME');
+
+            await EmailAutomationService.sendWelcomeEmail({
+              firstName,
+              email: user.email,
+              discountCode,
+            });
+
+            console.log('✅ Welcome email sent to new Google user:', user.email);
+          }
+        } catch (error) {
+          console.error('❌ Failed to send welcome email for Google user:', error);
+          // Don't block sign in if email fails
+        }
+      }
+      return true;
+    },
     async jwt({ token, user }) {
       if (user) {
         token.firstName = user.firstName

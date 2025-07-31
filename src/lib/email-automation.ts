@@ -1,4 +1,4 @@
-import { FirestoreService } from './firestore'
+// import { FirestoreService } from './firestore' // Removed - using Prisma instead
 import { sendEmail, createEmailTemplate } from './email'
 import { generateWelcomeEmail, WelcomeEmailData } from './email-templates/welcome';
 import { generateOrderConfirmationEmail, OrderConfirmationData } from './email-templates/order-confirmation';
@@ -15,20 +15,20 @@ export class EmailAutomationService {
       const emailData = { ...userData, discountCode };
       const emailContent = generateWelcomeEmail(emailData);
 
-      const success = await sendEmail({
+      const emailResult = await sendEmail({
         to: userData.email,
         subject: emailContent.subject,
         html: emailContent.html,
         text: emailContent.text,
       });
 
-      if (success) {
+      if (emailResult.success) {
         console.log(`Welcome email sent to ${userData.email}`);
         // Store discount code in database for validation
         await this.storeDiscountCode(discountCode, userData.email, 15, 30);
       }
 
-      return success;
+      return emailResult.success;
     } catch (error) {
       console.error('Failed to send welcome email:', error);
       return false;
@@ -40,18 +40,18 @@ export class EmailAutomationService {
     try {
       const emailContent = generateOrderConfirmationEmail(orderData);
 
-      const success = await sendEmail({
+      const emailResult = await sendEmail({
         to: orderData.email,
         subject: emailContent.subject,
         html: emailContent.html,
         text: emailContent.text,
       });
 
-      if (success) {
+      if (emailResult.success) {
         console.log(`Order confirmation sent to ${orderData.email} for order ${orderData.orderNumber}`);
       }
 
-      return success;
+      return emailResult.success;
     } catch (error) {
       console.error('Failed to send order confirmation email:', error);
       return false;
@@ -63,18 +63,18 @@ export class EmailAutomationService {
     try {
       const emailContent = generateNewsletterEmail(subscriberData);
 
-      const success = await sendEmail({
+      const emailResult = await sendEmail({
         to: subscriberData.firstName, // This should be the email address
         subject: emailContent.subject,
         html: emailContent.html,
         text: emailContent.text,
       });
 
-      if (success) {
+      if (emailResult.success) {
         console.log(`Newsletter sent to subscriber`);
       }
 
-      return success;
+      return emailResult.success;
     } catch (error) {
       console.error('Failed to send newsletter email:', error);
       return false;
@@ -86,14 +86,14 @@ export class EmailAutomationService {
     try {
       const emailContent = generateDiscountVoucherEmail(voucherData);
 
-      const success = await sendEmail({
+      const emailResult = await sendEmail({
         to: email,
         subject: emailContent.subject,
         html: emailContent.html,
         text: emailContent.text,
       });
 
-      if (success) {
+      if (emailResult.success) {
         console.log(`Discount voucher sent to ${email}`);
         // Store discount code in database
         await this.storeDiscountCode(
@@ -104,7 +104,7 @@ export class EmailAutomationService {
         );
       }
 
-      return success;
+      return emailResult.success;
     } catch (error) {
       console.error('Failed to send discount voucher email:', error);
       return false;
@@ -153,13 +153,13 @@ export class EmailAutomationService {
     try {
       const expiryDate = new Date(Date.now() + validDays * 24 * 60 * 60 * 1000);
 
-      await FirestoreService.createDiscountCode({
-        code,
-        email,
-        percentage,
-        expiryDate,
-        reason: 'welcome',
-      });
+      // await FirestoreService.createDiscountCode({
+      //   code,
+      //   email,
+      //   percentage,
+      //   expiryDate,
+      //   reason: 'welcome',
+      // }); // Commented out - using Prisma instead
 
       console.log(`Discount code stored: ${code} for ${email}, ${percentage}% off, expires ${expiryDate.toISOString()}`);
     } catch (error) {

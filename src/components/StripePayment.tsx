@@ -18,9 +18,10 @@ interface StripePaymentProps {
   onError: (error: string) => void;
   isProcessing: boolean;
   setIsProcessing: (processing: boolean) => void;
+  orderData?: any;
 }
 
-function CheckoutForm({ amount, onSuccess, onError, isProcessing, setIsProcessing }: StripePaymentProps) {
+function CheckoutForm({ amount, onSuccess, onError, isProcessing, setIsProcessing, orderData }: StripePaymentProps) {
   const stripe = useStripe();
   const elements = useElements();
   const [clientSecret, setClientSecret] = useState('');
@@ -30,11 +31,12 @@ function CheckoutForm({ amount, onSuccess, onError, isProcessing, setIsProcessin
     fetch('/api/create-payment-intent', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
+      body: JSON.stringify({
         amount,
         metadata: {
           source: 'celestial-crystals-checkout'
-        }
+        },
+        orderData
       }),
     })
       .then((res) => res.json())
@@ -46,7 +48,7 @@ function CheckoutForm({ amount, onSuccess, onError, isProcessing, setIsProcessin
         }
       })
       .catch(() => onError('Failed to initialize payment'));
-  }, [amount, onError]);
+  }, [amount, onError, orderData]);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -100,7 +102,7 @@ function CheckoutForm({ amount, onSuccess, onError, isProcessing, setIsProcessin
       <div className="p-4 border border-gray-300 rounded-lg bg-white">
         <CardElement options={cardElementOptions} />
       </div>
-      
+
       <button
         type="submit"
         disabled={!stripe || isProcessing}
@@ -129,11 +131,11 @@ export default function StripePayment(props: StripePaymentProps) {
         <CreditCard className="w-5 h-5" />
         <span className="font-medium">Credit or Debit Card</span>
       </div>
-      
+
       <Elements stripe={stripePromise}>
         <CheckoutForm {...props} />
       </Elements>
-      
+
       <div className="flex items-center justify-center space-x-4 text-xs text-gray-500">
         <span>Powered by Stripe</span>
         <span>•</span>

@@ -4,7 +4,9 @@ import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Mail, Lock, User, Eye, EyeOff, Sparkles, Calendar } from 'lucide-react';
+import Image from 'next/image';
+import { Mail, Lock, User, Eye, EyeOff, Calendar } from 'lucide-react';
+import { useTheme } from '@/contexts/ThemeContext';
 
 export default function SignUpPage() {
   const [formData, setFormData] = useState({
@@ -19,6 +21,7 @@ export default function SignUpPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
+  const { isDark } = useTheme();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -96,31 +99,68 @@ export default function SignUpPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
+    <div className={`min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative ${isDark
+      ? 'bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900'
+      : 'bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50'
+      }`}>
+      {/* Celestial Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-blue-400 dark:bg-blue-300 rounded-full animate-pulse opacity-60"></div>
+        <div className="absolute top-1/3 right-1/3 w-1 h-1 bg-purple-400 dark:bg-purple-300 rounded-full animate-pulse opacity-80"></div>
+        <div className="absolute bottom-1/4 left-1/3 w-1.5 h-1.5 bg-indigo-400 dark:bg-indigo-300 rounded-full animate-pulse opacity-70"></div>
+        <div className="absolute top-1/2 right-1/4 w-1 h-1 bg-pink-400 dark:bg-pink-300 rounded-full animate-pulse opacity-60"></div>
+        <div className="absolute bottom-1/3 right-1/2 w-2 h-2 bg-cyan-400 dark:bg-cyan-300 rounded-full animate-pulse opacity-50"></div>
+        <div className="absolute top-3/4 left-1/2 w-1 h-1 bg-yellow-400 dark:bg-yellow-300 rounded-full animate-pulse opacity-40"></div>
+      </div>
+
+      <div className="max-w-md w-full space-y-8 relative z-10">
         <div className="text-center">
-          <div className="flex items-center justify-center mb-6">
-            <Sparkles className="w-12 h-12 text-gray-600 mr-3" />
-            <h1 className="text-4xl font-light text-gray-900">CELESTIAL</h1>
+          <div className="mx-auto h-16 w-auto flex justify-center mb-6">
+            <Image
+              src="/images/logo-design.png"
+              alt="Celestial Crystals"
+              width={64}
+              height={64}
+              className={`h-16 w-auto ${isDark ? 'brightness-0 invert' : ''}`}
+            />
           </div>
-          <h2 className="text-2xl font-medium text-gray-900 mb-2">Join Our Community</h2>
-          <p className="text-gray-600">Start your crystal journey today</p>
+          <h2 className={`text-3xl font-extrabold font-playfair ${isDark ? 'text-white' : 'text-gray-900'}`}>
+            Join Our Community
+          </h2>
+          <p className={`mt-2 text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+            Start your celestial crystal journey
+          </p>
+          <p className="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
+            Already have an account?{' '}
+            <Link
+              href="/auth/signin"
+              className="font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 transition-colors"
+            >
+              Sign in here
+            </Link>
+          </p>
         </div>
 
-        <div className="celestial-card p-8">
+        <div className={`p-8 rounded-2xl shadow-2xl backdrop-blur-sm border ${isDark
+          ? 'bg-gray-800/80 border-gray-700/50 shadow-purple-900/20'
+          : 'bg-white/80 border-gray-200/50 shadow-blue-900/10'
+          }`}>
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 text-sm">
+              <div className={`border px-4 py-3 text-sm rounded-lg ${isDark
+                ? 'bg-red-900/50 border-red-700 text-red-300'
+                : 'bg-red-50 border-red-200 text-red-700'
+                }`}>
                 {error}
               </div>
             )}
 
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="name" className={`block text-sm font-medium mb-2 ${isDark ? 'text-white' : 'text-gray-700'}`}>
                 Full Name
               </label>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <User className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 ${isDark ? 'text-gray-400' : 'text-gray-400'}`} />
                 <input
                   id="name"
                   name="name"
@@ -128,14 +168,17 @@ export default function SignUpPage() {
                   value={formData.name}
                   onChange={handleChange}
                   required
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 text-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400 transition-colors"
+                  className={`w-full pl-10 pr-4 py-3 rounded-lg border focus:outline-none focus:ring-2 transition-all duration-200 ${isDark
+                    ? 'border-gray-600 bg-gray-700/50 text-white placeholder-gray-400 focus:ring-purple-500 focus:border-purple-500 hover:bg-gray-700/70'
+                    : 'border-gray-300 bg-white text-gray-900 placeholder-gray-500 focus:ring-indigo-500 focus:border-indigo-500 hover:border-gray-400'
+                    }`}
                   placeholder="Your full name"
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="email" className={`block text-sm font-medium mb-2 ${isDark ? 'text-white' : 'text-gray-700'}`}>
                 Email Address
               </label>
               <div className="relative">
@@ -226,7 +269,10 @@ export default function SignUpPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="celestial-button w-full disabled:opacity-50 disabled:cursor-not-allowed"
+              className={`w-full py-3 px-6 rounded-lg font-medium text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] active:scale-[0.98] ${isDark
+                ? 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 shadow-lg shadow-purple-500/25'
+                : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg shadow-indigo-500/25'
+                }`}
             >
               {isLoading ? 'Creating Account...' : 'Create Account'}
             </button>
@@ -235,17 +281,20 @@ export default function SignUpPage() {
           <div className="mt-6">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300" />
+                <div className={`w-full border-t ${isDark ? 'border-gray-600' : 'border-gray-300'}`} />
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">Or continue with</span>
+                <span className={`px-2 ${isDark ? 'bg-gray-800 text-gray-400' : 'bg-white text-gray-500'}`}>Or continue with</span>
               </div>
             </div>
 
             <button
               onClick={handleGoogleSignUp}
               disabled={isLoading}
-              className="mt-4 w-full bg-white text-gray-700 py-3 px-6 border border-gray-300 font-medium hover:bg-gray-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 text-sm uppercase tracking-wide"
+              className={`mt-4 w-full py-3 px-6 rounded-lg border font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 text-sm transform hover:scale-[1.02] active:scale-[0.98] ${isDark
+                ? 'bg-gray-700/50 text-white border-gray-600 hover:bg-gray-700/70 shadow-lg shadow-gray-900/25'
+                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 shadow-lg shadow-gray-500/10'
+                }`}
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />

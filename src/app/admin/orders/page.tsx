@@ -1,19 +1,36 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Package, Eye, Edit, Truck, CheckCircle, Clock, AlertCircle } from 'lucide-react';
+import { useSession } from 'next-auth/react';
+import { useTheme } from '@/contexts/ThemeContext';
+import {
+  Package,
+  Search,
+  Filter,
+  Eye,
+  Truck,
+  CheckCircle,
+  Clock,
+  AlertCircle,
+  DollarSign,
+  Calendar,
+  User,
+  Mail,
+  Phone
+} from 'lucide-react';
 
 interface Order {
   id: string;
   orderNumber: string;
-  customerName: string;
-  customerEmail: string;
-  totalAmount: number;
-  status: string;
-  itemCount: number;
+  status: 'PENDING' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
+  total: number;
   createdAt: string;
-  shippingAddress: any;
-  items: Array<{
+  user: {
+    firstName?: string;
+    lastName?: string;
+    email: string;
+  };
+  items: {
     id: string;
     quantity: number;
     price: number;
@@ -21,287 +38,290 @@ interface Order {
       name: string;
       image: string;
     };
-  }>;
+  }[];
+  shippingAddress?: {
+    street: string;
+    city: string;
+    state: string;
+    zipCode: string;
+    country: string;
+  };
 }
 
-export default function OrdersPage() {
+export default function AdminOrdersPage() {
+  const { data: session } = useSession();
+  const { isDark } = useTheme();
   const [orders, setOrders] = useState<Order[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [showModal, setShowModal] = useState(false);
+
+  const statusColors = {
+    PENDING: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+    PROCESSING: 'bg-blue-100 text-blue-800 border-blue-200',
+    SHIPPED: 'bg-purple-100 text-purple-800 border-purple-200',
+    DELIVERED: 'bg-green-100 text-green-800 border-green-200',
+    CANCELLED: 'bg-red-100 text-red-800 border-red-200',
+  };
+
+  const statusIcons = {
+    PENDING: Clock,
+    PROCESSING: Package,
+    SHIPPED: Truck,
+    DELIVERED: CheckCircle,
+    CANCELLED: AlertCircle,
+  };
 
   useEffect(() => {
     fetchOrders();
-  }, [statusFilter]);
+  }, []);
 
   const fetchOrders = async () => {
     try {
-      const params = new URLSearchParams();
-      if (statusFilter !== 'all') params.append('status', statusFilter);
-
-      const response = await fetch(`/api/admin/orders?${params}`);
+      const response = await fetch('/api/admin/orders');
       if (response.ok) {
         const data = await response.json();
         setOrders(data.orders || []);
-      } else {
-        setError('Failed to load orders');
       }
     } catch (error) {
-      setError('Failed to load orders');
+      console.error('Error fetching orders:', error);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
   const updateOrderStatus = async (orderId: string, newStatus: string) => {
     try {
-      const response = await fetch('/api/admin/orders', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderId, status: newStatus })
+      const response = await fetch(`/api/admin/orders/${orderId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: newStatus }),
       });
 
       if (response.ok) {
-        await fetchOrders();
-        setSelectedOrder(null);
-      } else {
-        setError('Failed to update order status');
+        fetchOrders();
+        if (selectedOrder?.id === orderId) {
+          setSelectedOrder({ ...selectedOrder, status: newStatus as any });
+        }
       }
     } catch (error) {
-      setError('Failed to update order status');
+      console.error('Error updating order status:', error);
     }
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'PENDING': return <Clock className="w-4 h-4 text-yellow-500" />;
-      case 'PROCESSING': return <Package className="w-4 h-4 text-blue-500" />;
-      case 'SHIPPED': return <Truck className="w-4 h-4 text-purple-500" />;
-      case 'DELIVERED': return <CheckCircle className="w-4 h-4 text-green-500" />;
-      case 'CANCELLED': return <AlertCircle className="w-4 h-4 text-red-500" />;
-      default: return <Clock className="w-4 h-4 text-gray-500" />;
-    }
-  };
+  const filteredOrders = orders.filter(order => {
+    const matchesSearch = 
+      order.orderNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      `${order.user.firstName} ${order.user.lastName}`.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
+    
+    return matchesSearch && matchesStatus;
+  });
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'PENDING': return 'bg-yellow-100 text-yellow-800';
-      case 'PROCESSING': return 'bg-blue-100 text-blue-800';
-      case 'SHIPPED': return 'bg-purple-100 text-purple-800';
-      case 'DELIVERED': return 'bg-green-100 text-green-800';
-      case 'CANCELLED': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  if (isLoading) {
+  if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-6"></div>
-            <div className="space-y-4">
-              {[...Array(5)].map((_, i) => (
-                <div key={i} className="h-20 bg-gray-200 dark:bg-gray-700 rounded"></div>
-              ))}
-            </div>
-          </div>
+      <div className={`min-h-screen p-6 ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+    <div className={`min-h-screen p-6 ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
       <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Order Management</h1>
-          
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-          >
-            <option value="all">All Orders</option>
-            <option value="PENDING">Pending</option>
-            <option value="PROCESSING">Processing</option>
-            <option value="SHIPPED">Shipped</option>
-            <option value="DELIVERED">Delivered</option>
-            <option value="CANCELLED">Cancelled</option>
-          </select>
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className={`text-3xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+            Order Management
+          </h1>
+          <p className={`mt-2 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+            Manage customer orders and track fulfillment
+          </p>
         </div>
 
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
-            {error}
-          </div>
-        )}
+        {/* Filters */}
+        <div className={`p-6 rounded-2xl shadow-sm border mb-8 ${
+          isDark 
+            ? 'bg-gray-800/80 border-gray-700/50' 
+            : 'bg-white/80 border-gray-200/50'
+        }`}>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="relative">
+              <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 ${
+                isDark ? 'text-gray-400' : 'text-gray-400'
+              }`} />
+              <input
+                type="text"
+                placeholder="Search orders..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className={`w-full pl-10 pr-4 py-3 rounded-lg border focus:outline-none focus:ring-2 transition-all duration-200 ${
+                  isDark
+                    ? 'border-gray-600 bg-gray-700/50 text-white placeholder-gray-400 focus:ring-purple-500 focus:border-purple-500'
+                    : 'border-gray-300 bg-white text-gray-900 placeholder-gray-500 focus:ring-indigo-500 focus:border-indigo-500'
+                }`}
+              />
+            </div>
+            
+            <div className="relative">
+              <Filter className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 ${
+                isDark ? 'text-gray-400' : 'text-gray-400'
+              }`} />
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className={`w-full pl-10 pr-4 py-3 rounded-lg border focus:outline-none focus:ring-2 transition-all duration-200 ${
+                  isDark
+                    ? 'border-gray-600 bg-gray-700/50 text-white focus:ring-purple-500 focus:border-purple-500'
+                    : 'border-gray-300 bg-white text-gray-900 focus:ring-indigo-500 focus:border-indigo-500'
+                }`}
+              >
+                <option value="all">All Statuses</option>
+                <option value="PENDING">Pending</option>
+                <option value="PROCESSING">Processing</option>
+                <option value="SHIPPED">Shipped</option>
+                <option value="DELIVERED">Delivered</option>
+                <option value="CANCELLED">Cancelled</option>
+              </select>
+            </div>
 
-        {orders.length === 0 ? (
-          <div className="text-center py-12">
-            <Package className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No Orders Found</h3>
-            <p className="text-gray-600 dark:text-gray-400">
-              {statusFilter === 'all' ? 'No orders have been placed yet.' : `No ${statusFilter.toLowerCase()} orders found.`}
-            </p>
+            <div className={`flex items-center justify-between px-4 py-3 rounded-lg ${
+              isDark ? 'bg-gray-700/50' : 'bg-gray-50'
+            }`}>
+              <span className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                Total Orders: {filteredOrders.length}
+              </span>
+              <Package className={`w-5 h-5 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
+            </div>
           </div>
-        ) : (
-          <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50 dark:bg-gray-700">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      Order
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      Customer
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      Amount
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      Date
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                  {orders.map((order) => (
-                    <tr key={order.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                      <td className="px-6 py-4 whitespace-nowrap">
+        </div>
+
+        {/* Orders Table */}
+        <div className={`rounded-2xl shadow-sm border overflow-hidden ${
+          isDark 
+            ? 'bg-gray-800/80 border-gray-700/50' 
+            : 'bg-white/80 border-gray-200/50'
+        }`}>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className={`${isDark ? 'bg-gray-700/50' : 'bg-gray-50'}`}>
+                <tr>
+                  <th className={`px-6 py-4 text-left text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-500'}`}>
+                    Order
+                  </th>
+                  <th className={`px-6 py-4 text-left text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-500'}`}>
+                    Customer
+                  </th>
+                  <th className={`px-6 py-4 text-left text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-500'}`}>
+                    Status
+                  </th>
+                  <th className={`px-6 py-4 text-left text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-500'}`}>
+                    Total
+                  </th>
+                  <th className={`px-6 py-4 text-left text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-500'}`}>
+                    Date
+                  </th>
+                  <th className={`px-6 py-4 text-left text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-500'}`}>
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                {filteredOrders.map((order) => {
+                  const StatusIcon = statusIcons[order.status];
+                  return (
+                    <tr key={order.id} className={`hover:${isDark ? 'bg-gray-700/30' : 'bg-gray-50'} transition-colors`}>
+                      <td className="px-6 py-4">
                         <div>
-                          <div className="text-sm font-medium text-gray-900 dark:text-white">
+                          <div className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
                             #{order.orderNumber}
                           </div>
-                          <div className="text-sm text-gray-500 dark:text-gray-400">
-                            {order.itemCount} item{order.itemCount !== 1 ? 's' : ''}
+                          <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                            {order.items.length} item{order.items.length !== 1 ? 's' : ''}
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-6 py-4">
                         <div>
-                          <div className="text-sm font-medium text-gray-900 dark:text-white">
-                            {order.customerName}
+                          <div className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                            {order.user.firstName} {order.user.lastName}
                           </div>
-                          <div className="text-sm text-gray-500 dark:text-gray-400">
-                            {order.customerEmail}
+                          <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                            {order.user.email}
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                        ${order.totalAmount.toFixed(2)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
-                          {getStatusIcon(order.status)}
-                          <span className="ml-1">{order.status}</span>
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex items-center space-x-2 px-3 py-1 rounded-full text-sm font-medium border ${statusColors[order.status]}`}>
+                          <StatusIcon className="w-4 h-4" />
+                          <span>{order.status}</span>
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                        {new Date(order.createdAt).toLocaleDateString()}
+                      <td className="px-6 py-4">
+                        <div className="flex items-center space-x-1">
+                          <DollarSign className={`w-4 h-4 ${isDark ? 'text-green-400' : 'text-green-600'}`} />
+                          <span className={`font-medium ${isDark ? 'text-green-400' : 'text-green-600'}`}>
+                            {order.total.toFixed(2)}
+                          </span>
+                        </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center space-x-1">
+                          <Calendar className={`w-4 h-4 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
+                          <span className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                            {new Date(order.createdAt).toLocaleDateString()}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
                         <button
-                          onClick={() => setSelectedOrder(order)}
-                          className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 mr-3"
+                          onClick={() => {
+                            setSelectedOrder(order);
+                            setShowModal(true);
+                          }}
+                          className={`flex items-center space-x-2 px-3 py-2 rounded-lg font-medium transition-all duration-200 ${
+                            isDark
+                              ? 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                              : 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                          }`}
                         >
                           <Eye className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => setSelectedOrder(order)}
-                          className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"
-                        >
-                          <Edit className="w-4 h-4" />
+                          <span>View</span>
                         </button>
                       </td>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
-        )}
+        </div>
 
-        {/* Order Details Modal */}
-        {selectedOrder && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="p-6">
-                <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                    Order #{selectedOrder.orderNumber}
-                  </h3>
-                  <button
-                    onClick={() => setSelectedOrder(null)}
-                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                  >
-                    ×
-                  </button>
-                </div>
-
-                <div className="space-y-6">
-                  <div>
-                    <h4 className="font-medium text-gray-900 dark:text-white mb-2">Customer Information</h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">{selectedOrder.customerName}</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">{selectedOrder.customerEmail}</p>
-                  </div>
-
-                  <div>
-                    <h4 className="font-medium text-gray-900 dark:text-white mb-2">Order Status</h4>
-                    <select
-                      value={selectedOrder.status}
-                      onChange={(e) => updateOrderStatus(selectedOrder.id, e.target.value)}
-                      className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    >
-                      <option value="PENDING">Pending</option>
-                      <option value="PROCESSING">Processing</option>
-                      <option value="SHIPPED">Shipped</option>
-                      <option value="DELIVERED">Delivered</option>
-                      <option value="CANCELLED">Cancelled</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <h4 className="font-medium text-gray-900 dark:text-white mb-2">Order Items</h4>
-                    <div className="space-y-2">
-                      {selectedOrder.items?.map((item) => (
-                        <div key={item.id} className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-700 rounded">
-                          <img
-                            src={item.crystal.image}
-                            alt={item.crystal.name}
-                            className="w-12 h-12 object-cover rounded"
-                          />
-                          <div className="flex-1">
-                            <p className="text-sm font-medium text-gray-900 dark:text-white">{item.crystal.name}</p>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">
-                              Qty: {item.quantity} × ${item.price.toFixed(2)}
-                            </p>
-                          </div>
-                        </div>
-                      )) || (
-                        <p className="text-sm text-gray-500 dark:text-gray-400">No items found</p>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="border-t pt-4">
-                    <div className="flex justify-between items-center">
-                      <span className="font-medium text-gray-900 dark:text-white">Total Amount:</span>
-                      <span className="text-lg font-bold text-gray-900 dark:text-white">
-                        ${selectedOrder.totalAmount.toFixed(2)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+        {/* Empty State */}
+        {filteredOrders.length === 0 && (
+          <div className={`text-center py-12 ${
+            isDark 
+              ? 'bg-gray-800/80 border-gray-700/50' 
+              : 'bg-white/80 border-gray-200/50'
+          } rounded-2xl border mt-8`}>
+            <Package className={`w-16 h-16 mx-auto mb-4 ${isDark ? 'text-gray-500' : 'text-gray-400'}`} />
+            <h3 className={`text-lg font-medium mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              No orders found
+            </h3>
+            <p className={`${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+              {searchTerm || statusFilter !== 'all' 
+                ? 'Try adjusting your search or filter criteria'
+                : 'Orders will appear here once customers start purchasing'
+              }
+            </p>
           </div>
         )}
       </div>

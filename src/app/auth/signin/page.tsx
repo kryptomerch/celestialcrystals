@@ -55,8 +55,21 @@ export default function SignInPage() {
   };
 
   return (
-    <div className={`min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 ${isDark ? 'bg-gray-950' : 'bg-gray-50'}`}>
-      <div className="max-w-md w-full space-y-8">
+    <div className={`min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative ${isDark
+      ? 'bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900'
+      : 'bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50'
+      }`}>
+      {/* Celestial Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-blue-400 dark:bg-blue-300 rounded-full animate-pulse opacity-60"></div>
+        <div className="absolute top-1/3 right-1/3 w-1 h-1 bg-purple-400 dark:bg-purple-300 rounded-full animate-pulse opacity-80"></div>
+        <div className="absolute bottom-1/4 left-1/3 w-1.5 h-1.5 bg-indigo-400 dark:bg-indigo-300 rounded-full animate-pulse opacity-70"></div>
+        <div className="absolute top-1/2 right-1/4 w-1 h-1 bg-pink-400 dark:bg-pink-300 rounded-full animate-pulse opacity-60"></div>
+        <div className="absolute bottom-1/3 right-1/2 w-2 h-2 bg-cyan-400 dark:bg-cyan-300 rounded-full animate-pulse opacity-50"></div>
+        <div className="absolute top-3/4 left-1/2 w-1 h-1 bg-yellow-400 dark:bg-yellow-300 rounded-full animate-pulse opacity-40"></div>
+      </div>
+
+      <div className="max-w-md w-full space-y-8 relative z-10">
         <div className="text-center">
           <div className="flex items-center justify-center mb-6">
             <Image
@@ -71,7 +84,10 @@ export default function SignInPage() {
           <p className={`${isDark ? 'text-white' : 'text-gray-600'}`}>Sign in to your crystal journey</p>
         </div>
 
-        <div className="celestial-card p-8">
+        <div className={`p-8 rounded-2xl shadow-2xl backdrop-blur-sm border ${isDark
+          ? 'bg-gray-800/80 border-gray-700/50 shadow-purple-900/20'
+          : 'bg-white/80 border-gray-200/50 shadow-blue-900/10'
+          }`}>
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
               <div className={`border px-4 py-3 text-sm ${isDark
@@ -94,9 +110,9 @@ export default function SignInPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className={`w-full pl-10 pr-4 py-3 border focus:outline-none focus:ring-1 transition-colors ${isDark
-                    ? 'border-gray-600 bg-gray-800 text-white focus:ring-purple-500 focus:border-purple-500'
-                    : 'border-gray-300 bg-white text-gray-900 focus:ring-gray-400 focus:border-gray-400'
+                  className={`w-full pl-10 pr-4 py-3 rounded-lg border focus:outline-none focus:ring-2 transition-all duration-200 ${isDark
+                    ? 'border-gray-600 bg-gray-700/50 text-white placeholder-gray-400 focus:ring-purple-500 focus:border-purple-500 hover:bg-gray-700/70'
+                    : 'border-gray-300 bg-white text-gray-900 placeholder-gray-500 focus:ring-indigo-500 focus:border-indigo-500 hover:border-gray-400'
                     }`}
                   placeholder="your@email.com"
                 />
@@ -115,9 +131,9 @@ export default function SignInPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className={`w-full pl-10 pr-12 py-3 border focus:outline-none focus:ring-1 transition-colors ${isDark
-                    ? 'border-gray-600 bg-gray-800 text-white focus:ring-purple-500 focus:border-purple-500'
-                    : 'border-gray-300 bg-white text-gray-900 focus:ring-gray-400 focus:border-gray-400'
+                  className={`w-full pl-10 pr-12 py-3 rounded-lg border focus:outline-none focus:ring-2 transition-all duration-200 ${isDark
+                    ? 'border-gray-600 bg-gray-700/50 text-white placeholder-gray-400 focus:ring-purple-500 focus:border-purple-500 hover:bg-gray-700/70'
+                    : 'border-gray-300 bg-white text-gray-900 placeholder-gray-500 focus:ring-indigo-500 focus:border-indigo-500 hover:border-gray-400'
                     }`}
                   placeholder="Enter your password"
                 />
@@ -134,7 +150,10 @@ export default function SignInPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="celestial-button w-full disabled:opacity-50 disabled:cursor-not-allowed"
+              className={`w-full py-3 px-6 rounded-lg font-medium text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] active:scale-[0.98] ${isDark
+                ? 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 shadow-lg shadow-purple-500/25'
+                : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg shadow-indigo-500/25'
+                }`}
             >
               {isLoading ? 'Signing In...' : 'Sign In'}
             </button>
@@ -153,9 +172,9 @@ export default function SignInPage() {
             <button
               onClick={handleGoogleSignIn}
               disabled={isLoading}
-              className={`mt-4 w-full py-3 px-6 border font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 text-sm uppercase tracking-wide ${isDark
-                ? 'bg-gray-800 text-white border-gray-600 hover:bg-gray-700'
-                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+              className={`mt-4 w-full py-3 px-6 rounded-lg border font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 text-sm transform hover:scale-[1.02] active:scale-[0.98] ${isDark
+                ? 'bg-gray-700/50 text-white border-gray-600 hover:bg-gray-700/70 shadow-lg shadow-gray-900/25'
+                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 shadow-lg shadow-gray-500/10'
                 }`}
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">

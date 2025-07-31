@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { crystalDatabase } from '@/data/crystals';
+import { prisma } from '@/lib/prisma';
 
 export async function GET(request: NextRequest) {
   try {
@@ -15,109 +15,134 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '0');
     const offset = parseInt(searchParams.get('offset') || '0');
 
-    // Filter crystals based on query parameters
-    let filteredCrystals = crystalDatabase.filter(crystal => {
-      // Category filter
-      if (category && category !== 'All' && crystal.category !== category) {
-        return false;
-      }
-
-      // Search filter
-      if (search) {
-        const searchLower = search.toLowerCase();
-        const matchesName = crystal.name.toLowerCase().includes(searchLower);
-        const matchesDescription = crystal.description.toLowerCase().includes(searchLower);
-        const matchesProperties = crystal.properties.some(prop =>
-          prop.toLowerCase().includes(searchLower)
-        );
-
-        if (!matchesName && !matchesDescription && !matchesProperties) {
-          return false;
-        }
-      }
-
-      // Rarity filter
-      if (rarity && rarity !== 'All' && crystal.rarity !== rarity) {
-        return false;
-      }
-
-      // Price range filter
-      if (minPrice && crystal.price < parseFloat(minPrice)) {
-        return false;
-      }
-      if (maxPrice && crystal.price > parseFloat(maxPrice)) {
-        return false;
-      }
-
-      return true;
-    });
-
-    // Sort crystals
-    filteredCrystals.sort((a, b) => {
-      switch (sortBy) {
-        case 'price-low':
-          return a.price - b.price;
-        case 'price-high':
-          return b.price - a.price;
-        case 'name':
-          return a.name.localeCompare(b.name);
-        case 'rarity':
-          const rarityOrder: Record<string, number> = { 'Common': 1, 'Uncommon': 2, 'Rare': 3, 'Very Rare': 4 };
-          return (rarityOrder[b.rarity] || 0) - (rarityOrder[a.rarity] || 0);
-        default:
-          return 0;
-      }
-    });
-
-    // Apply pagination
-    const total = filteredCrystals.length;
-    if (limit > 0) {
-      filteredCrystals = filteredCrystals.slice(offset, offset + limit);
-    }
-
-    return NextResponse.json({
-      crystals: filteredCrystals,
-      total,
-      offset,
-      limit: limit || total
-    });
-
-  } catch (error) {
-    console.error('Error fetching crystals:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch crystals' },
-      { status: 500 }
-    );
-  }
-}
-
-// Get available filter options
-export async function OPTIONS() {
-  try {
-    const categories = [...new Set(crystalDatabase.map(crystal => crystal.category))];
-    const rarities = [...new Set(crystalDatabase.map(crystal => crystal.rarity))];
-    const priceRange = {
-      min: Math.min(...crystalDatabase.map(crystal => crystal.price)),
-      max: Math.max(...crystalDatabase.map(crystal => crystal.price))
+    // Build Prisma query
+    const where: any = {
+      isActive: true
     };
 
+    // Apply filters
+    if (category && category !== 'All') {
+      where.category = category;
+    }
+
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { description: { contains: search, mode: 'insensitive' } },
+        { keywords: { contains: search, mode: 'insensitive' } }
+      ];
+    }
+
+    if (rarity && rarity !== 'All') {
+      where.rarity = rarity;
+    }
+
+    if (minPrice) {
+      where.price = { ...where.price, gte: parseFloat(minPrice) };
+    }
+
+    if (maxPrice) {
+      where.price = { ...where.price, lte: parseFloat(maxPrice) };
+    }
+
+    // Apply sorting
+    let orderBy: any = { name: 'asc' };
+    switch (sortBy) {
+      case 'name':
+        orderBy = { name: 'asc' };
+        break;
+      case 'price-low':
+        orderBy = { price: 'asc' };
+        break;
+      case 'price-high':
+        orderBy = { price: 'desc' };
+        break;
+      case 'rarity':
+        orderBy = { rarity: 'asc' };
+        break;
+    }
+
+    // Fetch crystals from database
+    const crystals = await prisma.crystal.findMany({
+      where,
+      orderBy,
+      take: limit > 0 ? limit : undefined,
+      skip: offset,
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        price: true,
+        category: true,
+        chakra: true,
+        element: true,
+        hardness: true,
+        origin: true,
+        rarity: true,
+        slug: true,
+        stockQuantity: true,
+        isActive: true,
+        isFeatured: true,
+        properties: true,
+        colors: true,
+        zodiacSigns: true,
+        birthMonths: true,
+        keywords: true,
+        image: true,
+        images: true,
+        createdAt: true,
+        updatedAt: true
+      }
+    });
+
+    // Transform the data to match the expected format
+    const transformedCrystals = crystals.map(crystal => ({
+      ...crystal,
+      properties: (() => {
+        try {
+          return Array.isArray(crystal.properties) ? crystal.properties : JSON.parse(crystal.properties || '[]');
+        } catch {
+          return [];
+        }
+      })(),
+      colors: (() => {
+        try {
+          return Array.isArray(crystal.colors) ? crystal.colors : JSON.parse(crystal.colors || '[]');
+        } catch {
+          return [];
+        }
+      })(),
+      zodiacSigns: (() => {
+        try {
+          return Array.isArray(crystal.zodiacSigns) ? crystal.zodiacSigns : JSON.parse(crystal.zodiacSigns || '[]');
+        } catch {
+          return [];
+        }
+      })(),
+      images: (() => {
+        try {
+          return Array.isArray(crystal.images) ? crystal.images : [crystal.image].filter(Boolean);
+        } catch {
+          return [crystal.image].filter(Boolean);
+        }
+      })()
+    }));
+
+    const total = await prisma.crystal.count({ where });
+
     return NextResponse.json({
-      categories,
-      rarities,
-      priceRange,
-      sortOptions: [
-        { value: 'name', label: 'Name' },
-        { value: 'price-low', label: 'Price: Low to High' },
-        { value: 'price-high', label: 'Price: High to Low' },
-        { value: 'rarity', label: 'Rarity' }
-      ]
+      crystals: transformedCrystals,
+      total,
+      hasMore: limit > 0 && crystals.length === limit
     });
 
   } catch (error) {
-    console.error('Error fetching filter options:', error);
+    console.error('Error fetching crystals from database:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch filter options' },
+      { error: 'Failed to fetch crystals from database' },
       { status: 500 }
     );
+  } finally {
+    await prisma.$disconnect();
   }
 }

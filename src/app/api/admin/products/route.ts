@@ -1,14 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { authOptions, isAdminEmail } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
 // Get all products for admin
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Check if user is admin (either by role or email)
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email }
+    });
+
+    const isAdmin = user?.role === 'ADMIN' || isAdminEmail(session.user.email);
+
+    if (!isAdmin) {
+      return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
     }
 
     const { searchParams } = new URL(request.url);
@@ -77,8 +88,19 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Check if user is admin
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email }
+    });
+
+    const isAdmin = user?.role === 'ADMIN' || isAdminEmail(session.user.email);
+
+    if (!isAdmin) {
+      return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
     }
 
     const {
@@ -107,23 +129,31 @@ export async function POST(request: NextRequest) {
     }
 
     // Create the product
+    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
     const product = await prisma.crystal.create({
       data: {
         name,
+        slug,
         description,
         price: parseFloat(price),
         category,
+        element: 'Earth', // Default value
+        hardness: '7', // Default value
+        origin: 'Various', // Default value
+        rarity: 'Common', // Default value
         properties: properties || [],
         colors: colors || [],
         chakra: chakra || '',
         zodiacSigns: zodiacSigns || [],
+        birthMonths: JSON.stringify([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]), // Default all months
+        keywords: JSON.stringify([name.toLowerCase()]), // Default keyword
         stockQuantity: parseInt(stockQuantity) || 0,
         lowStockThreshold: parseInt(lowStockThreshold) || 5,
         image: image || '',
         images: images || [],
         isActive: isActive !== false,
-        isFeatured: isFeatured === true,
-        createdBy: session.user.id
+        isFeatured: isFeatured === true
       }
     });
 
@@ -135,8 +165,7 @@ export async function POST(request: NextRequest) {
         quantity: parseInt(stockQuantity) || 0,
         previousQty: 0,
         newQty: parseInt(stockQuantity) || 0,
-        reason: 'Initial product creation',
-        createdBy: session.user.id
+        reason: 'Initial product creation'
       }
     });
 
@@ -159,8 +188,19 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Check if user is admin
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email }
+    });
+
+    const isAdmin = user?.role === 'ADMIN' || isAdminEmail(session.user.email);
+
+    if (!isAdmin) {
+      return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
     }
 
     const {
@@ -232,8 +272,7 @@ export async function PUT(request: NextRequest) {
           quantity: parseInt(stockQuantity) - currentProduct.stockQuantity,
           previousQty: currentProduct.stockQuantity,
           newQty: parseInt(stockQuantity),
-          reason: 'Product update - stock adjustment',
-          createdBy: session.user.id
+          reason: 'Product update - stock adjustment'
         }
       });
     }
@@ -274,7 +313,7 @@ export async function DELETE(request: NextRequest) {
     // Soft delete - just mark as inactive
     await prisma.crystal.update({
       where: { id },
-      data: { 
+      data: {
         isActive: false,
         updatedAt: new Date()
       }

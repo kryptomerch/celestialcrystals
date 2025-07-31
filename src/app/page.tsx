@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import Head from 'next/head';
 import { crystalDatabase, getRecommendedCrystals, Crystal } from '@/data/crystals';
 import { Sparkles, Calendar, Search, ShoppingBag, Star, Heart, Mail, Shield, Zap, Sun, Moon, Gem, Flower2, Mountain, Waves, ArrowUpDown, Truck } from 'lucide-react';
 import Image from 'next/image';
@@ -24,6 +25,8 @@ export default function HomePage() {
   const [sortBy, setSortBy] = useState('name-asc');
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [selectedCrystal, setSelectedCrystal] = useState<Crystal | null>(null);
+  const [databaseCrystals, setDatabaseCrystals] = useState<Crystal[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const categories = [
     { name: 'All', icon: Gem },
@@ -38,6 +41,30 @@ export default function HomePage() {
     { name: 'Intuition', icon: Moon }
   ];
 
+  // Fetch crystals from database
+  useEffect(() => {
+    const fetchCrystals = async () => {
+      try {
+        const response = await fetch('/api/crystals');
+        if (response.ok) {
+          const data = await response.json();
+          setDatabaseCrystals(data.crystals || []);
+        } else {
+          // Fallback to static data if API fails
+          setDatabaseCrystals(crystalDatabase);
+        }
+      } catch (error) {
+        console.error('Failed to fetch crystals:', error);
+        // Fallback to static data
+        setDatabaseCrystals(crystalDatabase);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCrystals();
+  }, []);
+
   const handleBirthDateSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (birthDate) {
@@ -47,7 +74,7 @@ export default function HomePage() {
     }
   };
 
-  const filteredCrystals = crystalDatabase.filter(crystal => {
+  const filteredCrystals = databaseCrystals.filter(crystal => {
     const matchesSearch = crystal.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       crystal.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
       crystal.properties.some(prop => prop.toLowerCase().includes(searchQuery.toLowerCase()));
@@ -85,7 +112,7 @@ export default function HomePage() {
     }
   });
 
-  const featuredCrystals = crystalDatabase.slice(0, 6);
+  const featuredCrystals = databaseCrystals.slice(0, 6);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -103,7 +130,7 @@ export default function HomePage() {
             />
           </div>
           <p className="text-base sm:text-lg lg:text-xl mb-6 sm:mb-8 max-w-3xl mx-auto font-light leading-relaxed text-foreground/70">
-            Discover the power of natural crystal bracelets. Find your perfect crystal companion based on your birthdate or explore our curated collection.
+            North America's #1 destination for authentic natural crystal bracelets. Discover the power of healing crystals with fast shipping across USA and Canada.
           </p>
 
           {/* Birth Date Form */}
@@ -127,11 +154,10 @@ export default function HomePage() {
               />
               <button
                 type="submit"
-                className={`w-full py-2.5 sm:py-3 px-4 font-medium transition-all duration-200 text-sm sm:text-base uppercase tracking-wide ${
-                  isDark 
-                    ? 'bg-purple-600 hover:bg-purple-700 text-white' 
-                    : 'bg-gray-900 hover:bg-gray-800 text-white'
-                }`}
+                className={`w-full py-2.5 sm:py-3 px-4 font-medium transition-all duration-200 text-sm sm:text-base uppercase tracking-wide ${isDark
+                  ? 'bg-purple-600 hover:bg-purple-700 text-white'
+                  : 'bg-gray-900 hover:bg-gray-800 text-white'
+                  }`}
               >
                 Get My Recommendations
               </button>
@@ -226,8 +252,8 @@ export default function HomePage() {
                   onClick={() => setSelectedCategory(category.name)}
                   className={`px-4 py-3 rounded font-medium transition-all duration-200 text-sm flex items-center space-x-2 ${selectedCategory === category.name
                     ? 'bg-black text-white'
-                    : isDark 
-                      ? 'celestial-card text-white hover:bg-gray-800' 
+                    : isDark
+                      ? 'celestial-card text-white hover:bg-gray-800'
                       : 'celestial-card text-gray-700 hover:bg-gray-50'
                     }`}
                 >
@@ -279,7 +305,7 @@ export default function HomePage() {
       <section className={`py-16 px-4 ${isDark ? 'bg-gray-950' : 'bg-white'}`}>
         <div className="max-w-4xl mx-auto text-center">
           <h2 className={`text-3xl font-light mb-8 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-            Why Choose Celestial Crystals?
+            Why North America Chooses CELESTIAL?
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
             <div className="celestial-card p-4 sm:p-6">
@@ -303,6 +329,51 @@ export default function HomePage() {
                 Detailed information about each crystal's properties and healing benefits.
               </p>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* North America Shipping */}
+      <section className={`py-16 px-4 ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
+        <div className="max-w-6xl mx-auto text-center">
+          <h2 className={`text-3xl font-light mb-8 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+            Fast Shipping Across North America
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="celestial-card p-6">
+              <div className="text-4xl mb-4">🇺🇸</div>
+              <h3 className={`text-xl font-medium mb-3 ${isDark ? 'text-white' : 'text-gray-900'}`}>United States</h3>
+              <p className={`text-sm ${isDark ? 'text-white' : 'text-gray-600'} mb-4`}>
+                Free shipping on orders over $50 to all 50 states including Alaska and Hawaii
+              </p>
+              <div className="flex items-center justify-center space-x-2">
+                <Truck className={`w-4 h-4 ${isDark ? 'text-white' : 'text-gray-600'}`} />
+                <span className={`text-sm ${isDark ? 'text-white' : 'text-gray-600'}`}>2-7 business days</span>
+              </div>
+            </div>
+            <div className="celestial-card p-6">
+              <div className="text-4xl mb-4">🇨🇦</div>
+              <h3 className={`text-xl font-medium mb-3 ${isDark ? 'text-white' : 'text-gray-900'}`}>Canada</h3>
+              <p className={`text-sm ${isDark ? 'text-white' : 'text-gray-600'} mb-4`}>
+                Free shipping on orders over $65 CAD to all provinces and territories
+              </p>
+              <div className="flex items-center justify-center space-x-2">
+                <Truck className={`w-4 h-4 ${isDark ? 'text-white' : 'text-gray-600'}`} />
+                <span className={`text-sm ${isDark ? 'text-white' : 'text-gray-600'}`}>3-10 business days</span>
+              </div>
+            </div>
+          </div>
+          <div className="mt-8">
+            <Link
+              href="/shipping"
+              className={`inline-flex items-center space-x-2 px-6 py-3 rounded-full font-medium transition-all duration-200 ${isDark
+                ? 'bg-white text-gray-900 hover:bg-gray-100'
+                : 'bg-gray-900 text-white hover:bg-gray-800'
+                }`}
+            >
+              <span>View Shipping Details</span>
+              <Truck className="w-4 h-4" />
+            </Link>
           </div>
         </div>
       </section>

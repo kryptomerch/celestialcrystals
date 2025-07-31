@@ -60,18 +60,7 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    // Add to email subscribers
-    try {
-      await FirestoreService.createEmailSubscriber({
-        email,
-        firstName,
-        lastName: lastName || '',
-        source: 'registration',
-      })
-    } catch (error) {
-      // Email subscriber might already exist, that's okay
-      console.log('Email subscriber already exists or failed to create:', error)
-    }
+    // Skip email subscriber for now - will be handled by email automation
 
     // Send welcome email with discount code
     try {

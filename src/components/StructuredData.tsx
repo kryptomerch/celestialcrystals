@@ -10,7 +10,7 @@ export function ProductStructuredData({ crystal }: ProductStructuredDataProps) {
     "@type": "Product",
     "name": crystal.name,
     "description": crystal.description,
-    "image": crystal.image || "https://celestialcrystals.com/crystal-placeholder.jpg",
+    "image": crystal.image || "https://thecelestial.xyz/crystal-placeholder.jpg",
     "brand": {
       "@type": "Brand",
       "name": "CELESTIAL"
@@ -19,7 +19,7 @@ export function ProductStructuredData({ crystal }: ProductStructuredDataProps) {
     "offers": {
       "@type": "Offer",
       "price": crystal.price,
-      "priceCurrency": "USD",
+      "priceCurrency": "CAD",
       "availability": "https://schema.org/InStock",
       "seller": {
         "@type": "Organization",

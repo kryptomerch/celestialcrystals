@@ -23,9 +23,10 @@ export interface EmailOptions {
   from?: string;
 }
 
-export async function sendEmail(options: EmailOptions): Promise<boolean> {
+export async function sendEmail(options: EmailOptions): Promise<{ success: boolean, id?: string, error?: string }> {
   try {
-    const fromEmail = options.from || process.env.FROM_EMAIL || 'noreply@celestialcrystals.com';
+    // Use Resend's onboarding domain for testing if no verified domain is available
+    const fromEmail = options.from || process.env.FROM_EMAIL || 'onboarding@resend.dev';
 
     console.log('📧 Attempting to send email:', {
       to: options.to,
@@ -45,7 +46,7 @@ export async function sendEmail(options: EmailOptions): Promise<boolean> {
           text: options.text,
         });
         console.log('✅ Email sent successfully via Resend:', result);
-        return true;
+        return { success: true, id: result.data?.id };
       } catch (resendError) {
         console.error('❌ Resend email failed:', resendError);
         // Continue to fallback methods
@@ -65,7 +66,7 @@ export async function sendEmail(options: EmailOptions): Promise<boolean> {
           text: options.text,
         });
         console.log('✅ Email sent successfully via SMTP:', result.messageId);
-        return true;
+        return { success: true, id: result.messageId };
       } catch (smtpError) {
         console.error('❌ SMTP email failed:', smtpError);
       }
@@ -79,11 +80,11 @@ export async function sendEmail(options: EmailOptions): Promise<boolean> {
       subject: options.subject,
       from: fromEmail,
     });
-    return true;
+    return { success: true, id: 'simulated-' + Date.now() };
 
   } catch (error) {
     console.error('Failed to send email:', error);
-    return false;
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
   }
 }
 
@@ -101,8 +102,8 @@ export function createEmailTemplate(content: string, title: string): string {
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
           line-height: 1.6;
           color: #333;
-          max-width: 600px;
-          margin: 0 auto;
+          max-width: 100%;
+          margin: 0;
           padding: 20px;
           background-color: #f9f9f9;
         }
@@ -111,6 +112,8 @@ export function createEmailTemplate(content: string, title: string): string {
           border-radius: 8px;
           padding: 40px;
           box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          width: 100%;
+          max-width: 100%;
         }
         .header {
           text-align: center;

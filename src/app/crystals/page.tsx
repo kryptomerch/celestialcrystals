@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { crystalDatabase, Crystal } from '@/data/crystals';
+import { Crystal } from '@/data/crystals';
 import { Search, Filter, Sparkles, ShoppingBag, ArrowUpDown, Truck } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import CrystalModal from '@/components/CrystalModal';
@@ -18,6 +18,9 @@ function CrystalsPageContent() {
   const [priceRange, setPriceRange] = useState([0, 100]);
   const [sortBy, setSortBy] = useState('name-asc');
   const [selectedCrystal, setSelectedCrystal] = useState<Crystal | null>(null);
+  const [crystals, setCrystals] = useState<Crystal[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { addToCart } = useCart();
   const { isDark } = useTheme();
 
@@ -38,10 +41,35 @@ function CrystalsPageContent() {
     }
   }, [searchParams]);
 
+  // Fetch crystals from database
+  useEffect(() => {
+    fetchCrystals();
+  }, []);
+
+  const fetchCrystals = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/crystals-db');
+      const data = await response.json();
+
+      if (data.crystals) {
+        setCrystals(data.crystals);
+        setError(null);
+      } else {
+        setError('Failed to load crystals');
+      }
+    } catch (err) {
+      setError('Failed to load crystals');
+      console.error('Error fetching crystals:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const categories = ['All', 'Protection', 'Love', 'Abundance', 'Communication', 'Spiritual Protection', 'Chakra Healing', 'Energy', 'Grounding', 'Intuition', 'Healing', 'Emotional Healing'];
   const rarities = ['All', 'Common', 'Uncommon', 'Rare', 'Very Rare'];
 
-  const filteredCrystals = crystalDatabase
+  const filteredCrystals = crystals
     .filter(crystal => {
       const matchesSearch = crystal.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         crystal.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -96,6 +124,33 @@ function CrystalsPageContent() {
     };
     return colorMap[colorName] || '#9CA3AF';
   };
+
+  if (loading) {
+    return (
+      <div className={`min-h-screen flex items-center justify-center ${isDark ? 'bg-gray-950' : 'bg-white'}`}>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+          <p className={`${isDark ? 'text-white' : 'text-gray-900'}`}>Loading crystals...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className={`min-h-screen flex items-center justify-center ${isDark ? 'bg-gray-950' : 'bg-white'}`}>
+        <div className="text-center">
+          <p className={`text-red-500 mb-4`}>{error}</p>
+          <button
+            onClick={fetchCrystals}
+            className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`min-h-screen ${isDark ? 'bg-gray-950 text-white' : 'bg-white text-gray-900'}`}>

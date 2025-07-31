@@ -1,7 +1,6 @@
 // Celestial Crystals Database Schema
 generator client {
-  provider      = "prisma-client-js"
-  binaryTargets = ["native", "darwin-arm64"]
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -469,4 +468,18 @@ model AISettings {
   updatedAt     DateTime  @updatedAt
 
   @@map("ai_settings")
+}
+
+// Admin Notifications
+model Notification {
+  id        String   @id @default(cuid())
+  type      String   // 'PAYMENT_SUCCESS', 'PAYMENT_FAILED', 'ORDER_CREATED', 'LOW_STOCK'
+  title     String
+  message   String
+  data      Json?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("notifications")
 }

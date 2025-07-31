@@ -184,8 +184,8 @@ export default function CheckoutPage() {
           <button
             onClick={() => router.push('/crystals')}
             className={`px-6 py-3 rounded-lg font-medium transition-colors ${isDark
-                ? 'bg-purple-600 hover:bg-purple-700 text-white'
-                : 'bg-purple-600 hover:bg-purple-700 text-white'
+              ? 'bg-purple-600 hover:bg-purple-700 text-white'
+              : 'bg-purple-600 hover:bg-purple-700 text-white'
               }`}
           >
             Shop Crystals
@@ -481,6 +481,17 @@ export default function CheckoutPage() {
                     onError={handlePaymentError}
                     isProcessing={isProcessing}
                     setIsProcessing={setIsProcessing}
+                    orderData={{
+                      items,
+                      subtotal,
+                      discountAmount,
+                      shipping,
+                      tax,
+                      total,
+                      discountCode: discountCode?.code,
+                      customerInfo: formData,
+                      shippingRate
+                    }}
                   />
                 )}
 
