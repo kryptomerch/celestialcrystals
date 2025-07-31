@@ -129,7 +129,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     if (crystals && crystals.length > 0) {
       const crystalPages: MetadataRoute.Sitemap = crystals.map((crystal) => ({
         url: `${baseUrl}/crystals/${crystal.slug || crystal.id}`,
-        lastModified: crystal.updatedAt,
+        lastModified: crystal.updatedAt || currentDate,
         changeFrequency: 'weekly' as const,
         priority: 0.8,
       }));
