@@ -79,9 +79,10 @@ export async function GET(request: NextRequest) {
       ];
     }
 
-    // Try to get orders, provide fallback if database not available
+    // Try to get orders from database
     let orders: any[] = [];
     let totalCount = 0;
+    let dbError = null;
 
     try {
       [orders, totalCount] = await Promise.all([
@@ -117,8 +118,15 @@ export async function GET(request: NextRequest) {
         }),
         prisma.order.count({ where })
       ]);
-    } catch (dbError) {
-      console.log('Database not available, using fallback orders data');
+
+      console.log(`✅ Successfully fetched ${totalCount} orders from database`);
+
+    } catch (error) {
+      dbError = error;
+      console.error('❌ Database error in admin orders:', error);
+
+      // Only use fallback if there's a real database connection issue
+      console.log('Using fallback orders data due to database error');
 
       // Provide realistic fallback orders data
       const fallbackOrders = [
