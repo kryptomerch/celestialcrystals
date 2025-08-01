@@ -50,7 +50,14 @@ export async function GET(request: NextRequest) {
         status: o.status,
         totalAmount: o.totalAmount,
         userEmail: o.user?.email,
-        itemCount: o.items?.length || 0
+        itemCount: o.items?.length || 0,
+        items: o.items?.map(item => ({
+          id: item.id,
+          crystalId: item.crystalId,
+          quantity: item.quantity,
+          price: item.price,
+          crystalName: item.crystal?.name || 'Unknown'
+        })) || []
       })));
 
     } catch (error) {
@@ -71,7 +78,14 @@ export async function GET(request: NextRequest) {
           userEmail: order.user?.email,
           userName: `${order.user?.firstName || ''} ${order.user?.lastName || ''}`.trim(),
           itemCount: order.items?.length || 0,
-          createdAt: order.createdAt
+          createdAt: order.createdAt,
+          items: order.items?.map(item => ({
+            id: item.id,
+            crystalId: item.crystalId,
+            quantity: item.quantity,
+            price: item.price,
+            crystalName: item.crystal?.name || 'Unknown'
+          })) || []
         })),
         rawOrdersCount: orders.length
       },
