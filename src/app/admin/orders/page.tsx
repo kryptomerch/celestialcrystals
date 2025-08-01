@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useTheme } from '@/contexts/ThemeContext';
 import {
@@ -16,7 +16,8 @@ import {
   Calendar,
   User,
   Mail,
-  Phone
+  Phone,
+  X
 } from 'lucide-react';
 
 interface Order {
@@ -24,6 +25,10 @@ interface Order {
   orderNumber: string;
   status: 'PENDING' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
   total: number;
+  subtotal?: number;
+  shippingAmount?: number;
+  taxAmount?: number;
+  discountAmount?: number;
   createdAt: string;
   user: {
     firstName?: string;
@@ -331,6 +336,144 @@ export default function AdminOrdersPage() {
                 : 'Orders will appear here once customers start purchasing'
               }
             </p>
+          </div>
+        )}
+
+        {/* Order Details Modal */}
+        {showModal && selectedOrder && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className={`max-w-4xl w-full max-h-[90vh] overflow-y-auto rounded-2xl ${isDark ? 'bg-gray-800' : 'bg-white'} shadow-2xl`}>
+              {/* Modal Header */}
+              <div className={`sticky top-0 px-6 py-4 border-b ${isDark ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-white'} rounded-t-2xl`}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                      Order #{selectedOrder.orderNumber}
+                    </h2>
+                    <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                      {selectedOrder.createdAt ? new Date(selectedOrder.createdAt).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      }) : 'Unknown date'}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setShowModal(false)}
+                    className={`p-2 rounded-lg transition-colors ${isDark ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Modal Content */}
+              <div className="p-6 space-y-6">
+                {/* Order Status */}
+                <div className={`p-4 rounded-lg ${isDark ? 'bg-gray-700/50' : 'bg-gray-50'}`}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      {statusIcons[selectedOrder.status] && React.createElement(statusIcons[selectedOrder.status], { className: "w-6 h-6" })}
+                      <div>
+                        <h3 className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                          Order Status: {selectedOrder.status}
+                        </h3>
+                        <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                          Total: ${(selectedOrder.total || 0).toFixed(2)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Customer Information */}
+                <div className={`p-4 rounded-lg ${isDark ? 'bg-gray-700/50' : 'bg-gray-50'}`}>
+                  <h3 className={`font-medium mb-3 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                    Customer Information
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex items-center space-x-3">
+                      <User className={`w-5 h-5 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
+                      <div>
+                        <p className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                          {(selectedOrder.user?.firstName || '') + ' ' + (selectedOrder.user?.lastName || '') || 'Unknown Customer'}
+                        </p>
+                        <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Customer</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <Mail className={`w-5 h-5 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
+                      <div>
+                        <p className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                          {selectedOrder.user?.email || 'No email'}
+                        </p>
+                        <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Email</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Order Items */}
+                <div className={`p-4 rounded-lg ${isDark ? 'bg-gray-700/50' : 'bg-gray-50'}`}>
+                  <h3 className={`font-medium mb-3 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                    Order Items ({(selectedOrder.items || selectedOrder.orderItems || []).length} item{(selectedOrder.items || selectedOrder.orderItems || []).length !== 1 ? 's' : ''})
+                  </h3>
+                  <div className="space-y-3">
+                    {(selectedOrder.items || selectedOrder.orderItems || []).map((item: any, index: number) => (
+                      <div key={item.id || index} className={`flex items-center space-x-4 p-3 rounded-lg ${isDark ? 'bg-gray-600/50' : 'bg-white'}`}>
+                        <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${isDark ? 'bg-gray-500' : 'bg-gray-100'}`}>
+                          <Package className={`w-6 h-6 ${isDark ? 'text-gray-300' : 'text-gray-500'}`} />
+                        </div>
+                        <div className="flex-1">
+                          <p className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                            {item.crystal?.name || 'Unknown Item'}
+                          </p>
+                          <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                            Quantity: {item.quantity || 1} • Price: ${(item.price || 0).toFixed(2)}
+                          </p>
+                        </div>
+                        <div className={`text-right ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                          <p className="font-medium">${((item.price || 0) * (item.quantity || 1)).toFixed(2)}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Order Summary */}
+                <div className={`p-4 rounded-lg ${isDark ? 'bg-gray-700/50' : 'bg-gray-50'}`}>
+                  <h3 className={`font-medium mb-3 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                    Order Summary
+                  </h3>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Subtotal:</span>
+                      <span className={isDark ? 'text-white' : 'text-gray-900'}>${(selectedOrder.subtotal || 0).toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Shipping:</span>
+                      <span className={isDark ? 'text-white' : 'text-gray-900'}>${(selectedOrder.shippingAmount || 0).toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Tax:</span>
+                      <span className={isDark ? 'text-white' : 'text-gray-900'}>${(selectedOrder.taxAmount || 0).toFixed(2)}</span>
+                    </div>
+                    {selectedOrder.discountAmount && selectedOrder.discountAmount > 0 && (
+                      <div className="flex justify-between">
+                        <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Discount:</span>
+                        <span className="text-green-600">-${selectedOrder.discountAmount.toFixed(2)}</span>
+                      </div>
+                    )}
+                    <div className={`flex justify-between pt-2 border-t ${isDark ? 'border-gray-600' : 'border-gray-200'}`}>
+                      <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>Total:</span>
+                      <span className={`font-bold text-lg ${isDark ? 'text-white' : 'text-gray-900'}`}>${(selectedOrder.total || 0).toFixed(2)}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </div>
