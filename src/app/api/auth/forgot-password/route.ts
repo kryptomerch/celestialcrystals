@@ -27,7 +27,13 @@ export async function POST(request: NextRequest) {
 
     // Check if user exists
     const user = await prisma.user.findUnique({
-      where: { email: email.toLowerCase() }
+      where: { email: email.toLowerCase() },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true
+      }
     });
 
     // Always return success to prevent email enumeration attacks
@@ -48,7 +54,7 @@ export async function POST(request: NextRequest) {
 
       try {
         await resend.emails.send({
-          from: 'onboarding@resend.dev', // Use Resend's verified domain
+          from: 'Celestial Crystals <noreply@thecelestial.xyz>', // Use your brand domain
           to: email,
           subject: 'Reset Your Celestial Crystals Password',
           html: `

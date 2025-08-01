@@ -25,8 +25,8 @@ export interface EmailOptions {
 
 export async function sendEmail(options: EmailOptions): Promise<{ success: boolean, id?: string, error?: string }> {
   try {
-    // Use Resend's verified onboarding domain
-    const fromEmail = options.from || 'onboarding@resend.dev';
+    // Use your brand domain with fallback to Resend's verified domain
+    const fromEmail = options.from || 'Celestial Crystals <noreply@thecelestial.xyz>';
 
     console.log('📧 Attempting to send email:', {
       to: options.to,

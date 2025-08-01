@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     console.log('📤 Attempting to send test email...');
 
     const result = await resend.emails.send({
-      from: 'onboarding@resend.dev', // Use Resend's verified domain for testing
+      from: 'Celestial Crystals <noreply@thecelestial.xyz>', // Use your brand domain
       to: email,
       subject: 'Test Email from Celestial Crystals',
       html: `
@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
       message: 'Test email sent successfully',
       details: {
         emailId: result.data?.id,
-        from: 'onboarding@resend.dev',
+        from: 'Celestial Crystals <noreply@thecelestial.xyz>',
         to: email,
         timestamp: new Date().toISOString(),
         resendResponse: result
