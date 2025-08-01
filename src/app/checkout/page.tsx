@@ -113,8 +113,9 @@ export default function CheckoutPage() {
 
     localStorage.setItem('lastOrder', JSON.stringify(orderData));
 
-    // Send order confirmation email
+    // Send order confirmation email (backup - immediate delivery)
     try {
+      console.log('📧 Sending immediate order confirmation email...');
       const estimatedDelivery = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', {
         weekday: 'long',
         year: 'numeric',
@@ -122,7 +123,7 @@ export default function CheckoutPage() {
         day: 'numeric'
       });
 
-      await fetch('/api/email/order-confirmation', {
+      const emailResponse = await fetch('/api/email/order-confirmation', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -146,8 +147,8 @@ export default function CheckoutPage() {
             lastName: formData.lastName,
             address: formData.address,
             city: formData.city,
-            province: formData.province,
-            postalCode: formData.postalCode,
+            state: formData.province,
+            zipCode: formData.postalCode,
             country: formData.country,
           },
           shippingMethod: shippingRate ? {
@@ -159,8 +160,14 @@ export default function CheckoutPage() {
           estimatedDelivery,
         }),
       });
+
+      if (emailResponse.ok) {
+        console.log('✅ Immediate order confirmation email sent successfully');
+      } else {
+        console.error('❌ Failed to send immediate order confirmation email');
+      }
     } catch (error) {
-      console.error('Failed to send order confirmation email:', error);
+      console.error('❌ Error sending immediate confirmation email:', error);
     }
 
     // Clear cart and redirect
