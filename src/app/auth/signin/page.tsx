@@ -147,6 +147,20 @@ export default function SignInPage() {
               </div>
             </div>
 
+            <div className="flex items-center justify-between mb-4">
+              <div className="text-sm">
+                <Link
+                  href="/auth/forgot-password"
+                  className={`font-medium transition-colors ${isDark
+                    ? 'text-purple-400 hover:text-purple-300'
+                    : 'text-indigo-600 hover:text-indigo-500'
+                    }`}
+                >
+                  Forgot your password?
+                </Link>
+              </div>
+            </div>
+
             <button
               type="submit"
               disabled={isLoading}

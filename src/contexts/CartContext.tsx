@@ -133,60 +133,58 @@ export function CartProvider({ children }: { children: ReactNode }) {
     // Discount code functions
     const applyDiscountCode = async (code: string): Promise<boolean> => {
         try {
-            // In a real app, validate against database
-            // For now, we'll validate against common patterns
-            const validCodes = [
-                { code: 'WELCOME15', percentage: 15 },
-                { code: 'WELCOME10', percentage: 10 },
-                { code: 'BDAY20', percentage: 20 },
-                { code: 'SAVE25', percentage: 25 },
-                { code: 'WEEKLY10', percentage: 10 },
-                { code: 'SEASON15', percentage: 15 },
-            ];
+            // Use the API to validate discount codes
+            const response = await fetch('/api/discount-codes/validate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ code: code.trim().toUpperCase() }),
+            });
 
-            // Check if code matches pattern (for generated codes)
-            const welcomeMatch = code.match(/^WELCOME\w{4,6}$/);
-            const bdayMatch = code.match(/^BDAY\w{3,9}$/);
-            const saveMatch = code.match(/^SAVE\w{3,9}$/);
-            const weeklyMatch = code.match(/^WEEKLY\w{3,9}$/);
-            const seasonMatch = code.match(/^SEASON\w{3,9}$/);
-            const backMatch = code.match(/^BACK\w{3,9}$/);
-
-            let discount: DiscountCode | null = null;
-
-            // Check static codes first
-            const staticCode = validCodes.find(c => c.code.toLowerCase() === code.toLowerCase());
-            if (staticCode) {
-                discount = {
-                    code: staticCode.code,
-                    percentage: staticCode.percentage,
-                    isValid: true,
-                    message: `${staticCode.percentage}% discount applied!`
-                };
-            }
-            // Check pattern-based codes
-            else if (welcomeMatch) {
-                discount = { code, percentage: 15, isValid: true, message: '15% welcome discount applied!' };
-            } else if (bdayMatch) {
-                discount = { code, percentage: 20, isValid: true, message: '20% birthday discount applied!' };
-            } else if (saveMatch) {
-                discount = { code, percentage: 15, isValid: true, message: '15% discount applied!' };
-            } else if (weeklyMatch) {
-                discount = { code, percentage: 10, isValid: true, message: '10% weekly discount applied!' };
-            } else if (seasonMatch) {
-                discount = { code, percentage: 15, isValid: true, message: '15% seasonal discount applied!' };
-            } else if (backMatch) {
-                discount = { code, percentage: 25, isValid: true, message: '25% welcome back discount applied!' };
+            if (response.ok) {
+                const discount = await response.json();
+                setDiscountCode(discount);
+                return discount.isValid;
             } else {
-                discount = { code, percentage: 0, isValid: false, message: 'Invalid discount code' };
+                // Fallback to local validation if API fails
+                console.warn('API validation failed, using fallback');
+                const discount = { code, percentage: 0, isValid: false, message: 'Unable to validate discount code' };
+                setDiscountCode(discount);
+                return false;
             }
-
-            setDiscountCode(discount);
-            return discount.isValid;
         } catch (error) {
             console.error('Error applying discount code:', error);
-            setDiscountCode({ code, percentage: 0, isValid: false, message: 'Error applying discount code' });
-            return false;
+            // Fallback validation for common codes
+            const fallbackCodes = [
+                { code: 'WELCOME15', percentage: 15, freeShipping: false },
+                { code: 'WELCOME10', percentage: 10, freeShipping: false },
+                { code: 'BDAY20', percentage: 20, freeShipping: false },
+                { code: 'SAVE25', percentage: 25, freeShipping: false },
+                { code: 'WEEKLY10', percentage: 10, freeShipping: false },
+                { code: 'SEASON15', percentage: 15, freeShipping: false },
+                { code: 'FREEDELIVERY', percentage: 0, freeShipping: true },
+            ];
+
+            const normalizedCode = code.trim().toUpperCase();
+            const fallbackCode = fallbackCodes.find(c => c.code === normalizedCode);
+
+            if (fallbackCode) {
+                const discount = {
+                    code: fallbackCode.code,
+                    percentage: fallbackCode.percentage,
+                    isValid: true,
+                    message: fallbackCode.freeShipping ? 'Free delivery applied!' : `${fallbackCode.percentage}% discount applied!`,
+                    freeShipping: fallbackCode.freeShipping,
+                    type: fallbackCode.freeShipping ? 'FREE_SHIPPING' : 'PERCENTAGE'
+                };
+                setDiscountCode(discount);
+                return true;
+            } else {
+                const discount = { code, percentage: 0, isValid: false, message: 'Invalid discount code' };
+                setDiscountCode(discount);
+                return false;
+            }
         }
     };
 
