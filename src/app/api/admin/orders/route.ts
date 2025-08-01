@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
   try {
     // Check authentication
     const session = await getServerSession(authOptions);
-    
+
     if (!session?.user?.email || !isAdminEmail(session.user.email)) {
       return NextResponse.json(
         { error: 'Unauthorized - Admin access required' },
@@ -32,16 +32,16 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '10');
     const status = searchParams.get('status') || 'all';
     const search = searchParams.get('search') || '';
-    
+
     const skip = (page - 1) * limit;
 
     // Build where clause
     const where: any = {};
-    
+
     if (status && status !== 'all') {
       where.status = status;
     }
-    
+
     if (search) {
       where.OR = [
         { orderNumber: { contains: search, mode: 'insensitive' } },
@@ -76,6 +76,21 @@ export async function GET(request: NextRequest) {
                   price: true
                 }
               }
+            }
+          },
+          shippingAddress: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              company: true,
+              address1: true,
+              address2: true,
+              city: true,
+              state: true,
+              zipCode: true,
+              country: true,
+              phone: true
             }
           }
         },
@@ -118,6 +133,19 @@ export async function GET(request: NextRequest) {
         firstName: order.user.firstName || '',
         lastName: order.user.lastName || ''
       },
+      shippingAddress: order.shippingAddress ? {
+        id: order.shippingAddress.id,
+        firstName: order.shippingAddress.firstName,
+        lastName: order.shippingAddress.lastName,
+        company: order.shippingAddress.company,
+        address1: order.shippingAddress.address1,
+        address2: order.shippingAddress.address2,
+        city: order.shippingAddress.city,
+        state: order.shippingAddress.state,
+        zipCode: order.shippingAddress.zipCode,
+        country: order.shippingAddress.country,
+        phone: order.shippingAddress.phone
+      } : null,
       items: order.items.map(item => ({
         id: item.id,
         quantity: item.quantity,
@@ -153,7 +181,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('❌ Error in admin orders API:', error);
     return NextResponse.json(
-      { 
+      {
         success: false,
         error: 'Failed to fetch orders',
         details: error instanceof Error ? error.message : 'Unknown error'

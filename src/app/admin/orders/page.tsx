@@ -17,7 +17,8 @@ import {
   User,
   Mail,
   Phone,
-  X
+  X,
+  MapPin
 } from 'lucide-react';
 
 interface Order {
@@ -54,11 +55,17 @@ interface Order {
     };
   }[];
   shippingAddress?: {
-    street: string;
+    id: string;
+    firstName: string;
+    lastName: string;
+    company?: string;
+    address1: string;
+    address2?: string;
     city: string;
     state: string;
     zipCode: string;
     country: string;
+    phone?: string;
   };
 }
 
@@ -414,6 +421,49 @@ export default function AdminOrdersPage() {
                     </div>
                   </div>
                 </div>
+
+                {/* Shipping Address */}
+                {selectedOrder.shippingAddress && (
+                  <div className={`p-4 rounded-lg ${isDark ? 'bg-gray-700/50' : 'bg-gray-50'}`}>
+                    <h3 className={`font-medium mb-3 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                      Shipping Address
+                    </h3>
+                    <div className="space-y-2">
+                      <div className="flex items-start space-x-3">
+                        <MapPin className={`w-5 h-5 mt-0.5 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
+                        <div className="flex-1">
+                          <p className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                            {selectedOrder.shippingAddress.firstName} {selectedOrder.shippingAddress.lastName}
+                          </p>
+                          {selectedOrder.shippingAddress.company && (
+                            <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                              {selectedOrder.shippingAddress.company}
+                            </p>
+                          )}
+                          <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                            {selectedOrder.shippingAddress.address1}
+                          </p>
+                          {selectedOrder.shippingAddress.address2 && (
+                            <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                              {selectedOrder.shippingAddress.address2}
+                            </p>
+                          )}
+                          <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                            {selectedOrder.shippingAddress.city}, {selectedOrder.shippingAddress.state} {selectedOrder.shippingAddress.zipCode}
+                          </p>
+                          <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                            {selectedOrder.shippingAddress.country}
+                          </p>
+                          {selectedOrder.shippingAddress.phone && (
+                            <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                              Phone: {selectedOrder.shippingAddress.phone}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Order Items */}
                 <div className={`p-4 rounded-lg ${isDark ? 'bg-gray-700/50' : 'bg-gray-50'}`}>
