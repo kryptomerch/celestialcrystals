@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
         totalAmount: o.totalAmount,
         userEmail: o.user?.email,
         itemCount: o.items?.length || 0,
-        items: o.items?.map(item => ({
+        items: o.items?.map((item: any) => ({
           id: item.id,
           crystalId: item.crystalId,
           quantity: item.quantity,
@@ -79,7 +79,7 @@ export async function GET(request: NextRequest) {
           userName: `${order.user?.firstName || ''} ${order.user?.lastName || ''}`.trim(),
           itemCount: order.items?.length || 0,
           createdAt: order.createdAt,
-          items: order.items?.map(item => ({
+          items: order.items?.map((item: any) => ({
             id: item.id,
             crystalId: item.crystalId,
             quantity: item.quantity,
