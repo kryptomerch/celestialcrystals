@@ -5,8 +5,9 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
+  const { params } = context;
   try {
     const session = await getServerSession(authOptions);
 
@@ -145,7 +146,7 @@ export async function GET(
   } catch (error) {
     console.error('❌ Error fetching order details:', error);
     return NextResponse.json(
-      { 
+      {
         success: false,
         error: 'Failed to fetch order details',
         details: error instanceof Error ? error.message : 'Unknown error'
