@@ -25,19 +25,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if user exists (with fallback for database issues)
-    let user;
-    try {
-      user = await prisma.user.findUnique({
-        where: { email: email.toLowerCase() }
-      });
-    } catch (dbError) {
-      console.error('❌ Database connection failed:', dbError);
-      // For now, return success but don't send email
-      return NextResponse.json({
-        message: 'If an account with that email exists, we have sent a password reset link. (Database temporarily unavailable)'
-      });
-    }
+    // Check if user exists
+    const user = await prisma.user.findUnique({
+      where: { email: email.toLowerCase() }
+    });
 
     // Always return success to prevent email enumeration attacks
     // But only send email if user actually exists
