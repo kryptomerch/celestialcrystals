@@ -100,6 +100,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   try {
+    // Skip database queries during build time or if DATABASE_URL is not properly configured
+    if (process.env.NODE_ENV === 'production' && process.env.VERCEL_ENV === 'production') {
+      console.log('Skipping database queries in production build for sitemap');
+      return staticPages;
+    }
+
     // Try to get database content with shorter timeout for Google crawlers
     const [crystals, categories] = await Promise.race([
       Promise.all([
