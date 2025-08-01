@@ -15,7 +15,8 @@ export async function POST(request: NextRequest) {
     console.log('🔍 Testing email service directly...');
     console.log('📧 Target email:', email);
     console.log('🔑 Resend API Key:', process.env.RESEND_API_KEY ? 'Set' : 'Not set');
-    console.log('📨 From email:', process.env.FROM_EMAIL || 'noreply@thecelestial.xyz');
+    console.log('📨 From email (env):', process.env.FROM_EMAIL);
+    console.log('📨 From email (will use):', 'onboarding@resend.dev');
 
     // Check if Resend API key is configured
     if (!process.env.RESEND_API_KEY || process.env.RESEND_API_KEY === 're_your_resend_api_key_here') {
@@ -84,7 +85,7 @@ export async function POST(request: NextRequest) {
       message: 'Test email sent successfully',
       details: {
         emailId: result.data?.id,
-        from: process.env.FROM_EMAIL || 'noreply@thecelestial.xyz',
+        from: 'onboarding@resend.dev',
         to: email,
         timestamp: new Date().toISOString(),
         resendResponse: result
