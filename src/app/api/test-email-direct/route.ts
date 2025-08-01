@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     console.log('📤 Attempting to send test email...');
 
     const result = await resend.emails.send({
-      from: process.env.FROM_EMAIL || 'noreply@thecelestial.xyz',
+      from: 'onboarding@resend.dev', // Use Resend's verified domain for testing
       to: email,
       subject: 'Test Email from Celestial Crystals',
       html: `
@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('❌ Email test failed:', error);
-    
+
     return NextResponse.json({
       success: false,
       error: 'Failed to send test email',

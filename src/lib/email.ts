@@ -25,8 +25,8 @@ export interface EmailOptions {
 
 export async function sendEmail(options: EmailOptions): Promise<{ success: boolean, id?: string, error?: string }> {
   try {
-    // Use Resend's onboarding domain for testing if no verified domain is available
-    const fromEmail = options.from || process.env.FROM_EMAIL || 'onboarding@resend.dev';
+    // Use Resend's verified onboarding domain
+    const fromEmail = options.from || 'onboarding@resend.dev';
 
     console.log('📧 Attempting to send email:', {
       to: options.to,

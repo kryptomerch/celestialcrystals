@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
 
       try {
         await resend.emails.send({
-          from: process.env.FROM_EMAIL || 'noreply@thecelestial.xyz',
+          from: 'onboarding@resend.dev', // Use Resend's verified domain
           to: email,
           subject: 'Reset Your Celestial Crystals Password',
           html: `

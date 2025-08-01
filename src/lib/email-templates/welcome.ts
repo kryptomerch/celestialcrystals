@@ -99,8 +99,8 @@ export function generateWelcomeEmail(data: WelcomeEmailData) {
       <p style="margin: 0 0 20px 0; opacity: 0.9;">
         Questions about crystals, their properties, or your order? Our crystal experts are here to guide you.
       </p>
-      <a href="mailto:celestial.gems@hotmail.com" style="color: #a0a0ff; text-decoration: none; font-weight: 500;">
-        celestial.gems@hotmail.com
+      <a href="mailto:support@thecelestial.xyz" style="color: #a0a0ff; text-decoration: none; font-weight: 500;">
+        support@thecelestial.xyz
       </a>
     </div>
 
