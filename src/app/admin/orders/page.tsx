@@ -30,7 +30,16 @@ interface Order {
     lastName?: string;
     email: string;
   };
-  items: {
+  items?: {
+    id: string;
+    quantity: number;
+    price: number;
+    crystal: {
+      name: string;
+      image: string;
+    };
+  }[];
+  orderItems?: {
     id: string;
     quantity: number;
     price: number;
@@ -155,8 +164,8 @@ export default function AdminOrdersPage() {
 
         {/* Filters */}
         <div className={`p-6 rounded-2xl shadow-sm border mb-8 ${isDark
-            ? 'bg-gray-800/80 border-gray-700/50'
-            : 'bg-white/80 border-gray-200/50'
+          ? 'bg-gray-800/80 border-gray-700/50'
+          : 'bg-white/80 border-gray-200/50'
           }`}>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="relative">
@@ -168,8 +177,8 @@ export default function AdminOrdersPage() {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className={`w-full pl-10 pr-4 py-3 rounded-lg border focus:outline-none focus:ring-2 transition-all duration-200 ${isDark
-                    ? 'border-gray-600 bg-gray-700/50 text-white placeholder-gray-400 focus:ring-purple-500 focus:border-purple-500'
-                    : 'border-gray-300 bg-white text-gray-900 placeholder-gray-500 focus:ring-indigo-500 focus:border-indigo-500'
+                  ? 'border-gray-600 bg-gray-700/50 text-white placeholder-gray-400 focus:ring-purple-500 focus:border-purple-500'
+                  : 'border-gray-300 bg-white text-gray-900 placeholder-gray-500 focus:ring-indigo-500 focus:border-indigo-500'
                   }`}
               />
             </div>
@@ -181,8 +190,8 @@ export default function AdminOrdersPage() {
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
                 className={`w-full pl-10 pr-4 py-3 rounded-lg border focus:outline-none focus:ring-2 transition-all duration-200 ${isDark
-                    ? 'border-gray-600 bg-gray-700/50 text-white focus:ring-purple-500 focus:border-purple-500'
-                    : 'border-gray-300 bg-white text-gray-900 focus:ring-indigo-500 focus:border-indigo-500'
+                  ? 'border-gray-600 bg-gray-700/50 text-white focus:ring-purple-500 focus:border-purple-500'
+                  : 'border-gray-300 bg-white text-gray-900 focus:ring-indigo-500 focus:border-indigo-500'
                   }`}
               >
                 <option value="all">All Statuses</option>
@@ -206,8 +215,8 @@ export default function AdminOrdersPage() {
 
         {/* Orders Table */}
         <div className={`rounded-2xl shadow-sm border overflow-hidden ${isDark
-            ? 'bg-gray-800/80 border-gray-700/50'
-            : 'bg-white/80 border-gray-200/50'
+          ? 'bg-gray-800/80 border-gray-700/50'
+          : 'bg-white/80 border-gray-200/50'
           }`}>
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -236,25 +245,28 @@ export default function AdminOrdersPage() {
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                 {filteredOrders.map((order) => {
                   const StatusIcon = statusIcons[order.status];
+                  const orderItems = order.items || order.orderItems || [];
+                  const itemCount = orderItems.length;
+
                   return (
                     <tr key={order.id} className={`hover:${isDark ? 'bg-gray-700/30' : 'bg-gray-50'} transition-colors`}>
                       <td className="px-6 py-4">
                         <div>
                           <div className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                            #{order.orderNumber}
+                            #{order.orderNumber || 'N/A'}
                           </div>
                           <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-                            {order.items.length} item{order.items.length !== 1 ? 's' : ''}
+                            {itemCount} item{itemCount !== 1 ? 's' : ''}
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4">
                         <div>
                           <div className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                            {order.user.firstName} {order.user.lastName}
+                            {(order.user?.firstName || '') + ' ' + (order.user?.lastName || '') || 'Unknown Customer'}
                           </div>
                           <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-                            {order.user.email}
+                            {order.user?.email || 'No email'}
                           </div>
                         </div>
                       </td>
@@ -268,7 +280,7 @@ export default function AdminOrdersPage() {
                         <div className="flex items-center space-x-1">
                           <DollarSign className={`w-4 h-4 ${isDark ? 'text-green-400' : 'text-green-600'}`} />
                           <span className={`font-medium ${isDark ? 'text-green-400' : 'text-green-600'}`}>
-                            {order.total.toFixed(2)}
+                            ${(order.total || 0).toFixed(2)}
                           </span>
                         </div>
                       </td>
@@ -276,7 +288,7 @@ export default function AdminOrdersPage() {
                         <div className="flex items-center space-x-1">
                           <Calendar className={`w-4 h-4 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
                           <span className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
-                            {new Date(order.createdAt).toLocaleDateString()}
+                            {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : 'Unknown'}
                           </span>
                         </div>
                       </td>
@@ -287,8 +299,8 @@ export default function AdminOrdersPage() {
                             setShowModal(true);
                           }}
                           className={`flex items-center space-x-2 px-3 py-2 rounded-lg font-medium transition-all duration-200 ${isDark
-                              ? 'bg-indigo-600 hover:bg-indigo-700 text-white'
-                              : 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                            ? 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                            : 'bg-indigo-600 hover:bg-indigo-700 text-white'
                             }`}
                         >
                           <Eye className="w-4 h-4" />
@@ -306,8 +318,8 @@ export default function AdminOrdersPage() {
         {/* Empty State */}
         {filteredOrders.length === 0 && (
           <div className={`text-center py-12 ${isDark
-              ? 'bg-gray-800/80 border-gray-700/50'
-              : 'bg-white/80 border-gray-200/50'
+            ? 'bg-gray-800/80 border-gray-700/50'
+            : 'bg-white/80 border-gray-200/50'
             } rounded-2xl border mt-8`}>
             <Package className={`w-16 h-16 mx-auto mb-4 ${isDark ? 'text-gray-500' : 'text-gray-400'}`} />
             <h3 className={`text-lg font-medium mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
