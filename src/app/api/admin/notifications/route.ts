@@ -4,7 +4,13 @@ import { authOptions } from '@/lib/auth';
 import { NotificationService } from '@/lib/notification-service';
 
 function isAdminEmail(email: string): boolean {
-  const adminEmails = ['dhruvshah8888@gmail.com', 'admin@celestialcrystals.com'];
+  const adminEmails = [
+    'kryptomerch.io@gmail.com',
+    'dhruvaparik@gmail.com',
+    'dhruvshah8888@gmail.com',
+    'admin@thecelestial.xyz',
+    'admin@celestialcrystals.com'
+  ];
   return adminEmails.includes(email.toLowerCase());
 }
 

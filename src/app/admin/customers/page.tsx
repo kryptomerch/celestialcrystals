@@ -68,9 +68,14 @@ export default function AdminCustomersPage() {
   };
 
   const filteredCustomers = customers.filter(customer => {
+    const email = customer.email || '';
+    const firstName = customer.firstName || '';
+    const lastName = customer.lastName || '';
+    const fullName = `${firstName} ${lastName}`.trim();
+
     const matchesSearch =
-      customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      `${customer.firstName} ${customer.lastName}`.toLowerCase().includes(searchTerm.toLowerCase());
+      email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      fullName.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesRole = roleFilter === 'all' || customer.role === roleFilter;
 
