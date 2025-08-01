@@ -19,6 +19,8 @@ export interface OrderConfirmationData {
   total: number;
   paymentMethod: string;
   shippingAddress: {
+    firstName?: string;
+    lastName?: string;
     address: string;
     city: string;
     state: string;
@@ -30,7 +32,7 @@ export interface OrderConfirmationData {
 
 export function generateOrderConfirmationEmail(data: OrderConfirmationData) {
   const formatPrice = (price: number) => `$${price.toFixed(2)}`;
-  
+
   const itemsHtml = data.items.map(item => `
     <tr style="border-bottom: 1px solid #eee;">
       <td style="padding: 15px 0;">
@@ -81,6 +83,7 @@ export function generateOrderConfirmationEmail(data: OrderConfirmationData) {
     
     <h3>🚚 Shipping Information</h3>
     <p><strong>Shipping Address:</strong><br>
+    ${data.shippingAddress.firstName && data.shippingAddress.lastName ? `${data.shippingAddress.firstName} ${data.shippingAddress.lastName}<br>` : ''}
     ${data.shippingAddress.address}<br>
     ${data.shippingAddress.city}, ${data.shippingAddress.state} ${data.shippingAddress.zipCode}<br>
     ${data.shippingAddress.country}</p>

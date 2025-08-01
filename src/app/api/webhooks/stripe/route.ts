@@ -384,8 +384,8 @@ async function handlePaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
               lastName: orderData.customerInfo.lastName,
               address: orderData.customerInfo.address,
               city: orderData.customerInfo.city,
-              province: orderData.customerInfo.province || orderData.customerInfo.state || '',
-              postalCode: orderData.customerInfo.postalCode || orderData.customerInfo.zipCode || '',
+              state: orderData.customerInfo.province || orderData.customerInfo.state || '',
+              zipCode: orderData.customerInfo.postalCode || orderData.customerInfo.zipCode || '',
               country: orderData.customerInfo.country || 'US',
             },
             shippingMethod: orderData.shippingRate ? {
