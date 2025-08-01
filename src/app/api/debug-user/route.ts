@@ -37,7 +37,6 @@ export async function POST(request: NextRequest) {
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
-        name: user.name,
         // Show all available fields
         allFields: Object.keys(user)
       }
