@@ -7,9 +7,15 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(request: NextRequest) {
   try {
-    const { email } = await request.json();
+    console.log('🔍 Forgot password request received');
+
+    const body = await request.json();
+    console.log('📝 Request body:', body);
+
+    const { email } = body;
 
     if (!email) {
+      console.log('❌ No email provided');
       return NextResponse.json(
         { error: 'Email is required' },
         { status: 400 }
@@ -19,20 +25,26 @@ export async function POST(request: NextRequest) {
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
+      console.log('❌ Invalid email format:', email);
       return NextResponse.json(
         { error: 'Invalid email format' },
         { status: 400 }
       );
     }
 
+    console.log('✅ Email validation passed:', email);
+
     // Check if user exists
+    console.log('🔍 Looking up user with email:', email.toLowerCase());
     const user = await prisma.user.findUnique({
       where: { email: email.toLowerCase() }
     });
+    console.log('👤 User found:', user ? 'Yes' : 'No');
 
     // Always return success to prevent email enumeration attacks
     // But only send email if user actually exists
     if (user) {
+      console.log('📧 Preparing to send reset email to user:', user.id);
       // Generate reset token with embedded user info and expiry
       const tokenData = {
         userId: user.id,
@@ -120,8 +132,16 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('❌ Forgot password error:', error);
+    console.error('❌ Error details:', {
+      name: error instanceof Error ? error.name : 'Unknown',
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : 'No stack trace'
+    });
     return NextResponse.json(
-      { error: 'Internal server error' },
+      {
+        error: 'Internal server error',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }
