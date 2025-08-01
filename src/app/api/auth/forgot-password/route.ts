@@ -39,14 +39,6 @@ export async function POST(request: NextRequest) {
     // Always return success to prevent email enumeration attacks
     // But only send email if user actually exists
     if (user) {
-      console.log('👤 User data for email:', {
-        id: user.id,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        hasFirstName: !!user.firstName,
-        firstNameValue: user.firstName || 'NOT_SET'
-      });
       // Generate reset token with embedded user info and expiry
       const tokenData = {
         userId: user.id,
