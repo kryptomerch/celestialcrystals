@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-
-// TODO: Replace with real Firestore/database integration
-// For now, return empty orders until real database is connected
+import { prisma } from '@/lib/prisma'
 
 // Get user's order history
 export async function GET(request: NextRequest) {
@@ -19,17 +17,81 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url)
     const status = searchParams.get('status')
+    const page = parseInt(searchParams.get('page') || '1')
+    const limit = parseInt(searchParams.get('limit') || '10')
 
-    // Return empty orders array - real orders will come from Firestore/database
+    const skip = (page - 1) * limit
+
+    // Build where clause
+    const where: any = {
+      userId: session.user.id
+    }
+
+    if (status && status !== 'all') {
+      where.status = status
+    }
+
+    // Get orders from database
+    const [orders, totalCount] = await Promise.all([
+      prisma.order.findMany({
+        where,
+        include: {
+          items: {
+            include: {
+              crystal: {
+                select: {
+                  id: true,
+                  name: true,
+                  image: true,
+                  properties: true
+                }
+              }
+            }
+          }
+        },
+        orderBy: {
+          createdAt: 'desc'
+        },
+        skip,
+        take: limit
+      }),
+      prisma.order.count({ where })
+    ])
+
+    // Format the response
+    const formattedOrders = orders.map(order => ({
+      id: order.id,
+      orderNumber: order.orderNumber,
+      status: order.status,
+      totalAmount: order.totalAmount,
+      createdAt: order.createdAt.toISOString(),
+      shippedAt: order.shippedAt?.toISOString(),
+      deliveredAt: order.deliveredAt?.toISOString(),
+      trackingNumber: order.trackingNumber,
+      paymentMethod: order.paymentMethod,
+      items: order.items.map(item => ({
+        id: item.id,
+        quantity: item.quantity,
+        price: item.price,
+        crystal: {
+          id: item.crystal.id,
+          name: item.crystal.name,
+          image: item.crystal.image,
+          properties: JSON.parse(item.crystal.properties || '[]')
+        }
+      }))
+    }))
+
     return NextResponse.json({
-      orders: [],
+      success: true,
+      orders: formattedOrders,
       pagination: {
-        page: 1,
-        limit: 10,
-        totalCount: 0,
-        totalPages: 0,
-        hasNext: false,
-        hasPrev: false
+        page,
+        limit,
+        totalCount,
+        totalPages: Math.ceil(totalCount / limit),
+        hasNext: page < Math.ceil(totalCount / limit),
+        hasPrev: page > 1
       }
     })
   } catch (error) {
@@ -41,37 +103,4 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// Get specific order details
-export async function POST(request: NextRequest) {
-  try {
-    const session = await getServerSession(authOptions)
 
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
-    }
-
-    const { orderId } = await request.json()
-
-    if (!orderId) {
-      return NextResponse.json(
-        { error: 'Order ID is required' },
-        { status: 400 }
-      )
-    }
-
-    // Return order not found - real orders will come from Firestore/database
-    return NextResponse.json(
-      { error: 'Order not found' },
-      { status: 404 }
-    )
-  } catch (error) {
-    console.error('Order details fetch error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
-  }
-}

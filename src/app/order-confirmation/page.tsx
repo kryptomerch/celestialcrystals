@@ -173,7 +173,7 @@ export default function OrderConfirmationPage() {
           </Link>
 
           <Link
-            href="/account/orders"
+            href="/orders"
             className="inline-flex items-center bg-white text-purple-600 px-8 py-3 rounded-lg font-semibold border-2 border-purple-600 hover:bg-purple-50 transition-all duration-300"
           >
             View Order Details
