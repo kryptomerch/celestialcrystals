@@ -11,30 +11,44 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 
 export async function POST(request: NextRequest) {
-  try {
-    console.log('🔔 Stripe webhook called at:', new Date().toISOString());
+  // Log webhook attempt immediately
+  console.log('🔔 Stripe webhook called at:', new Date().toISOString());
+  console.log('🔔 Request URL:', request.url);
+  console.log('🔔 Request method:', request.method);
 
+  try {
     const body = await request.text();
     const headersList = await headers();
     const signature = headersList.get('stripe-signature');
 
-    // Log to debug endpoint
+    console.log('🔔 Webhook body length:', body.length);
+    console.log('🔔 Has signature:', !!signature);
+    console.log('🔔 Signature preview:', signature?.substring(0, 50) + '...');
+
+    // Log to debug endpoint with more details
     try {
-      await fetch(`${process.env.NEXTAUTH_URL}/api/debug/webhook-logs`, {
+      const logResponse = await fetch(`${process.env.NEXTAUTH_URL}/api/debug/webhook-logs`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           type: 'stripe_webhook_received',
           timestamp: new Date().toISOString(),
           hasSignature: !!signature,
-          bodyLength: body.length
+          bodyLength: body.length,
+          signaturePreview: signature?.substring(0, 50),
+          url: request.url,
+          method: request.method
         })
       });
+      console.log('🔔 Debug log response status:', logResponse.status);
     } catch (logError) {
-      console.log('Failed to log webhook call:', logError);
+      console.error('❌ Failed to log webhook call:', logError);
     }
 
-    // In development, allow bypassing signature verification if webhook secret is placeholder
+    // Check webhook secret configuration
+    console.log('🔑 Webhook secret configured:', !!webhookSecret);
+    console.log('🔑 Webhook secret preview:', webhookSecret?.substring(0, 10) + '...');
+
     const isDevelopment = process.env.NODE_ENV === 'development';
     const isPlaceholderSecret = webhookSecret === 'whsec_placeholder';
 
@@ -46,32 +60,57 @@ export async function POST(request: NextRequest) {
         event = JSON.parse(body);
         console.log('📝 Parsed webhook event without signature verification');
       } catch (parseErr) {
-        console.error('Failed to parse webhook body:', parseErr);
+        console.error('❌ Failed to parse webhook body:', parseErr);
         return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
       }
     } else {
       // Production mode: Verify signature
       if (!signature) {
-        console.error('No Stripe signature found');
+        console.error('❌ No Stripe signature found in headers');
+        console.log('📋 Available headers:', Object.fromEntries(headersList.entries()));
         return NextResponse.json({ error: 'No signature' }, { status: 400 });
       }
 
       if (!webhookSecret || isPlaceholderSecret) {
-        console.error('Stripe webhook secret not configured properly');
+        console.error('❌ Stripe webhook secret not configured properly');
+        console.log('🔑 Current secret:', webhookSecret);
         return NextResponse.json({ error: 'Webhook secret not configured' }, { status: 500 });
       }
 
       // Verify the webhook signature
       try {
+        console.log('🔐 Attempting to verify webhook signature...');
         event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
+        console.log('✅ Webhook signature verified successfully');
       } catch (err) {
-        console.error('Webhook signature verification failed:', err);
+        console.error('❌ Webhook signature verification failed:', err);
+        console.error('❌ Error details:', err instanceof Error ? err.message : 'Unknown error');
+        console.log('🔑 Used secret:', webhookSecret?.substring(0, 10) + '...');
+        console.log('🔏 Used signature:', signature?.substring(0, 50) + '...');
         return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
       }
     }
 
     console.log('✅ Stripe webhook received:', event.type);
-    console.log('Event data:', JSON.stringify(event.data, null, 2));
+    console.log('📊 Event ID:', event.id);
+    console.log('📊 Event created:', new Date(event.created * 1000).toISOString());
+
+    // Log to debug endpoint with event details
+    try {
+      await fetch(`${process.env.NEXTAUTH_URL}/api/debug/webhook-logs`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'stripe_event_processed',
+          timestamp: new Date().toISOString(),
+          eventType: event.type,
+          eventId: event.id,
+          eventCreated: new Date(event.created * 1000).toISOString()
+        })
+      });
+    } catch (logError) {
+      console.error('❌ Failed to log event processing:', logError);
+    }
 
     // Handle the event
     switch (event.type) {
@@ -79,23 +118,29 @@ export async function POST(request: NextRequest) {
         const paymentIntent = event.data.object as Stripe.PaymentIntent;
         console.log('💰 Processing payment_intent.succeeded for:', paymentIntent.id);
         await handlePaymentSuccess(paymentIntent);
+        console.log('✅ Payment success handled for:', paymentIntent.id);
         break;
 
       case 'payment_intent.payment_failed':
         const failedPayment = event.data.object as Stripe.PaymentIntent;
+        console.log('❌ Processing payment_intent.payment_failed for:', failedPayment.id);
         await handlePaymentFailure(failedPayment);
+        console.log('✅ Payment failure handled for:', failedPayment.id);
         break;
 
       case 'checkout.session.completed':
         const session = event.data.object as Stripe.Checkout.Session;
+        console.log('🛒 Processing checkout.session.completed for:', session.id);
         await handleCheckoutCompleted(session);
+        console.log('✅ Checkout completion handled for:', session.id);
         break;
 
       default:
-        console.log(`Unhandled event type: ${event.type}`);
+        console.log(`⚠️ Unhandled event type: ${event.type}`);
     }
 
-    return NextResponse.json({ received: true });
+    console.log('🎉 Webhook processing completed successfully');
+    return NextResponse.json({ received: true, eventType: event.type, eventId: event.id });
   } catch (error) {
     console.error('Webhook error:', error);
     return NextResponse.json(
