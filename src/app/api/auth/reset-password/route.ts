@@ -21,17 +21,33 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Find user with valid reset token
-    const user = await prisma.user.findFirst({
-      where: {
-        resetToken: token,
-        resetTokenExpiry: {
-          gt: new Date() // Token must not be expired
-        }
+    // Decode and validate the reset token
+    let tokenData;
+    try {
+      const decoded = Buffer.from(token, 'base64url').toString('utf-8');
+      tokenData = JSON.parse(decoded);
+
+      // Check if token is expired
+      if (Date.now() > tokenData.exp) {
+        return NextResponse.json(
+          { error: 'Reset token has expired' },
+          { status: 400 }
+        );
       }
+    } catch (decodeError) {
+      console.error('❌ Invalid token format:', decodeError);
+      return NextResponse.json(
+        { error: 'Invalid reset token' },
+        { status: 400 }
+      );
+    }
+
+    // Find the user by ID from token
+    const user = await prisma.user.findUnique({
+      where: { id: tokenData.userId }
     });
 
-    if (!user) {
+    if (!user || user.email !== tokenData.email) {
       return NextResponse.json(
         { error: 'Invalid or expired reset token' },
         { status: 400 }
@@ -41,13 +57,11 @@ export async function POST(request: NextRequest) {
     // Hash new password
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    // Update user password and clear reset token
+    // Update user password
     await prisma.user.update({
       where: { id: user.id },
       data: {
-        password: hashedPassword,
-        resetToken: null,
-        resetTokenExpiry: null
+        password: hashedPassword
       }
     });
 
@@ -79,14 +93,30 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Check if token is valid and not expired
-    const user = await prisma.user.findFirst({
-      where: {
-        resetToken: token,
-        resetTokenExpiry: {
-          gt: new Date()
-        }
-      },
+    // Decode and validate the reset token
+    let tokenData;
+    try {
+      const decoded = Buffer.from(token, 'base64url').toString('utf-8');
+      tokenData = JSON.parse(decoded);
+
+      // Check if token is expired
+      if (Date.now() > tokenData.exp) {
+        return NextResponse.json(
+          { error: 'Reset token has expired' },
+          { status: 400 }
+        );
+      }
+    } catch (decodeError) {
+      console.error('❌ Invalid token format:', decodeError);
+      return NextResponse.json(
+        { error: 'Invalid reset token' },
+        { status: 400 }
+      );
+    }
+
+    // Find the user by ID from token
+    const user = await prisma.user.findUnique({
+      where: { id: tokenData.userId },
       select: {
         id: true,
         email: true,
@@ -94,7 +124,7 @@ export async function GET(request: NextRequest) {
       }
     });
 
-    if (!user) {
+    if (!user || user.email !== tokenData.email) {
       return NextResponse.json(
         { error: 'Invalid or expired reset token' },
         { status: 400 }

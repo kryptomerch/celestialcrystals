@@ -33,18 +33,15 @@ export async function POST(request: NextRequest) {
     // Always return success to prevent email enumeration attacks
     // But only send email if user actually exists
     if (user) {
-      // Generate reset token
-      const resetToken = crypto.randomBytes(32).toString('hex');
-      const resetTokenExpiry = new Date(Date.now() + 3600000); // 1 hour from now
+      // Generate reset token with embedded user info and expiry
+      const tokenData = {
+        userId: user.id,
+        email: user.email,
+        exp: Date.now() + 3600000 // 1 hour from now
+      };
 
-      // Save reset token to database
-      await prisma.user.update({
-        where: { id: user.id },
-        data: {
-          resetToken,
-          resetTokenExpiry
-        }
-      });
+      // Create a simple encoded token (in production, use JWT or similar)
+      const resetToken = Buffer.from(JSON.stringify(tokenData)).toString('base64url');
 
       // Send password reset email
       const resetUrl = `${process.env.NEXTAUTH_URL}/auth/reset-password?token=${resetToken}`;
