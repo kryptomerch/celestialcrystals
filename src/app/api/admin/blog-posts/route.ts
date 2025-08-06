@@ -100,7 +100,7 @@ export async function POST(request: NextRequest) {
         slug,
         category: category || 'General',
         featuredImage: featuredImage || null,
-        author: author || session.user.name || 'Admin',
+        author: author || session.user.firstName || session.user.email || 'Admin',
         tags: tags || [],
         status,
         isAIGenerated,
