@@ -6,7 +6,7 @@ import { prisma } from '@/lib/prisma';
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    
+
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
@@ -23,15 +23,15 @@ export async function POST(request: NextRequest) {
     const { orderId, reason, note } = await request.json();
 
     if (!orderId || !reason) {
-      return NextResponse.json({ 
-        error: 'Order ID and cancellation reason are required' 
+      return NextResponse.json({
+        error: 'Order ID and cancellation reason are required'
       }, { status: 400 });
     }
 
     // Validate cancellation reason
     const validReasons = [
       'out_of_stock',
-      'customer_request', 
+      'customer_request',
       'payment_failed',
       'fraud_detected',
       'duplicate_order',
@@ -40,8 +40,8 @@ export async function POST(request: NextRequest) {
     ];
 
     if (!validReasons.includes(reason)) {
-      return NextResponse.json({ 
-        error: 'Invalid cancellation reason' 
+      return NextResponse.json({
+        error: 'Invalid cancellation reason'
       }, { status: 400 });
     }
 
@@ -64,8 +64,8 @@ export async function POST(request: NextRequest) {
 
     // Check if order can be cancelled (not already shipped/delivered/cancelled)
     if (['SHIPPED', 'DELIVERED', 'CANCELLED'].includes(order.status)) {
-      return NextResponse.json({ 
-        error: `Cannot cancel order with status: ${order.status}` 
+      return NextResponse.json({
+        error: `Cannot cancel order with status: ${order.status}`
       }, { status: 400 });
     }
 
@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
           await tx.crystal.update({
             where: { id: item.crystalId },
             data: {
-              stock: {
+              stockQuantity: {
                 increment: item.quantity
               }
             }
