@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Bot, Calendar, FileText, TrendingUp, Zap, Clock, Target, Globe } from 'lucide-react';
+import { Bot, Calendar, FileText, TrendingUp, Zap, Clock, Target, Globe, Eye, CheckCircle, XCircle, Plus, Edit } from 'lucide-react';
 
 interface BlogPost {
   id: string;
@@ -27,6 +27,9 @@ export default function AIBlogAutomationPage() {
   const [results, setResults] = useState<any>(null);
   const [recentPosts, setRecentPosts] = useState<BlogPost[]>([]);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
+  const [previewPost, setPreviewPost] = useState<any>(null);
+  const [publishingPost, setPublishingPost] = useState<string | null>(null);
   const [stats, setStats] = useState<AutomationStats>({
     totalPosts: 0,
     aiGeneratedPosts: 0,
@@ -38,6 +41,54 @@ export default function AIBlogAutomationPage() {
   useEffect(() => {
     loadDashboardData();
   }, []);
+
+  const handlePreviewPost = async (postId: string) => {
+    try {
+      const response = await fetch(`/api/admin/blog-posts/preview/${postId}`);
+      const data = await response.json();
+
+      if (data.success) {
+        setPreviewPost(data.post);
+        setShowPreview(true);
+      } else {
+        alert('Failed to load preview');
+      }
+    } catch (error) {
+      console.error('Preview error:', error);
+      alert('Failed to load preview');
+    }
+  };
+
+  const handlePublishPost = async (postId: string, action: 'publish' | 'unpublish') => {
+    setPublishingPost(postId);
+    try {
+      const response = await fetch('/api/admin/blog-posts/publish', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          postId,
+          action
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        // Refresh the dashboard data
+        await loadDashboardData();
+        alert(`Post ${action}ed successfully!`);
+      } else {
+        alert(`Failed to ${action} post: ${data.error}`);
+      }
+    } catch (error) {
+      console.error(`${action} error:`, error);
+      alert(`Failed to ${action} post`);
+    } finally {
+      setPublishingPost(null);
+    }
+  };
 
   const loadDashboardData = async () => {
     try {
@@ -246,10 +297,19 @@ export default function AIBlogAutomationPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* AI Generation Controls */}
           <div className="bg-white p-6 rounded-lg shadow-sm border">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
-              <Zap className="w-5 h-5 mr-2 text-yellow-500" />
-              Generate AI Content
-            </h2>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-semibold text-gray-900 flex items-center">
+                <Zap className="w-5 h-5 mr-2 text-yellow-500" />
+                Generate AI Content
+              </h2>
+              <a
+                href="/admin/blog-editor"
+                className="flex items-center space-x-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm"
+              >
+                <Plus className="w-4 h-4" />
+                <span>New Post</span>
+              </a>
+            </div>
 
             <div className="space-y-4">
               <button
@@ -350,6 +410,45 @@ export default function AIBlogAutomationPage() {
                       SEO: {post.seoScore}%
                     </span>
                   </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex items-center space-x-2 mt-3">
+                    <button
+                      onClick={() => handlePreviewPost(post.id)}
+                      className="flex items-center space-x-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 text-sm"
+                    >
+                      <Eye className="w-3 h-3" />
+                      <span>Preview</span>
+                    </button>
+
+                    <a
+                      href={`/admin/blog-editor?edit=${post.id}`}
+                      className="flex items-center space-x-1 px-3 py-1 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-sm"
+                    >
+                      <Edit className="w-3 h-3" />
+                      <span>Edit</span>
+                    </a>
+
+                    {post.status === 'draft' ? (
+                      <button
+                        onClick={() => handlePublishPost(post.id, 'publish')}
+                        disabled={publishingPost === post.id}
+                        className="flex items-center space-x-1 px-3 py-1 bg-green-100 text-green-700 rounded-md hover:bg-green-200 text-sm disabled:opacity-50"
+                      >
+                        <CheckCircle className="w-3 h-3" />
+                        <span>{publishingPost === post.id ? 'Publishing...' : 'Publish'}</span>
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handlePublishPost(post.id, 'unpublish')}
+                        disabled={publishingPost === post.id}
+                        className="flex items-center space-x-1 px-3 py-1 bg-yellow-100 text-yellow-700 rounded-md hover:bg-yellow-200 text-sm disabled:opacity-50"
+                      >
+                        <XCircle className="w-3 h-3" />
+                        <span>{publishingPost === post.id ? 'Unpublishing...' : 'Unpublish'}</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
@@ -390,6 +489,135 @@ export default function AIBlogAutomationPage() {
           </div>
         </div>
       </div>
+
+      {/* Blog Preview Modal */}
+      {showPreview && previewPost && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="max-w-4xl w-full max-h-[90vh] overflow-y-auto bg-white rounded-2xl shadow-2xl">
+            {/* Modal Header */}
+            <div className="sticky top-0 px-6 py-4 border-b bg-white rounded-t-2xl">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">Blog Preview</h2>
+                  <p className="text-sm text-gray-600">
+                    Status: <span className={`font-medium ${previewPost.status === 'published' ? 'text-green-600' : 'text-yellow-600'}`}>
+                      {previewPost.status}
+                    </span>
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowPreview(false)}
+                  className="p-2 rounded-lg hover:bg-gray-100 text-gray-500"
+                >
+                  <XCircle className="w-6 h-6" />
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6">
+              {/* Featured Image */}
+              {previewPost.featuredImage && (
+                <div className="mb-6">
+                  <img
+                    src={previewPost.featuredImage}
+                    alt={previewPost.title}
+                    className="w-full h-64 object-cover rounded-lg"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                </div>
+              )}
+
+              {/* Article Header */}
+              <div className="mb-6">
+                <div className="flex items-center space-x-4 text-sm text-gray-600 mb-4">
+                  <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded-full">
+                    {previewPost.category}
+                  </span>
+                  <span>{previewPost.author}</span>
+                  <span>{previewPost.readingTime} min read</span>
+                  {previewPost.isAIGenerated && (
+                    <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
+                      AI Generated
+                    </span>
+                  )}
+                </div>
+
+                <h1 className="text-3xl font-bold text-gray-900 mb-4">
+                  {previewPost.title}
+                </h1>
+
+                <p className="text-lg text-gray-600 leading-relaxed">
+                  {previewPost.excerpt}
+                </p>
+              </div>
+
+              {/* Article Content */}
+              <div className="prose prose-lg max-w-none">
+                <div
+                  dangerouslySetInnerHTML={{ __html: previewPost.content }}
+                  className="text-gray-800 leading-relaxed"
+                />
+              </div>
+
+              {/* Tags */}
+              {previewPost.tags && previewPost.tags.length > 0 && (
+                <div className="mt-8 pt-6 border-t">
+                  <h3 className="text-sm font-medium text-gray-900 mb-3">Tags:</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {previewPost.tags.map((tag: string, index: number) => (
+                      <span
+                        key={index}
+                        className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="mt-8 pt-6 border-t flex space-x-4">
+                {previewPost.status === 'draft' ? (
+                  <button
+                    onClick={() => {
+                      handlePublishPost(previewPost.id, 'publish');
+                      setShowPreview(false);
+                    }}
+                    disabled={publishingPost === previewPost.id}
+                    className="flex items-center space-x-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+                  >
+                    <CheckCircle className="w-4 h-4" />
+                    <span>{publishingPost === previewPost.id ? 'Publishing...' : 'Publish Now'}</span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => {
+                      handlePublishPost(previewPost.id, 'unpublish');
+                      setShowPreview(false);
+                    }}
+                    disabled={publishingPost === previewPost.id}
+                    className="flex items-center space-x-2 px-6 py-3 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 disabled:opacity-50"
+                  >
+                    <XCircle className="w-4 h-4" />
+                    <span>{publishingPost === previewPost.id ? 'Unpublishing...' : 'Unpublish'}</span>
+                  </button>
+                )}
+
+                <button
+                  onClick={() => setShowPreview(false)}
+                  className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+                >
+                  Close Preview
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

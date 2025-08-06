@@ -228,6 +228,12 @@ model Order {
   shippedAt         DateTime?
   deliveredAt       DateTime?
 
+  // Cancellation
+  cancelledAt     DateTime?
+  cancelledBy     String?   // 'admin', 'customer', 'system'
+  cancellationReason String? // 'out_of_stock', 'customer_request', 'payment_failed', 'fraud_detected', 'other'
+  cancellationNote   String? // Additional details about cancellation
+
   // Timestamps
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt

@@ -18,7 +18,9 @@ import {
   Mail,
   Phone,
   X,
-  MapPin
+  MapPin,
+  XCircle,
+  AlertTriangle
 } from 'lucide-react';
 
 interface Order {
@@ -31,6 +33,9 @@ interface Order {
   taxAmount?: number;
   discountAmount?: number;
   createdAt: string;
+  cancelledAt?: string;
+  cancellationReason?: string;
+  cancellationNote?: string;
   user: {
     firstName?: string;
     lastName?: string;
@@ -78,6 +83,10 @@ export default function AdminOrdersPage() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancelReason, setCancelReason] = useState('');
+  const [cancelNote, setCancelNote] = useState('');
+  const [cancelling, setCancelling] = useState(false);
 
   const statusColors = {
     PENDING: 'bg-yellow-100 text-yellow-800 border-yellow-200',
@@ -110,6 +119,49 @@ export default function AdminOrdersPage() {
       console.error('Error fetching orders:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCancelOrder = async () => {
+    if (!selectedOrder || !cancelReason) return;
+
+    setCancelling(true);
+    try {
+      const response = await fetch('/api/admin/orders/cancel', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          orderId: selectedOrder.id,
+          reason: cancelReason,
+          note: cancelNote
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        // Update the order in the list
+        setOrders(orders.map(order =>
+          order.id === selectedOrder.id
+            ? { ...order, status: 'CANCELLED' as const, cancelledAt: new Date().toISOString(), cancellationReason: cancelReason, cancellationNote: cancelNote }
+            : order
+        ));
+        // Update selected order
+        setSelectedOrder({ ...selectedOrder, status: 'CANCELLED', cancelledAt: new Date().toISOString(), cancellationReason: cancelReason, cancellationNote: cancelNote });
+        setShowCancelModal(false);
+        setCancelReason('');
+        setCancelNote('');
+        alert('Order cancelled successfully');
+      } else {
+        const error = await response.json();
+        alert(`Failed to cancel order: ${error.error}`);
+      }
+    } catch (error) {
+      console.error('Error cancelling order:', error);
+      alert('Failed to cancel order');
+    } finally {
+      setCancelling(false);
     }
   };
 
@@ -390,8 +442,30 @@ export default function AdminOrdersPage() {
                         <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                           Total: ${(selectedOrder.total || 0).toFixed(2)}
                         </p>
+                        {selectedOrder.status === 'CANCELLED' && selectedOrder.cancellationReason && (
+                          <div className="mt-2">
+                            <p className={`text-sm font-medium text-red-600`}>
+                              Cancelled: {selectedOrder.cancellationReason.replace('_', ' ')}
+                            </p>
+                            {selectedOrder.cancellationNote && (
+                              <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                                Note: {selectedOrder.cancellationNote}
+                              </p>
+                            )}
+                          </div>
+                        )}
                       </div>
                     </div>
+                    {/* Cancel Button - only show if order can be cancelled */}
+                    {selectedOrder.status !== 'CANCELLED' && selectedOrder.status !== 'SHIPPED' && selectedOrder.status !== 'DELIVERED' && (
+                      <button
+                        onClick={() => setShowCancelModal(true)}
+                        className="flex items-center space-x-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
+                      >
+                        <XCircle className="w-4 h-4" />
+                        <span>Cancel Order</span>
+                      </button>
+                    )}
                   </div>
                 </div>
 
@@ -521,6 +595,99 @@ export default function AdminOrdersPage() {
                       <span className={`font-bold text-lg ${isDark ? 'text-white' : 'text-gray-900'}`}>${(selectedOrder.total || 0).toFixed(2)}</span>
                     </div>
                   </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Cancel Order Modal */}
+        {showCancelModal && selectedOrder && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className={`max-w-md w-full rounded-2xl ${isDark ? 'bg-gray-800' : 'bg-white'} shadow-2xl`}>
+              <div className={`px-6 py-4 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <AlertTriangle className="w-6 h-6 text-red-600" />
+                    <h3 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                      Cancel Order
+                    </h3>
+                  </div>
+                  <button
+                    onClick={() => setShowCancelModal(false)}
+                    className={`p-2 rounded-lg transition-colors ${isDark ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-6">
+                <p className={`text-sm mb-4 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                  Are you sure you want to cancel order #{selectedOrder.orderNumber}? This action cannot be undone.
+                </p>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                      Cancellation Reason *
+                    </label>
+                    <select
+                      value={cancelReason}
+                      onChange={(e) => setCancelReason(e.target.value)}
+                      className={`w-full px-3 py-2 rounded-lg border ${isDark
+                        ? 'bg-gray-700 border-gray-600 text-white'
+                        : 'bg-white border-gray-300 text-gray-900'
+                        } focus:ring-2 focus:ring-red-500 focus:border-red-500`}
+                    >
+                      <option value="">Select a reason</option>
+                      <option value="out_of_stock">Out of Stock</option>
+                      <option value="customer_request">Customer Request</option>
+                      <option value="payment_failed">Payment Failed</option>
+                      <option value="fraud_detected">Fraud Detected</option>
+                      <option value="duplicate_order">Duplicate Order</option>
+                      <option value="address_issue">Address Issue</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                      Additional Notes (Optional)
+                    </label>
+                    <textarea
+                      value={cancelNote}
+                      onChange={(e) => setCancelNote(e.target.value)}
+                      placeholder="Add any additional details about the cancellation..."
+                      rows={3}
+                      className={`w-full px-3 py-2 rounded-lg border ${isDark
+                        ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
+                        : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                        } focus:ring-2 focus:ring-red-500 focus:border-red-500`}
+                    />
+                  </div>
+                </div>
+
+                <div className="flex space-x-3 mt-6">
+                  <button
+                    onClick={() => setShowCancelModal(false)}
+                    className={`flex-1 px-4 py-2 rounded-lg font-medium transition-colors ${isDark
+                      ? 'bg-gray-700 hover:bg-gray-600 text-white'
+                      : 'bg-gray-200 hover:bg-gray-300 text-gray-900'
+                      }`}
+                  >
+                    Keep Order
+                  </button>
+                  <button
+                    onClick={handleCancelOrder}
+                    disabled={!cancelReason || cancelling}
+                    className={`flex-1 px-4 py-2 rounded-lg font-medium transition-colors ${!cancelReason || cancelling
+                        ? 'bg-gray-400 cursor-not-allowed text-white'
+                        : 'bg-red-600 hover:bg-red-700 text-white'
+                      }`}
+                  >
+                    {cancelling ? 'Cancelling...' : 'Cancel Order'}
+                  </button>
                 </div>
               </div>
             </div>

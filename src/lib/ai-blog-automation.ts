@@ -124,7 +124,7 @@ export class AIBlogAutomationService {
       category: 'Crystal Guides',
       featuredImage: crystal.image || '/blog/crystal-default.jpg',
       publishDate: new Date(),
-      status: 'published',
+      status: 'draft', // Save as draft for review
       author: 'CELESTIAL Team',
       tags: ['crystal healing', crystal.name.toLowerCase(), crystal.category.toLowerCase()]
     });
@@ -151,7 +151,7 @@ export class AIBlogAutomationService {
       category: 'Chakra Healing',
       featuredImage: `/blog/chakra-${chakra.toLowerCase().replace(' ', '-')}.jpg`,
       publishDate: new Date(),
-      status: 'published',
+      status: 'draft', // Save as draft for review
       author: 'CELESTIAL Team',
       tags: ['chakra healing', chakra.toLowerCase(), 'energy healing']
     });
@@ -186,7 +186,7 @@ export class AIBlogAutomationService {
       category: 'Seasonal Healing',
       featuredImage: `/blog/season-${currentSeason.toLowerCase()}.jpg`,
       publishDate: new Date(),
-      status: 'published',
+      status: 'draft', // Save as draft for review
       author: 'CELESTIAL Team',
       tags: ['seasonal healing', currentSeason.toLowerCase(), 'crystal rituals']
     });

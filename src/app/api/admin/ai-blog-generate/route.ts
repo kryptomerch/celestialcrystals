@@ -22,18 +22,18 @@ async function generateHowToPost(): Promise<void> {
   };
 
   const blogPost = await AIBlogAutomationService.generateBlogPost('howToGuide', variables);
-  
+
   // Save the post to database
   await AIBlogAutomationService.saveBlogPost({
     ...blogPost,
     category: 'How-To Guides',
     featuredImage: '/blog/how-to-crystals.jpg',
     publishDate: new Date(),
-    status: 'published',
+    status: 'draft', // Save as draft for review
     author: 'CELESTIAL Team',
     tags: ['how-to', 'crystal healing', topic.action.replace(' ', '-')]
   });
-  
+
   console.log(`Generated how-to post: ${blogPost.title}`);
 }
 
@@ -63,18 +63,18 @@ async function generateBirthstonePost(): Promise<void> {
   };
 
   const blogPost = await AIBlogAutomationService.generateBlogPost('birthstoneGuide', variables);
-  
+
   // Save the post to database
   await AIBlogAutomationService.saveBlogPost({
     ...blogPost,
     category: 'Birthstone Guides',
     featuredImage: `/blog/birthstone-${monthData.month.toLowerCase()}.jpg`,
     publishDate: new Date(),
-    status: 'published',
+    status: 'draft', // Save as draft for review
     author: 'CELESTIAL Team',
     tags: ['birthstone', monthData.month.toLowerCase(), 'zodiac', 'astrology']
   });
-  
+
   console.log(`Generated birthstone post: ${blogPost.title}`);
 }
 
@@ -114,33 +114,33 @@ export async function POST(request: NextRequest) {
       case 'weekly-crystal-post':
         console.log('📝 Generating weekly crystal post...');
         await AIBlogAutomationService.generateWeeklyCrystalPost();
-        result = { 
+        result = {
           type: 'weekly-crystal-post',
           message: 'Weekly crystal guide generated successfully',
           timestamp: new Date().toISOString()
         };
         break;
-      
+
       case 'monthly-chakra-post':
         console.log('🧘 Generating monthly chakra post...');
         await AIBlogAutomationService.generateMonthlyChakraPost();
-        result = { 
+        result = {
           type: 'monthly-chakra-post',
           message: 'Monthly chakra guide generated successfully',
           timestamp: new Date().toISOString()
         };
         break;
-      
+
       case 'seasonal-post':
         console.log('🌸 Generating seasonal post...');
         await AIBlogAutomationService.generateSeasonalPost();
-        result = { 
+        result = {
           type: 'seasonal-post',
           message: 'Seasonal crystal guide generated successfully',
           timestamp: new Date().toISOString()
         };
         break;
-      
+
       case 'generate-all':
         console.log('🚀 Generating multiple posts...');
         // Generate multiple posts for content boost
@@ -149,14 +149,14 @@ export async function POST(request: NextRequest) {
           generateHowToPost(),
           generateBirthstonePost()
         ]);
-        result = { 
+        result = {
           type: 'generate-all',
           message: 'Multiple blog posts generated successfully',
           count: 3,
           timestamp: new Date().toISOString()
         };
         break;
-      
+
       default:
         return NextResponse.json(
           { error: 'Invalid action. Use: weekly-crystal-post, monthly-chakra-post, seasonal-post, or generate-all' },
@@ -175,7 +175,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('❌ Admin AI Blog Generation Error:', error);
     return NextResponse.json(
-      { 
+      {
         success: false,
         error: 'Failed to generate blog content',
         details: error instanceof Error ? error.message : 'Unknown error'
