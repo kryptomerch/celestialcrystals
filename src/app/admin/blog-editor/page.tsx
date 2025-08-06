@@ -38,7 +38,7 @@ export default function BlogEditorPage() {
     try {
       const response = await fetch(`/api/admin/blog-posts/preview/${id}`);
       const data = await response.json();
-      
+
       if (data.success) {
         setBlogData({
           title: data.post.title,
@@ -68,7 +68,7 @@ export default function BlogEditorPage() {
         ...blogData,
         ...editorData,
         tags: blogData.tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0),
-        author: session?.user?.name || 'Admin',
+        author: session?.user?.firstName || session?.user?.email || 'Admin',
         isAIGenerated: false
       };
 
@@ -178,22 +178,20 @@ export default function BlogEditorPage() {
               {editId && (
                 <button
                   onClick={handlePublish}
-                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium ${
-                    blogData.status === 'published'
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium ${blogData.status === 'published'
                       ? 'bg-yellow-600 hover:bg-yellow-700 text-white'
                       : 'bg-green-600 hover:bg-green-700 text-white'
-                  }`}
+                    }`}
                 >
                   <Globe className="w-4 h-4" />
                   <span>{blogData.status === 'published' ? 'Unpublish' : 'Publish'}</span>
                 </button>
               )}
-              
-              <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                blogData.status === 'published'
+
+              <span className={`px-3 py-1 rounded-full text-sm font-medium ${blogData.status === 'published'
                   ? 'bg-green-100 text-green-700'
                   : 'bg-yellow-100 text-yellow-700'
-              }`}>
+                }`}>
                 {blogData.status}
               </span>
             </div>
@@ -219,7 +217,7 @@ export default function BlogEditorPage() {
             {/* Post Settings */}
             <div className="bg-white p-6 rounded-lg shadow-sm border">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Post Settings</h3>
-              
+
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -310,16 +308,16 @@ export default function BlogEditorPage() {
                   {previewData.category}
                 </span>
               </div>
-              
+
               <h1 className="text-3xl font-bold text-gray-900 mb-4">
                 {previewData.title}
               </h1>
-              
+
               <p className="text-lg text-gray-600 mb-6">
                 {previewData.excerpt}
               </p>
 
-              <div 
+              <div
                 className="prose prose-lg max-w-none"
                 dangerouslySetInnerHTML={{ __html: previewData.content }}
               />
