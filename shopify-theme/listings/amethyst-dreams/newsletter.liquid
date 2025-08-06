@@ -1,0 +1,114 @@
+{%- liquid
+  assign newsletter_title = section.settings.newsletter_title | default: "Stay Connected"
+  assign newsletter_description = section.settings.newsletter_description | default: "Subscribe for updates on new arrivals and special offers"
+-%}
+
+<style>
+  .newsletter-section {
+    padding: 4rem 0;
+    background: var(--color-card-background);
+    text-align: center;
+  }
+
+  .newsletter-section__container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  .newsletter-section__title {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .newsletter-section__description {
+    margin-bottom: 2rem;
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  .newsletter-section__form {
+    display: flex;
+    gap: 1rem;
+    max-width: 400px;
+    margin: 0 auto;
+  }
+
+  .newsletter-section__input {
+    flex: 1;
+    padding: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 0.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--color-text);
+  }
+
+  .newsletter-section__button {
+    padding: 1rem 2rem;
+    background: var(--gradient-primary);
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-weight: 600;
+  }
+
+  @media screen and (max-width: 749px) {
+    .newsletter-section__form {
+      flex-direction: column;
+    }
+  }
+</style>
+
+<section class="newsletter-section">
+  <div class="newsletter-section__container">
+    <h2 class="newsletter-section__title">
+      {{ newsletter_title | escape }}
+    </h2>
+    <p class="newsletter-section__description">
+      {{ newsletter_description | escape }}
+    </p>
+    <form class="newsletter-section__form" action="{{ routes.cart_add_url }}" method="post">
+      <input 
+        type="email" 
+        class="newsletter-section__input" 
+        placeholder="Enter your email"
+        name="contact[email]"
+        required
+      >
+      <button type="submit" class="newsletter-section__button">
+        Subscribe
+      </button>
+    </form>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Newsletter",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "newsletter_title",
+      "label": "Newsletter Title",
+      "default": "Stay Connected"
+    },
+    {
+      "type": "textarea",
+      "id": "newsletter_description",
+      "label": "Newsletter Description",
+      "default": "Subscribe for updates on new arrivals and special offers"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Newsletter"
+    }
+  ]
+}
+{% endschema %}

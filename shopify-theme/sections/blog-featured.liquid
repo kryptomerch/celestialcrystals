@@ -1,0 +1,416 @@
+{% comment %}
+  NextGen Jewelry - Featured Blog Section
+  Features: Crystal guides, healing properties, care instructions
+{% endcomment %}
+
+<section class="blog-featured-section" id="blog-featured">
+  <div class="container">
+    <h2 class="section-title text-center text-gradient">{{ section.settings.title | default: 'Crystal Knowledge & Healing Guides' }}</h2>
+    <p class="section-subtitle text-center">Learn about the healing properties and meanings of our crystals</p>
+    
+    <div class="blog-grid">
+      {% assign blog = blogs[section.settings.blog] | default: blogs.first %}
+      {% if blog.articles.size > 0 %}
+        {% for article in blog.articles limit: section.settings.posts_to_show %}
+          <article class="blog-card card">
+            {% if article.image %}
+              <div class="blog-image-container">
+                <img src="{{ article.image | image_url: width: 400 }}" 
+                     alt="{{ article.title }}" 
+                     class="blog-image"
+                     loading="lazy">
+                <div class="blog-overlay">
+                  <span class="blog-category">{{ article.tags.first | capitalize }}</span>
+                </div>
+              </div>
+            {% endif %}
+            
+            <div class="blog-content">
+              <h3 class="blog-title">{{ article.title }}</h3>
+              
+              {% if section.settings.show_excerpt %}
+                <p class="blog-excerpt">{{ article.excerpt | default: article.content | strip_html | truncate: 150 }}</p>
+              {% endif %}
+              
+              <div class="blog-meta">
+                {% if section.settings.show_date %}
+                  <span class="blog-date">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke="currentColor" stroke-width="2"/>
+                      <line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" stroke-width="2"/>
+                      <line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" stroke-width="2"/>
+                      <line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                    {{ article.published_at | date: '%B %d, %Y' }}
+                  </span>
+                {% endif %}
+                
+                {% if section.settings.show_author %}
+                  <span class="blog-author">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2"/>
+                      <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                    {{ article.author | default: 'Crystal Expert' }}
+                  </span>
+                {% endif %}
+                
+                <span class="reading-time">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                    <polyline points="12,6 12,12 16,14" stroke="currentColor" stroke-width="2"/>
+                  </svg>
+                  {{ article.content | strip_html | number_of_words | divided_by: 200 | at_least: 1 }} min read
+                </span>
+              </div>
+              
+              <a href="{{ article.url }}" class="btn btn-secondary blog-read-more">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2"/>
+                </svg>
+                Read More
+              </a>
+            </div>
+          </article>
+        {% endfor %}
+      {% else %}
+        <!-- Default blog articles if no blog exists -->
+        <article class="blog-card card">
+          <div class="blog-image-container">
+            <img src="{{ 'blog-lava-chakra.jpg' | asset_url }}" alt="Lava 7 Chakra Bracelets">
+            <div class="blog-overlay">
+              <span class="blog-category">Healing</span>
+            </div>
+          </div>
+          <div class="blog-content">
+            <h3 class="blog-title">The Power of Lava 7 Chakra Bracelets</h3>
+            <p class="blog-excerpt">Discover how lava stone combined with chakra crystals can balance your energy centers and promote healing throughout your body and mind...</p>
+            <div class="blog-meta">
+              <span class="blog-date">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke="currentColor" stroke-width="2"/>
+                  <line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" stroke-width="2"/>
+                  <line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" stroke-width="2"/>
+                  <line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="2"/>
+                </svg>
+                January 15, 2024
+              </span>
+              <span class="blog-author">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2"/>
+                  <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
+                </svg>
+                Crystal Expert
+              </span>
+              <span class="reading-time">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                  <polyline points="12,6 12,12 16,14" stroke="currentColor" stroke-width="2"/>
+                </svg>
+                5 min read
+              </span>
+            </div>
+            <a href="/blogs/crystal-guide/lava-7-chakra-bracelets" class="btn btn-secondary blog-read-more">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2"/>
+              </svg>
+              Read More
+            </a>
+          </div>
+        </article>
+        
+        <article class="blog-card card">
+          <div class="blog-image-container">
+            <img src="{{ 'blog-turquoise.jpg' | asset_url }}" alt="Turquoise Crystal Properties">
+            <div class="blog-overlay">
+              <span class="blog-category">Properties</span>
+            </div>
+          </div>
+          <div class="blog-content">
+            <h3 class="blog-title">Turquoise: The Stone of Protection</h3>
+            <p class="blog-excerpt">Learn about the ancient healing properties of turquoise and how it can enhance your spiritual journey while providing protection and wisdom...</p>
+            <div class="blog-meta">
+              <span class="blog-date">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke="currentColor" stroke-width="2"/>
+                  <line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" stroke-width="2"/>
+                  <line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" stroke-width="2"/>
+                  <line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="2"/>
+                </svg>
+                January 10, 2024
+              </span>
+              <span class="blog-author">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2"/>
+                  <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
+                </svg>
+                Healing Specialist
+              </span>
+              <span class="reading-time">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                  <polyline points="12,6 12,12 16,14" stroke="currentColor" stroke-width="2"/>
+                </svg>
+                7 min read
+              </span>
+            </div>
+            <a href="/blogs/crystal-guide/turquoise-healing-properties" class="btn btn-secondary blog-read-more">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2"/>
+              </svg>
+              Read More
+            </a>
+          </div>
+        </article>
+        
+        <article class="blog-card card">
+          <div class="blog-image-container">
+            <img src="{{ 'blog-crystal-care.jpg' | asset_url }}" alt="Crystal Care Guide">
+            <div class="blog-overlay">
+              <span class="blog-category">Care</span>
+            </div>
+          </div>
+          <div class="blog-content">
+            <h3 class="blog-title">How to Cleanse and Charge Your Crystals</h3>
+            <p class="blog-excerpt">Essential guide to maintaining the energy and effectiveness of your crystal jewelry collection with proper cleansing and charging techniques...</p>
+            <div class="blog-meta">
+              <span class="blog-date">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke="currentColor" stroke-width="2"/>
+                  <line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" stroke-width="2"/>
+                  <line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" stroke-width="2"/>
+                  <line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="2"/>
+                </svg>
+                January 5, 2024
+              </span>
+              <span class="blog-author">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2"/>
+                  <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
+                </svg>
+                Energy Healer
+              </span>
+              <span class="reading-time">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                  <polyline points="12,6 12,12 16,14" stroke="currentColor" stroke-width="2"/>
+                </svg>
+                6 min read
+              </span>
+            </div>
+            <a href="/blogs/crystal-guide/crystal-care-guide" class="btn btn-secondary blog-read-more">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2"/>
+              </svg>
+              Read More
+            </a>
+          </div>
+        </article>
+      {% endif %}
+    </div>
+    
+    <div class="text-center">
+      <a href="{{ blog.url | default: '/blogs/crystal-guide' }}" class="btn btn-primary">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" stroke="currentColor" stroke-width="2"/>
+          <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" stroke="currentColor" stroke-width="2"/>
+        </svg>
+        View All Articles
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+/* Blog Featured Section Styles */
+.blog-featured-section {
+  padding: 4rem 0;
+  background: var(--color-background);
+  margin: 2rem 0;
+}
+
+.section-subtitle {
+  font-size: 1.2rem;
+  color: var(--color-text-secondary);
+  margin-bottom: 3rem;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.blog-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 2rem;
+  margin-bottom: 3rem;
+}
+
+.blog-card {
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.blog-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px rgba(102, 126, 234, 0.15);
+}
+
+.blog-image-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.blog-image {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.blog-card:hover .blog-image {
+  transform: scale(1.05);
+}
+
+.blog-overlay {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+}
+
+.blog-category {
+  background: var(--gradient-primary);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 2rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.blog-content {
+  padding: 2rem;
+}
+
+.blog-title {
+  font-size: 1.4rem;
+  margin-bottom: 1rem;
+  color: var(--color-text);
+  line-height: 1.3;
+}
+
+.blog-excerpt {
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+}
+
+.blog-meta {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  flex-wrap: wrap;
+}
+
+.blog-meta span {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.blog-meta svg {
+  width: 16px;
+  height: 16px;
+  opacity: 0.7;
+}
+
+.blog-read-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+}
+
+.reading-time {
+  color: var(--color-accent) !important;
+  font-weight: 500;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .blog-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .blog-content {
+    padding: 1.5rem;
+  }
+  
+  .blog-meta {
+    gap: 1rem;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .blog-meta span {
+    flex-direction: row;
+  }
+}
+</style>
+
+{% schema %}
+{
+  "name": "Blog Featured",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Section Title",
+      "default": "Crystal Knowledge & Healing Guides"
+    },
+    {
+      "type": "blog",
+      "id": "blog",
+      "label": "Blog"
+    },
+    {
+      "type": "range",
+      "id": "posts_to_show",
+      "label": "Number of posts to show",
+      "min": 2,
+      "max": 6,
+      "step": 1,
+      "default": 3
+    },
+    {
+      "type": "checkbox",
+      "id": "show_excerpt",
+      "label": "Show excerpt",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_date",
+      "label": "Show date",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_author",
+      "label": "Show author",
+      "default": true
+    }
+  ],
+  "presets": [
+    {
+      "name": "Blog Featured"
+    }
+  ]
+}
+{% endschema %}

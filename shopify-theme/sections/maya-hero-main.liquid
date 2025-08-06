@@ -1,0 +1,228 @@
+{% comment %}
+  Maya Magic - Main Hero Section (Exact Replica)
+{% endcomment %}
+
+<!-- Maya Magic Header -->
+<header class="maya-header">
+  <div class="maya-header-content">
+    <a href="/" class="maya-logo">{{ shop.name | default: 'NextGen Jewelry' }}</a>
+    
+    <div class="maya-search">
+      <span class="maya-search-icon">🔍</span>
+      <input type="text" class="maya-search-input" placeholder="Search">
+    </div>
+    
+    <button class="maya-cart">🛒</button>
+  </div>
+</header>
+
+<!-- Maya Magic Main Content -->
+<main class="maya-main">
+  <!-- Hero Section with Starry Background -->
+  <section class="maya-hero-section">
+    
+    <!-- Hero Content -->
+    <div class="maya-hero-content">
+      <h1 class="maya-hero-title">
+        {{ section.settings.hero_title | default: 'NextGen Jewelry Collection' }}
+      </h1>
+      <p class="maya-hero-subtitle">
+        {{ section.settings.hero_description | default: 'Discover the future of jewelry with our signature celestial designs crafted for the modern soul.' }}
+      </p>
+      <a href="{{ section.settings.hero_button_link | default: '/collections/all' }}" class="maya-cta-button">
+        {{ section.settings.hero_button_text | default: 'Explore Collection' }}
+      </a>
+    </div>
+
+    <!-- Product Filter Navigation - Exact Maya Magic Style -->
+    <div class="maya-product-filter">
+      <button class="maya-filter-btn active" data-filter="all">All Products</button>
+      <button class="maya-filter-btn" data-filter="bracelets">Bracelets</button>
+      <button class="maya-filter-btn" data-filter="necklaces">Necklaces</button>
+      <button class="maya-filter-btn" data-filter="rings">Rings</button>
+      <button class="maya-filter-btn" data-filter="earrings">Earrings</button>
+    </div>
+
+  </section>
+</main>
+
+<style>
+/* Additional Maya Magic Styles */
+.maya-hero-section {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Floating cosmic particles */
+.maya-hero-section::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    radial-gradient(3px 3px at 50px 100px, rgba(102, 126, 234, 0.8), transparent),
+    radial-gradient(2px 2px at 150px 200px, rgba(118, 75, 162, 0.6), transparent),
+    radial-gradient(4px 4px at 300px 50px, rgba(102, 126, 234, 0.4), transparent),
+    radial-gradient(1px 1px at 400px 150px, rgba(255, 255, 255, 0.8), transparent),
+    radial-gradient(2px 2px at 200px 300px, rgba(118, 75, 162, 0.5), transparent);
+  background-size: 500px 400px;
+  animation: cosmicDrift 25s linear infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+@keyframes cosmicDrift {
+  from { transform: translate(0, 0) rotate(0deg); }
+  to { transform: translate(-100px, -50px) rotate(360deg); }
+}
+
+/* Enhanced button hover effects */
+.maya-cta-button {
+  position: relative;
+  z-index: 3;
+}
+
+.maya-filter-btn {
+  position: relative;
+  z-index: 3;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .maya-hero-section::after {
+    background-size: 300px 250px;
+  }
+}
+
+/* Additional starry effects */
+.maya-hero-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    radial-gradient(1px 1px at 80px 120px, white, transparent),
+    radial-gradient(1px 1px at 200px 80px, rgba(255,255,255,0.8), transparent),
+    radial-gradient(2px 2px at 350px 200px, white, transparent),
+    radial-gradient(1px 1px at 450px 100px, rgba(255,255,255,0.6), transparent),
+    radial-gradient(1px 1px at 100px 300px, white, transparent),
+    radial-gradient(2px 2px at 300px 350px, rgba(255,255,255,0.7), transparent);
+  background-size: 600px 400px;
+  animation: starTwinkle 20s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+@keyframes starTwinkle {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Maya Magic specific interactions
+  
+  // Enhanced filter button effects
+  const filterBtns = document.querySelectorAll('.maya-filter-btn');
+  
+  filterBtns.forEach(btn => {
+    btn.addEventListener('click', function() {
+      // Remove active from all
+      filterBtns.forEach(b => b.classList.remove('active'));
+      
+      // Add active to clicked
+      this.classList.add('active');
+      
+      // Add ripple effect
+      const ripple = document.createElement('span');
+      ripple.style.cssText = `
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.3);
+        transform: scale(0);
+        animation: ripple 0.6s linear;
+        left: 50%;
+        top: 50%;
+        width: 20px;
+        height: 20px;
+        margin-left: -10px;
+        margin-top: -10px;
+      `;
+      
+      this.appendChild(ripple);
+      
+      setTimeout(() => {
+        ripple.remove();
+      }, 600);
+    });
+  });
+  
+  // Add ripple animation
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes ripple {
+      to {
+        transform: scale(4);
+        opacity: 0;
+      }
+    }
+  `;
+  document.head.appendChild(style);
+  
+  // Search input enhancements
+  const searchInput = document.querySelector('.maya-search-input');
+  if (searchInput) {
+    searchInput.addEventListener('focus', function() {
+      this.style.boxShadow = '0 0 25px rgba(102, 126, 234, 0.4)';
+    });
+    
+    searchInput.addEventListener('blur', function() {
+      this.style.boxShadow = '';
+    });
+  }
+});
+</script>
+
+{% schema %}
+{
+  "name": "Maya Hero Main",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "hero_title",
+      "label": "Hero Title",
+      "default": "NextGen Jewelry Collection"
+    },
+    {
+      "type": "textarea",
+      "id": "hero_description",
+      "label": "Hero Description",
+      "default": "Discover the future of jewelry with our signature celestial designs crafted for the modern soul."
+    },
+    {
+      "type": "text",
+      "id": "hero_button_text",
+      "label": "Button Text",
+      "default": "Explore Collection"
+    },
+    {
+      "type": "url",
+      "id": "hero_button_link",
+      "label": "Button Link",
+      "default": "/collections/all"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Maya Hero Main"
+    }
+  ]
+}
+{% endschema %}

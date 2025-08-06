@@ -1,0 +1,85 @@
+{%- liquid
+  assign rich_text_title = section.settings.rich_text_title
+  assign rich_text_content = section.settings.rich_text_content
+-%}
+
+<style>
+  .rich-text-section {
+    padding: 4rem 0;
+    background: var(--color-background);
+  }
+
+  .rich-text-section__container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    text-align: center;
+  }
+
+  .rich-text-section__title {
+    font-size: 2.5rem;
+    margin-bottom: 2rem;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .rich-text-section__content {
+    font-size: 1.125rem;
+    line-height: 1.8;
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .rich-text-section__content p {
+    margin-bottom: 1.5rem;
+  }
+
+  .rich-text-section__content h2,
+  .rich-text-section__content h3 {
+    color: var(--color-accent);
+    margin: 2rem 0 1rem;
+  }
+</style>
+
+<section class="rich-text-section">
+  <div class="rich-text-section__container">
+    {%- if rich_text_title != blank -%}
+      <h2 class="rich-text-section__title">
+        {{ rich_text_title | escape }}
+      </h2>
+    {%- endif -%}
+    {%- if rich_text_content != blank -%}
+      <div class="rich-text-section__content">
+        {{ rich_text_content }}
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Rich Text",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "rich_text_title",
+      "label": "Heading",
+      "default": "Rich text"
+    },
+    {
+      "type": "richtext",
+      "id": "rich_text_content",
+      "label": "Text",
+      "default": "<p>Use this text to share information about your brand with your customers. Describe a product, share announcements, or welcome customers to your store.</p>"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Rich Text"
+    }
+  ]
+}
+{% endschema %}

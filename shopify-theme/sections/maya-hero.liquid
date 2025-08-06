@@ -1,0 +1,332 @@
+{% comment %}
+  Maya Magic Style - Cosmic Hero Section
+{% endcomment %}
+
+<section class="maya-hero" id="maya-hero">
+  <!-- Animated Stars Background -->
+  <div class="stars-container">
+    <div class="star" style="top: 10%; left: 20%; animation-delay: 0s;"></div>
+    <div class="star" style="top: 20%; left: 80%; animation-delay: 1s;"></div>
+    <div class="star" style="top: 30%; left: 40%; animation-delay: 2s;"></div>
+    <div class="star" style="top: 40%; left: 70%; animation-delay: 3s;"></div>
+    <div class="star" style="top: 50%; left: 10%; animation-delay: 4s;"></div>
+    <div class="star" style="top: 60%; left: 90%; animation-delay: 5s;"></div>
+    <div class="star" style="top: 70%; left: 30%; animation-delay: 6s;"></div>
+    <div class="star" style="top: 80%; left: 60%; animation-delay: 7s;"></div>
+    <div class="star" style="top: 15%; left: 50%; animation-delay: 8s;"></div>
+    <div class="star" style="top: 85%; left: 25%; animation-delay: 9s;"></div>
+  </div>
+
+  <!-- Hero Content -->
+  <div class="maya-hero-content">
+    <h1 class="maya-hero-title">
+      {{ section.settings.hero_title | default: 'NextGen Jewelry Collection' }}
+    </h1>
+    <p class="maya-hero-subtitle">
+      {{ section.settings.hero_description | default: 'Discover the future of jewelry with our signature celestial designs crafted for the modern soul.' }}
+    </p>
+    <a href="{{ section.settings.hero_button_link | default: '/collections/all' }}" class="maya-cta-button">
+      {{ section.settings.hero_button_text | default: 'Explore Collection' }}
+    </a>
+  </div>
+
+  <!-- Product Filter Navigation -->
+  <div class="product-filter">
+    <button class="filter-btn active" data-filter="all">All Products</button>
+    <button class="filter-btn" data-filter="bracelets">Bracelets</button>
+    <button class="filter-btn" data-filter="necklaces">Necklaces</button>
+    <button class="filter-btn" data-filter="rings">Rings</button>
+    <button class="filter-btn" data-filter="earrings">Earrings</button>
+  </div>
+
+  <!-- Floating Cosmic Elements -->
+  <div class="cosmic-elements">
+    <div class="cosmic-element"></div>
+    <div class="cosmic-element"></div>
+    <div class="cosmic-element"></div>
+    <div class="cosmic-element"></div>
+  </div>
+</section>
+
+<style>
+  .maya-hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    overflow: hidden;
+    background: 
+      radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%),
+      radial-gradient(ellipse at top, #16213e 0%, transparent 50%);
+    padding: 2rem;
+  }
+
+  /* Animated Stars Background */
+  .stars-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .star {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    background: white;
+    border-radius: 50%;
+    animation: twinkle 4s ease-in-out infinite;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+  }
+
+  @keyframes twinkle {
+    0%, 100% { 
+      opacity: 0.3; 
+      transform: scale(1); 
+    }
+    50% { 
+      opacity: 1; 
+      transform: scale(1.5); 
+    }
+  }
+
+  .maya-hero-content {
+    position: relative;
+    z-index: 2;
+    max-width: 900px;
+    margin-bottom: 4rem;
+  }
+
+  .maya-hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(3rem, 6vw, 5rem);
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.2;
+    text-shadow: 0 0 30px rgba(102, 126, 234, 0.5);
+  }
+
+  .maya-hero-subtitle {
+    font-size: 1.3rem;
+    margin-bottom: 3rem;
+    opacity: 0.9;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.8);
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .maya-cta-button {
+    display: inline-block;
+    padding: 1.2rem 3rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    text-decoration: none;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    border: 2px solid transparent;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 2rem;
+  }
+
+  .maya-cta-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+  }
+
+  .maya-cta-button:hover::before {
+    left: 100%;
+  }
+
+  .maya-cta-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+
+  /* Product Filter */
+  .product-filter {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin: 2rem 0;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 2;
+  }
+
+  .filter-btn {
+    padding: 0.75rem 1.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 25px;
+    color: white;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+  }
+
+  .filter-btn:hover,
+  .filter-btn.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-color: transparent;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  }
+
+  /* Floating Cosmic Elements */
+  .cosmic-elements {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .cosmic-element {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(102, 126, 234, 0.6) 0%, transparent 70%);
+    animation: cosmicFloat 8s ease-in-out infinite;
+  }
+
+  .cosmic-element:nth-child(1) { 
+    width: 6px; height: 6px; 
+    top: 15%; left: 10%; 
+    animation-delay: 0s; 
+  }
+  .cosmic-element:nth-child(2) { 
+    width: 4px; height: 4px; 
+    top: 70%; left: 15%; 
+    animation-delay: 2s; 
+  }
+  .cosmic-element:nth-child(3) { 
+    width: 8px; height: 8px; 
+    top: 30%; right: 20%; 
+    animation-delay: 4s; 
+  }
+  .cosmic-element:nth-child(4) { 
+    width: 3px; height: 3px; 
+    top: 85%; right: 30%; 
+    animation-delay: 6s; 
+  }
+
+  @keyframes cosmicFloat {
+    0%, 100% { 
+      transform: translateY(0px) scale(1); 
+      opacity: 0.4; 
+    }
+    50% { 
+      transform: translateY(-30px) scale(1.5); 
+      opacity: 1; 
+    }
+  }
+
+  @media (max-width: 768px) {
+    .maya-hero {
+      min-height: 90vh;
+      padding: 1rem;
+    }
+    
+    .maya-hero-subtitle {
+      font-size: 1.1rem;
+    }
+    
+    .maya-cta-button {
+      padding: 1rem 2rem;
+      font-size: 1rem;
+    }
+    
+    .product-filter {
+      gap: 0.5rem;
+    }
+    
+    .filter-btn {
+      padding: 0.5rem 1rem;
+      font-size: 0.8rem;
+    }
+  }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Filter button functionality
+  const filterBtns = document.querySelectorAll('.filter-btn');
+  
+  filterBtns.forEach(btn => {
+    btn.addEventListener('click', function() {
+      // Remove active class from all buttons
+      filterBtns.forEach(b => b.classList.remove('active'));
+      // Add active class to clicked button
+      this.classList.add('active');
+      
+      // Here you would typically filter products
+      const filter = this.dataset.filter;
+      console.log('Filter selected:', filter);
+    });
+  });
+});
+</script>
+
+{% schema %}
+{
+  "name": "Maya Hero",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "hero_title",
+      "label": "Hero Title",
+      "default": "NextGen Jewelry Collection"
+    },
+    {
+      "type": "textarea",
+      "id": "hero_description",
+      "label": "Hero Description",
+      "default": "Discover the future of jewelry with our signature celestial designs crafted for the modern soul."
+    },
+    {
+      "type": "text",
+      "id": "hero_button_text",
+      "label": "Button Text",
+      "default": "Explore Collection"
+    },
+    {
+      "type": "url",
+      "id": "hero_button_link",
+      "label": "Button Link",
+      "default": "/collections/all"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Maya Hero"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,539 @@
+{% comment %}
+  NextGen Jewelry - Hero Banner with Advanced Slideshow
+  Features: Auto-sliding, Multiple slides, Countdown timer, Promo banner
+{% endcomment %}
+
+<section class="hero-slideshow" id="hero-slideshow">
+  <div class="slideshow-container">
+    <!-- Slide 1 -->
+    <div class="slide active" style="background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('{{ 'hero-celestial-1.jpg' | asset_url }}')">
+      <div class="slide-content">
+        <h1 class="slide-title text-gradient">{{ section.settings.hero_title | default: 'Celestial Crystal Collection' }}</h1>
+        <p class="slide-description">{{ section.settings.hero_description | default: 'Discover the mystical power of our handcrafted crystal jewelry' }}</p>
+        <div class="slide-buttons">
+          <a href="{{ section.settings.hero_button_link | default: '/collections/all' }}" class="btn btn-primary">
+            {{ section.settings.hero_button_text | default: 'Shop Now' }}
+          </a>
+          <a href="/blogs/crystal-guide" class="btn btn-secondary">Learn More</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 2 -->
+    <div class="slide" style="background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('{{ 'hero-healing-2.jpg' | asset_url }}')">
+      <div class="slide-content">
+        <h1 class="slide-title text-gradient">Healing Energy Bracelets</h1>
+        <p class="slide-description">Channel positive energy with our 7 Chakra and healing stone bracelets</p>
+        <div class="slide-buttons">
+          <a href="/collections/bracelets" class="btn btn-primary">Explore Bracelets</a>
+          <a href="/pages/crystal-guide" class="btn btn-secondary">Crystal Guide</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 3 -->
+    <div class="slide" style="background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('{{ 'hero-limited-3.jpg' | asset_url }}')">
+      <div class="slide-content">
+        <h1 class="slide-title text-gradient">Limited Edition Pieces</h1>
+        <p class="slide-description">Exclusive designs crafted with rare crystals and precious metals</p>
+        <div class="slide-buttons">
+          <a href="/collections/limited-edition" class="btn btn-primary">View Collection</a>
+          <a href="/pages/about" class="btn btn-secondary">Our Story</a>
+        </div>
+
+        <!-- Countdown Timer for Limited Edition -->
+        {% if section.settings.show_countdown %}
+        <div class="countdown-container">
+          <div class="countdown-timer" data-end-date="{{ section.settings.countdown_date | default: '2024-12-31T23:59:59' }}">
+            <span class="countdown-label">Limited Time Offer Ends In:</span>
+            <div class="countdown-display">00d 00h 00m 00s</div>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Navigation Dots -->
+    <div class="slideshow-nav">
+      <span class="slide-dot active" data-slide="0" aria-label="Go to slide 1"></span>
+      <span class="slide-dot" data-slide="1" aria-label="Go to slide 2"></span>
+      <span class="slide-dot" data-slide="2" aria-label="Go to slide 3"></span>
+    </div>
+
+    <!-- Navigation Arrows -->
+    <button class="slide-arrow slide-prev" aria-label="Previous slide">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    <button class="slide-arrow slide-next" aria-label="Next slide">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Promo Banner -->
+  {% if section.settings.show_promo_banner %}
+    <div class="promo-banner">
+      <div class="container">
+        <div class="promo-content">
+          <span class="promo-icon">✨</span>
+          <span class="promo-text">{{ section.settings.promo_text | default: 'Free shipping on orders over $75 | 30-day money-back guarantee' }}</span>
+          <span class="promo-icon">✨</span>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+</section>
+
+<style>
+/* Hero Slideshow Styles */
+.hero-slideshow {
+  position: relative;
+  margin-bottom: 3rem;
+}
+
+.slideshow-container {
+  position: relative;
+  width: 100%;
+  height: 70vh;
+  min-height: 500px;
+  overflow: hidden;
+  border-radius: 1rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.slide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 1s ease-in-out;
+}
+
+.slide.active {
+  opacity: 1;
+}
+
+.slide-content {
+  text-align: center;
+  color: white;
+  max-width: 700px;
+  padding: 3rem;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 1rem;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  animation: slideInUp 1s ease-out;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-title {
+  font-size: 3.5rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  line-height: 1.2;
+  background: linear-gradient(135deg, #ffffff 0%, #a0a0ff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.slide-description {
+  font-size: 1.3rem;
+  margin-bottom: 2rem;
+  opacity: 0.95;
+  line-height: 1.5;
+}
+
+.slide-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: 50px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+  color: white;
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: #a0a0ff;
+  color: white;
+}
+
+.countdown-container {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.countdown-label {
+  display: block;
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+  opacity: 0.9;
+}
+
+.countdown-display {
+  font-size: 1.5rem;
+  font-weight: 600;
+  font-family: monospace;
+  color: #a0a0ff;
+  text-shadow: 0 0 10px rgba(160, 160, 255, 0.5);
+}
+
+/* Navigation */
+.slideshow-nav {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.5rem;
+  z-index: 10;
+}
+
+.slide-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+}
+
+.slide-dot:hover,
+.slide-dot.active {
+  background: #a0a0ff;
+  border-color: white;
+  transform: scale(1.2);
+}
+
+.slide-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.5);
+  border: none;
+  color: white;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 10;
+  backdrop-filter: blur(10px);
+}
+
+.slide-arrow:hover {
+  background: rgba(0, 0, 0, 0.8);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.slide-prev {
+  left: 30px;
+}
+
+.slide-next {
+  right: 30px;
+}
+
+/* Promo Banner */
+.promo-banner {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 1rem 0;
+  text-align: center;
+  color: white;
+  margin-top: 1rem;
+  border-radius: 0.5rem;
+  animation: pulse 3s infinite;
+}
+
+.promo-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  font-weight: 500;
+}
+
+.promo-icon {
+  font-size: 1.2rem;
+  animation: sparkle 2s infinite;
+}
+
+@keyframes sparkle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.1); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .slideshow-container {
+    height: 60vh;
+    min-height: 400px;
+  }
+
+  .slide-content {
+    padding: 2rem;
+    max-width: 90%;
+  }
+
+  .slide-title {
+    font-size: 2.5rem;
+  }
+
+  .slide-description {
+    font-size: 1.1rem;
+  }
+
+  .slide-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .slide-arrow {
+    width: 40px;
+    height: 40px;
+  }
+
+  .slide-prev {
+    left: 15px;
+  }
+
+  .slide-next {
+    right: 15px;
+  }
+
+  .promo-content {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .slide-title {
+    font-size: 2rem;
+  }
+
+  .slide-description {
+    font-size: 1rem;
+  }
+
+  .countdown-display {
+    font-size: 1.2rem;
+  }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const slideshow = document.getElementById('hero-slideshow');
+  if (!slideshow) return;
+
+  const slides = slideshow.querySelectorAll('.slide');
+  const dots = slideshow.querySelectorAll('.slide-dot');
+  const prevBtn = slideshow.querySelector('.slide-prev');
+  const nextBtn = slideshow.querySelector('.slide-next');
+
+  let currentSlide = 0;
+  let slideInterval;
+
+  function showSlide(index) {
+    slides.forEach(slide => slide.classList.remove('active'));
+    dots.forEach(dot => dot.classList.remove('active'));
+
+    slides[index].classList.add('active');
+    dots[index].classList.add('active');
+
+    currentSlide = index;
+  }
+
+  function nextSlide() {
+    const next = (currentSlide + 1) % slides.length;
+    showSlide(next);
+  }
+
+  function prevSlide() {
+    const prev = (currentSlide - 1 + slides.length) % slides.length;
+    showSlide(prev);
+  }
+
+  function startSlideshow() {
+    slideInterval = setInterval(nextSlide, 6000);
+  }
+
+  function stopSlideshow() {
+    clearInterval(slideInterval);
+  }
+
+  startSlideshow();
+
+  dots.forEach((dot, index) => {
+    dot.addEventListener('click', () => {
+      showSlide(index);
+      stopSlideshow();
+      startSlideshow();
+    });
+  });
+
+  if (prevBtn) {
+    prevBtn.addEventListener('click', () => {
+      prevSlide();
+      stopSlideshow();
+      startSlideshow();
+    });
+  }
+
+  if (nextBtn) {
+    nextBtn.addEventListener('click', () => {
+      nextSlide();
+      stopSlideshow();
+      startSlideshow();
+    });
+  }
+
+  slideshow.addEventListener('mouseenter', stopSlideshow);
+  slideshow.addEventListener('mouseleave', startSlideshow);
+
+  // Countdown timer
+  const countdownTimer = slideshow.querySelector('.countdown-timer');
+  if (countdownTimer) {
+    const endDate = new Date(countdownTimer.dataset.endDate).getTime();
+    const display = countdownTimer.querySelector('.countdown-display');
+
+    function updateCountdown() {
+      const now = new Date().getTime();
+      const distance = endDate - now;
+
+      if (distance < 0) {
+        display.innerHTML = 'OFFER EXPIRED';
+        return;
+      }
+
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+      display.innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+    }
+
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+  }
+});
+</script>
+
+{% schema %}
+{
+  "name": "Hero Banner Slideshow",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "hero_title",
+      "label": "Hero Title",
+      "default": "Celestial Crystal Collection"
+    },
+    {
+      "type": "textarea",
+      "id": "hero_description",
+      "label": "Hero Description",
+      "default": "Discover the mystical power of our handcrafted crystal jewelry"
+    },
+    {
+      "type": "text",
+      "id": "hero_button_text",
+      "label": "Button Text",
+      "default": "Shop Now"
+    },
+    {
+      "type": "url",
+      "id": "hero_button_link",
+      "label": "Button Link",
+      "default": "/collections/all"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_promo_banner",
+      "label": "Show Promo Banner",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "promo_text",
+      "label": "Promo Banner Text",
+      "default": "Free shipping on orders over $75 | 30-day money-back guarantee"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_countdown",
+      "label": "Show Countdown Timer",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "countdown_date",
+      "label": "Countdown End Date",
+      "info": "Format: YYYY-MM-DDTHH:MM:SS",
+      "default": "2024-12-31T23:59:59"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Hero Banner Slideshow"
+    }
+  ]
+}
+{% endschema %}

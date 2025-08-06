@@ -1,0 +1,133 @@
+{%- liquid
+  assign hero_title = section.settings.hero_title | default: "NextGen Jewelry Collection"
+  assign hero_description = section.settings.hero_description | default: "Discover the future of jewelry with our signature celestial designs."
+  assign hero_button_text = section.settings.hero_button_text | default: "Explore Collection"
+  assign hero_button_link = section.settings.hero_button_link | default: "/collections/all"
+-%}
+
+<style>
+  .nextgen-jewelry-hero {
+    position: relative;
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    overflow: hidden;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+
+  .nextgen-jewelry-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+      radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.4) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.2) 0%, transparent 50%);
+    z-index: 1;
+  }
+
+  .nextgen-jewelry-hero__content {
+    position: relative;
+    z-index: 2;
+    max-width: 800px;
+    padding: 2rem;
+    color: white;
+  }
+
+  .nextgen-jewelry-hero__title {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    background: linear-gradient(135deg, #ffffff 0%, #a0a0ff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .nextgen-jewelry-hero__description {
+    font-size: 1.25rem;
+    margin-bottom: 2rem;
+    opacity: 0.9;
+    line-height: 1.6;
+  }
+
+  .nextgen-jewelry-hero__button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1.25rem 2.5rem;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(20px);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50px;
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1.125rem;
+    transition: all 0.3s ease;
+  }
+
+  .nextgen-jewelry-hero__button:hover {
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateY(-3px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+    color: white;
+  }
+</style>
+
+<section class="nextgen-jewelry-hero">
+  <div class="nextgen-jewelry-hero__content">
+    <h1 class="nextgen-jewelry-hero__title">
+      {{ hero_title | escape }}
+    </h1>
+    <p class="nextgen-jewelry-hero__description">
+      {{ hero_description | escape }}
+    </p>
+    <a href="{{ hero_button_link }}" class="nextgen-jewelry-hero__button">
+      {{ hero_button_text | escape }}
+    </a>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "NextGen Jewelry Hero",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "hero_title",
+      "label": "Hero Title",
+      "default": "NextGen Jewelry Collection"
+    },
+    {
+      "type": "textarea",
+      "id": "hero_description",
+      "label": "Hero Description",
+      "default": "Discover the future of jewelry with our signature celestial designs."
+    },
+    {
+      "type": "text",
+      "id": "hero_button_text",
+      "label": "Button Text",
+      "default": "Explore Collection"
+    },
+    {
+      "type": "url",
+      "id": "hero_button_link",
+      "label": "Button Link"
+    }
+  ],
+  "presets": [
+    {
+      "name": "NextGen Jewelry Hero"
+    }
+  ]
+}
+{% endschema %}

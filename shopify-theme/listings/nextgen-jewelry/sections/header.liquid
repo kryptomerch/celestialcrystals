@@ -1,0 +1,410 @@
+{%- liquid
+  assign logo_alt = settings.logo.alt | default: shop.name | escape
+  assign logo_height = settings.logo_width | divided_by: settings.logo.aspect_ratio
+-%}
+
+<script src="{{ 'details-disclosure.js' | asset_url }}" defer="defer"></script>
+<script src="{{ 'details-modal.js' | asset_url }}" defer="defer"></script>
+<script src="{{ 'cart-notification.js' | asset_url }}" defer="defer"></script>
+
+<svg xmlns="http://www.w3.org/2000/svg" class="hidden">
+  <defs>
+    <symbol id="icon-search" viewBox="0 0 18 19" fill="none">
+      <path fill-rule="evenodd" clip-rule="evenodd" d="M11.03 11.68A5.784 5.784 0 112.85 3.5a5.784 5.784 0 018.18 8.18zm.26 1.12a6.78 6.78 0 11.72-.72l5.4 5.4a.5.5 0 11-.71.7l-5.41-5.38z" fill="currentColor"/>
+    </symbol>
+    <symbol id="icon-cart" viewBox="0 0 20 20" fill="none">
+      <path fill-rule="evenodd" clip-rule="evenodd" d="M8.5 16a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM17.5 16a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" fill="currentColor"/>
+      <path d="M3 4h1.68l2.4 9.6a2 2 0 002 1.6h8.4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M5 8h12l-1 5H7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="icon-close" viewBox="0 0 18 17" fill="none">
+      <path d="M.865 15.978a.5.5 0 00.707.707l7.433-7.431 7.579 7.282a.501.501 0 00.846-.37.5.5 0 00-.153-.351L9.712 8.546l7.417-7.416a.5.5 0 10-.707-.708L8.991 7.853 1.413.573a.5.5 0 10-.693.72l7.563 7.268-7.418 7.417z" fill="currentColor">
+    </symbol>
+    <symbol id="icon-hamburger" viewBox="0 0 20 16" fill="none">
+      <path d="M1 1h18M1 8h18M1 15h18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    </symbol>
+  </defs>
+</svg>
+
+{% comment %}theme-check-disable UndefinedObject{% endcomment %}
+<script src="{{ 'cart.js' | asset_url }}" defer="defer"></script>
+{% comment %}theme-check-enable UndefinedObject{% endcomment %}
+
+<style>
+  .header {
+    background: rgba(26, 26, 26, 0.95);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    transition: var(--animation-primary);
+  }
+
+  .header__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 2rem;
+    max-width: var(--page-width);
+    margin: var(--page-width-margin);
+  }
+
+  .header__logo {
+    flex-shrink: 0;
+  }
+
+  .header__logo img {
+    max-width: {{ settings.logo_width }}px;
+    height: auto;
+    filter: brightness(1.2);
+  }
+
+  .header__logo-text {
+    font-family: var(--font-heading-family);
+    font-size: 2rem;
+    font-weight: var(--font-heading-weight);
+    color: var(--color-text);
+    text-decoration: none;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .header__nav {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+  }
+
+  .header__nav-list {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: 2rem;
+  }
+
+  .header__nav-item {
+    position: relative;
+  }
+
+  .header__nav-link {
+    color: var(--color-text);
+    text-decoration: none;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    transition: var(--animation-primary);
+    position: relative;
+  }
+
+  .header__nav-link:hover,
+  .header__nav-link:focus {
+    color: var(--color-accent);
+    background: rgba(160, 160, 255, 0.1);
+  }
+
+  .header__nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background: var(--gradient-primary);
+    transition: var(--animation-primary);
+    transform: translateX(-50%);
+  }
+
+  .header__nav-link:hover::after {
+    width: 100%;
+  }
+
+  .header__actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .header__search {
+    position: relative;
+  }
+
+  .header__search-input {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 2rem;
+    padding: 0.75rem 1rem 0.75rem 3rem;
+    color: var(--color-text);
+    width: 250px;
+    transition: var(--animation-primary);
+  }
+
+  .header__search-input:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 2px rgba(160, 160, 255, 0.2);
+  }
+
+  .header__search-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 18px;
+    height: 18px;
+    color: var(--color-text);
+  }
+
+  .header__cart {
+    position: relative;
+    background: var(--gradient-primary);
+    border: none;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--animation-primary);
+    color: white;
+  }
+
+  .header__cart:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+  }
+
+  .header__cart-count {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #ff4757;
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: bold;
+  }
+
+  .header__mobile-menu {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--color-text);
+    cursor: pointer;
+    padding: 0.5rem;
+  }
+
+  /* Mobile Styles */
+  @media screen and (max-width: 990px) {
+    .header__nav-list {
+      display: none;
+    }
+
+    .header__mobile-menu {
+      display: block;
+    }
+
+    .header__search-input {
+      width: 200px;
+    }
+  }
+
+  @media screen and (max-width: 749px) {
+    .header__inner {
+      padding: 1rem;
+    }
+
+    .header__search {
+      display: none;
+    }
+
+    .header__logo img {
+      max-width: 150px;
+    }
+  }
+
+  /* Dropdown Menus */
+  .header__nav-item:hover .header__dropdown {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+
+  .header__dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: var(--color-card-background);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    min-width: 200px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: var(--animation-primary);
+    backdrop-filter: blur(20px);
+    z-index: 1000;
+  }
+
+  .header__dropdown-link {
+    display: block;
+    color: var(--color-text);
+    text-decoration: none;
+    padding: 0.5rem 0;
+    transition: var(--animation-primary);
+  }
+
+  .header__dropdown-link:hover {
+    color: var(--color-accent);
+    padding-left: 0.5rem;
+  }
+</style>
+
+<header class="header">
+  <div class="header__inner">
+    <!-- Logo -->
+    <div class="header__logo">
+      {%- if settings.logo != blank -%}
+        <a href="{{ routes.root_url }}" class="header__logo-link">
+          <img
+            src="{{ settings.logo | image_url: width: settings.logo_width }}"
+            alt="{{ logo_alt }}"
+            loading="lazy"
+            width="{{ settings.logo_width }}"
+            height="{{ logo_height }}"
+          >
+        </a>
+      {%- else -%}
+        <a href="{{ routes.root_url }}" class="header__logo-text">
+          {{ shop.name }}
+        </a>
+      {%- endif -%}
+    </div>
+
+    <!-- Navigation -->
+    <nav class="header__nav">
+      <ul class="header__nav-list">
+        {%- for link in linklists.main-menu.links -%}
+          <li class="header__nav-item">
+            <a href="{{ link.url }}" class="header__nav-link">
+              {{ link.title }}
+            </a>
+            {%- if link.links != blank -%}
+              <div class="header__dropdown">
+                {%- for childlink in link.links -%}
+                  <a href="{{ childlink.url }}" class="header__dropdown-link">
+                    {{ childlink.title }}
+                  </a>
+                {%- endfor -%}
+              </div>
+            {%- endif -%}
+          </li>
+        {%- endfor -%}
+      </ul>
+    </nav>
+
+    <!-- Actions -->
+    <div class="header__actions">
+      <!-- Search -->
+      {%- if settings.show_search -%}
+        <div class="header__search">
+          <form action="{{ routes.search_url }}" method="get" class="search">
+            <input
+              class="header__search-input"
+              id="Search-In-Modal"
+              type="search"
+              name="q"
+              value="{{ search.terms | escape }}"
+              placeholder="{{ 'general.search.search' | t }}"
+              {%- if settings.predictive_search_enabled -%}
+                role="combobox"
+                aria-expanded="false"
+                aria-owns="predictive-search-results-list"
+                aria-controls="predictive-search-results-list"
+                aria-haspopup="listbox"
+                aria-autocomplete="list"
+                autocorrect="off"
+                autocomplete="off"
+                autocapitalize="off"
+                spellcheck="false"
+              {%- endif -%}
+            >
+            <svg class="header__search-icon" aria-hidden="true" focusable="false">
+              <use href="#icon-search">
+            </svg>
+          </form>
+        </div>
+      {%- endif -%}
+
+      <!-- Cart -->
+      <button class="header__cart" onclick="openCart()">
+        <svg width="20" height="20" aria-hidden="true" focusable="false">
+          <use href="#icon-cart">
+        </svg>
+        {%- if settings.show_cart_count and cart.item_count > 0 -%}
+          <span class="header__cart-count">{{ cart.item_count }}</span>
+        {%- endif -%}
+      </button>
+
+      <!-- Mobile Menu Toggle -->
+      <button class="header__mobile-menu" onclick="toggleMobileMenu()">
+        <svg width="20" height="16" aria-hidden="true" focusable="false">
+          <use href="#icon-hamburger">
+        </svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<script>
+  function openCart() {
+    // Open cart drawer or redirect to cart page
+    if (typeof window.cartDrawer !== 'undefined') {
+      window.cartDrawer.open();
+    } else {
+      window.location.href = '{{ routes.cart_url }}';
+    }
+  }
+
+  function toggleMobileMenu() {
+    // Toggle mobile menu
+    const nav = document.querySelector('.header__nav-list');
+    nav.style.display = nav.style.display === 'flex' ? 'none' : 'flex';
+  }
+</script>
+
+{% schema %}
+{
+  "name": "Header",
+  "settings": [
+    {
+      "type": "link_list",
+      "id": "menu",
+      "default": "main-menu",
+      "label": "Menu"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_line_separator",
+      "default": true,
+      "label": "Show line separator"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_sticky_header",
+      "default": true,
+      "label": "Enable sticky header"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,266 @@
+{%- liquid
+  assign target = product | default: product_card_product
+  assign compare_at_price = target.compare_at_price
+  assign price = target.price | default: 1999
+  assign price_class = price_class | default: ''
+  assign available = target.available | default: false
+  assign money_price = price | money
+  if settings.currency_code_enabled
+    assign money_price = price | money_with_currency
+  endif
+  if target == product and product.price_varies
+    assign money_price = 'products.product.price.from_price_html' | t: price: money_price
+  endif
+-%}
+
+<div class="price {{ price_class }}">
+  <div class="price__container">
+    {%- comment -%}
+      Explanation of description list:
+        - div.price__regular: Displayed when there are no variants on sale
+        - div.price__sale: Displayed when a variant is a sale
+    {%- endcomment -%}
+    <div class="price__regular">
+      <span class="visually-hidden visually-hidden--inline">{{ 'products.product.price.regular_price' | t }}</span>
+      <span class="price-item price-item--regular">
+        {{ money_price }}
+      </span>
+    </div>
+    <div class="price__sale">
+      {%- unless product.price_varies == false and product.compare_at_price_varies %}
+        <span class="visually-hidden visually-hidden--inline">{{ 'products.product.price.regular_price' | t }}</span>
+        <span>
+          <s class="price-item price-item--regular">
+            {% if settings.currency_code_enabled %}
+              {{ compare_at_price | money_with_currency }}
+            {% else %}
+              {{ compare_at_price | money }}
+            {% endif %}
+          </s>
+        </span>
+      {%- endunless -%}
+      <span class="visually-hidden visually-hidden--inline">{{ 'products.product.price.sale_price' | t }}</span>
+      <span class="price-item price-item--sale price-item--last">
+        {{ money_price }}
+      </span>
+    </div>
+    <small class="unit-price caption{% if product.selected_or_first_available_variant.unit_price_measurement == nil %} hidden{% endif %}">
+      <span class="visually-hidden">{{ 'products.product.price.unit_price' | t }}</span>
+      <span class="price-item price-item--last">
+        <span>{{- product.selected_or_first_available_variant.unit_price | money -}}</span>
+        <span aria-hidden="true">/</span>
+        <span class="visually-hidden">&nbsp;{{ 'accessibility.unit_price_separator' | t }}&nbsp;</span>
+        <span>
+          {%- if product.selected_or_first_available_variant.unit_price_measurement.reference_value != 1 -%}
+            {{- product.selected_or_first_available_variant.unit_price_measurement.reference_value -}}
+          {%- endif -%}
+          {{ product.selected_or_first_available_variant.unit_price_measurement.reference_unit }}
+        </span>
+      </span>
+    </small>
+  </div>
+  {%- if product.selected_or_first_available_variant.available == false -%}
+    <div class="price__availability">
+      <span class="badge badge--sold-out color-{{ settings.sold_out_badge_color_scheme }}">
+        {{ 'products.product.sold_out' | t }}
+      </span>
+    </div>
+  {%- elsif compare_at_price > price and available -%}
+    <div class="price__availability">
+      <span class="badge badge--sale color-{{ settings.sale_badge_color_scheme }}">
+        {{ 'products.product.on_sale' | t }}
+      </span>
+    </div>
+  {%- endif -%}
+</div>
+
+<style>
+  .price {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .price__container {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .price__regular {
+    display: flex;
+    align-items: baseline;
+    gap: 0.25rem;
+  }
+
+  .price__sale {
+    display: none;
+    align-items: baseline;
+    gap: 0.5rem;
+  }
+
+  .price-item {
+    font-weight: 600;
+    color: var(--color-accent);
+  }
+
+  .price-item--regular {
+    color: rgba(255, 255, 255, 0.6);
+    text-decoration: line-through;
+    font-weight: 400;
+  }
+
+  .price-item--sale {
+    color: var(--color-accent);
+    font-weight: 600;
+  }
+
+  .unit-price {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.875rem;
+  }
+
+  .price__availability {
+    display: flex;
+    align-items: center;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .badge--sale {
+    background: #ff4757;
+    color: white;
+  }
+
+  .badge--sold-out {
+    background: rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  /* Show sale price when product is on sale */
+  .price:has(.price-item--regular[style*="line-through"]) .price__regular {
+    display: none;
+  }
+
+  .price:has(.price-item--regular[style*="line-through"]) .price__sale {
+    display: flex;
+  }
+
+  /* Alternative approach for browsers that don't support :has() */
+  .price--on-sale .price__regular {
+    display: none;
+  }
+
+  .price--on-sale .price__sale {
+    display: flex;
+  }
+
+  /* Responsive adjustments */
+  @media screen and (max-width: 749px) {
+    .price {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.25rem;
+    }
+
+    .price__container {
+      gap: 0.25rem;
+    }
+  }
+
+  /* Price variations for different contexts */
+  .price--large {
+    font-size: 1.5rem;
+  }
+
+  .price--small {
+    font-size: 0.875rem;
+  }
+
+  .price--center {
+    justify-content: center;
+  }
+
+  .price--right {
+    justify-content: flex-end;
+  }
+
+  /* Card context styling */
+  .card .price {
+    margin-top: auto;
+  }
+
+  .card .price-item {
+    font-size: 1.125rem;
+  }
+
+  /* Product page context styling */
+  .product-info .price {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .product-info .price-item {
+    font-size: inherit;
+  }
+
+  /* Collection page context styling */
+  .collection-grid .price {
+    font-size: 1rem;
+  }
+
+  /* Animation for price changes */
+  .price-item {
+    transition: var(--animation-primary);
+  }
+
+  .price-item:hover {
+    color: var(--color-primary);
+  }
+</style>
+
+<script>
+  // Add JavaScript functionality for dynamic price updates
+  document.addEventListener('DOMContentLoaded', function() {
+    // Handle variant price changes
+    const variantSelectors = document.querySelectorAll('[name*="options"]');
+    
+    variantSelectors.forEach(selector => {
+      selector.addEventListener('change', function() {
+        updatePriceDisplay();
+      });
+    });
+
+    function updatePriceDisplay() {
+      // This would be implemented based on your variant data structure
+      // For now, it's a placeholder for dynamic price updates
+    }
+
+    // Add sale badge animation
+    const saleBadges = document.querySelectorAll('.badge--sale');
+    saleBadges.forEach(badge => {
+      badge.style.animation = 'pulse 2s infinite';
+    });
+  });
+
+  // CSS animation for sale badges
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+  `;
+  document.head.appendChild(style);
+</script>

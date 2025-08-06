@@ -40,50 +40,60 @@ export default function AIBlogAutomationPage() {
 
   const loadDashboardData = async () => {
     try {
-      // Load recent AI-generated posts and stats
-      // This would fetch from your blog API
-      setStats({
-        totalPosts: 24,
-        aiGeneratedPosts: 18,
-        avgSeoScore: 87,
-        totalViews: 12450,
-        scheduledPosts: 3
-      });
+      // Fetch real blog posts from API
+      const response = await fetch('/api/admin/blog-posts');
+      const data = await response.json();
 
-      setRecentPosts([
-        {
-          id: '1',
-          title: 'The Complete Guide to Amethyst Crystal: Healing Properties & Benefits',
-          category: 'Crystal Guides',
-          status: 'published',
-          publishDate: '2025-01-15',
-          viewCount: 1250,
-          seoScore: 92,
-          isAIGenerated: true
-        },
-        {
-          id: '2', 
-          title: 'Best Crystals for Heart Chakra Healing: Complete Guide 2025',
-          category: 'Chakra Healing',
-          status: 'published',
-          publishDate: '2025-01-10',
-          viewCount: 890,
-          seoScore: 88,
-          isAIGenerated: true
-        },
-        {
-          id: '3',
-          title: 'Winter Crystal Rituals: Seasonal Healing & Energy Alignment',
-          category: 'Seasonal Healing',
-          status: 'scheduled',
-          publishDate: '2025-01-20',
-          viewCount: 0,
-          seoScore: 85,
-          isAIGenerated: true
-        }
-      ]);
+      if (data.success) {
+        const posts = data.posts || [];
+        const aiPosts = posts.filter((post: any) => post.isAIGenerated);
+
+        // Calculate real stats
+        setStats({
+          totalPosts: posts.length,
+          aiGeneratedPosts: aiPosts.length,
+          avgSeoScore: 85, // Default SEO score - could be calculated based on content analysis
+          totalViews: posts.reduce((sum: number, post: any) => sum + (post.views || 0), 0),
+          scheduledPosts: posts.filter((post: any) => post.status === 'scheduled').length
+        });
+
+        // Set recent AI-generated posts with correct current dates
+        setRecentPosts(
+          aiPosts
+            .slice(0, 5) // Show last 5 AI posts
+            .map((post: any) => ({
+              id: post.id,
+              title: post.title,
+              category: post.category,
+              status: post.status,
+              publishDate: post.publishedAt || post.createdAt,
+              viewCount: post.views || 0,
+              seoScore: 85, // Default SEO score
+              isAIGenerated: post.isAIGenerated
+            }))
+        );
+      } else {
+        // Fallback to empty state if API fails
+        setStats({
+          totalPosts: 0,
+          aiGeneratedPosts: 0,
+          avgSeoScore: 0,
+          totalViews: 0,
+          scheduledPosts: 0
+        });
+        setRecentPosts([]);
+      }
     } catch (error) {
       console.error('Failed to load dashboard data:', error);
+      // Set empty state on error
+      setStats({
+        totalPosts: 0,
+        aiGeneratedPosts: 0,
+        avgSeoScore: 0,
+        totalViews: 0,
+        scheduledPosts: 0
+      });
+      setRecentPosts([]);
     }
   };
 
@@ -92,18 +102,17 @@ export default function AIBlogAutomationPage() {
     setResults(null);
 
     try {
-      const response = await fetch('/api/cron/ai-blog-automation', {
+      const response = await fetch('/api/admin/ai-blog-generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_CRON_SECRET || 'your-cron-secret-key-here'}`,
         },
         body: JSON.stringify({ action }),
       });
 
       const data = await response.json();
       setResults(data);
-      
+
       if (data.success) {
         // Reload dashboard data to show new post
         setTimeout(loadDashboardData, 2000);
@@ -269,26 +278,24 @@ export default function AIBlogAutomationPage() {
                     <h3 className="font-medium text-gray-900 text-sm leading-tight">
                       {post.title}
                     </h3>
-                    <span className={`px-2 py-1 text-xs rounded-full ${
-                      post.status === 'published' 
-                        ? 'bg-green-100 text-green-700'
-                        : 'bg-yellow-100 text-yellow-700'
-                    }`}>
+                    <span className={`px-2 py-1 text-xs rounded-full ${post.status === 'published'
+                      ? 'bg-green-100 text-green-700'
+                      : 'bg-yellow-100 text-yellow-700'
+                      }`}>
                       {post.status}
                     </span>
                   </div>
-                  
+
                   <div className="flex items-center justify-between text-sm text-gray-500">
                     <span>{post.category}</span>
                     <span>{new Date(post.publishDate).toLocaleDateString()}</span>
                   </div>
-                  
+
                   <div className="flex items-center justify-between mt-2 text-sm">
                     <span className="text-gray-600">{post.viewCount} views</span>
-                    <span className={`font-medium ${
-                      post.seoScore >= 90 ? 'text-green-600' :
+                    <span className={`font-medium ${post.seoScore >= 90 ? 'text-green-600' :
                       post.seoScore >= 80 ? 'text-yellow-600' : 'text-red-600'
-                    }`}>
+                      }`}>
                       SEO: {post.seoScore}%
                     </span>
                   </div>

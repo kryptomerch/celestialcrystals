@@ -1,0 +1,116 @@
+{%- liquid
+  assign banner_title = section.settings.banner_title | default: "Image Banner"
+  assign banner_text = section.settings.banner_text | default: "Give customers details about the banner image(s) or content on the template."
+  assign button_label = section.settings.button_label
+  assign button_link = section.settings.button_link
+-%}
+
+<style>
+  .image-banner {
+    position: relative;
+    min-height: 50vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    overflow: hidden;
+    background: var(--color-card-background);
+  }
+
+  .image-banner__content {
+    position: relative;
+    z-index: 2;
+    max-width: 800px;
+    padding: 2rem;
+    color: white;
+  }
+
+  .image-banner__title {
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 700;
+    margin-bottom: 1rem;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .image-banner__text {
+    font-size: 1.125rem;
+    margin-bottom: 2rem;
+    opacity: 0.9;
+    line-height: 1.6;
+  }
+
+  .image-banner__button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 2rem;
+    background: var(--gradient-primary);
+    color: white;
+    text-decoration: none;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    transition: var(--animation-primary);
+  }
+
+  .image-banner__button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+    color: white;
+  }
+</style>
+
+<section class="image-banner">
+  <div class="image-banner__content">
+    <h2 class="image-banner__title">
+      {{ banner_title | escape }}
+    </h2>
+    <p class="image-banner__text">
+      {{ banner_text | escape }}
+    </p>
+    {%- if button_label != blank and button_link != blank -%}
+      <a href="{{ button_link }}" class="image-banner__button">
+        {{ button_label | escape }}
+      </a>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Image Banner",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "banner_title",
+      "label": "Banner Title",
+      "default": "Image Banner"
+    },
+    {
+      "type": "textarea",
+      "id": "banner_text",
+      "label": "Banner Text",
+      "default": "Give customers details about the banner image(s) or content on the template."
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button Label"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button Link"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Image Banner"
+    }
+  ]
+}
+{% endschema %}

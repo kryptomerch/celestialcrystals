@@ -1,0 +1,123 @@
+{%- liquid
+  assign collage_title = section.settings.collage_title
+-%}
+
+<style>
+  .collage-section {
+    padding: 4rem 0;
+    background: var(--color-background);
+  }
+
+  .collage-section__container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  .collage-section__title {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 3rem;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .collage-section__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+  }
+
+  .collage-item {
+    position: relative;
+    overflow: hidden;
+    border-radius: 1rem;
+    aspect-ratio: 1;
+    background: var(--color-card-background);
+  }
+
+  .collage-item__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: var(--animation-primary);
+  }
+
+  .collage-item:hover .collage-item__image {
+    transform: scale(1.05);
+  }
+</style>
+
+<section class="collage-section">
+  <div class="collage-section__container">
+    {%- if collage_title != blank -%}
+      <h2 class="collage-section__title">
+        {{ collage_title | escape }}
+      </h2>
+    {%- endif -%}
+    <div class="collage-section__grid">
+      {%- for block in section.blocks -%}
+        <div class="collage-item">
+          {%- if block.settings.image != blank -%}
+            <img 
+              src="{{ block.settings.image | image_url: width: 600 }}"
+              alt="{{ block.settings.image.alt | escape }}"
+              class="collage-item__image"
+              loading="lazy"
+            >
+          {%- endif -%}
+        </div>
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Collage",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "collage_title",
+      "label": "Heading",
+      "default": "Collage"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "image",
+      "name": "Image",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Collage",
+      "blocks": [
+        {
+          "type": "image"
+        },
+        {
+          "type": "image"
+        },
+        {
+          "type": "image"
+        },
+        {
+          "type": "image"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

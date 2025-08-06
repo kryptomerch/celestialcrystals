@@ -1,0 +1,305 @@
+[
+  {
+    "name": "theme_info",
+    "theme_name": "NextGen Jewelry",
+    "theme_version": "1.0.0",
+    "theme_author": "Celestial Crystals",
+    "theme_documentation_url": "https://thecelestial.xyz/docs",
+    "theme_support_url": "https://thecelestial.xyz/support"
+  },
+  {
+    "name": "Colors",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Celestial Theme Colors"
+      },
+      {
+        "type": "color",
+        "id": "primary_color",
+        "label": "Primary Color",
+        "default": "#667eea"
+      },
+      {
+        "type": "color",
+        "id": "secondary_color",
+        "label": "Secondary Color",
+        "default": "#764ba2"
+      },
+      {
+        "type": "color",
+        "id": "accent_color",
+        "label": "Accent Color",
+        "default": "#a0a0ff"
+      },
+      {
+        "type": "color",
+        "id": "background_color",
+        "label": "Background Color",
+        "default": "#0a0a0a"
+      },
+      {
+        "type": "color",
+        "id": "text_color",
+        "label": "Text Color",
+        "default": "#ffffff"
+      },
+      {
+        "type": "color",
+        "id": "card_background",
+        "label": "Card Background",
+        "default": "#1a1a1a"
+      }
+    ]
+  },
+  {
+    "name": "Typography",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Font Settings"
+      },
+      {
+        "type": "font_picker",
+        "id": "heading_font",
+        "label": "Heading Font",
+        "default": "assistant_n4"
+      },
+      {
+        "type": "font_picker",
+        "id": "body_font",
+        "label": "Body Font",
+        "default": "assistant_n4"
+      },
+      {
+        "type": "range",
+        "id": "base_font_size",
+        "label": "Base Font Size",
+        "min": 14,
+        "max": 20,
+        "step": 1,
+        "unit": "px",
+        "default": 16
+      }
+    ]
+  },
+  {
+    "name": "Header",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Header Settings"
+      },
+      {
+        "type": "image_picker",
+        "id": "logo",
+        "label": "Logo Image"
+      },
+      {
+        "type": "range",
+        "id": "logo_width",
+        "label": "Logo Width",
+        "min": 100,
+        "max": 300,
+        "step": 10,
+        "unit": "px",
+        "default": 200
+      },
+      {
+        "type": "checkbox",
+        "id": "show_search",
+        "label": "Show Search Bar",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "show_cart_count",
+        "label": "Show Cart Count",
+        "default": true
+      }
+    ]
+  },
+  {
+    "name": "Product Grid",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Product Display Settings"
+      },
+      {
+        "type": "range",
+        "id": "products_per_row_desktop",
+        "label": "Products per row (Desktop)",
+        "min": 2,
+        "max": 5,
+        "step": 1,
+        "default": 4
+      },
+      {
+        "type": "range",
+        "id": "products_per_row_mobile",
+        "label": "Products per row (Mobile)",
+        "min": 1,
+        "max": 3,
+        "step": 1,
+        "default": 2
+      },
+      {
+        "type": "checkbox",
+        "id": "show_product_glow",
+        "label": "Show Product Glow Effects",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "enable_product_modal",
+        "label": "Enable Product Quick View Modal",
+        "default": true
+      },
+      {
+        "type": "range",
+        "id": "modal_images_count",
+        "label": "Images in Modal Slideshow",
+        "min": 1,
+        "max": 10,
+        "step": 1,
+        "default": 4
+      }
+    ]
+  },
+  {
+    "name": "Homepage",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Homepage Hero Section"
+      },
+      {
+        "type": "image_picker",
+        "id": "hero_background",
+        "label": "Hero Background Image"
+      },
+      {
+        "type": "text",
+        "id": "hero_title",
+        "label": "Hero Title",
+        "default": "Discover Your Perfect Crystal"
+      },
+      {
+        "type": "textarea",
+        "id": "hero_description",
+        "label": "Hero Description",
+        "default": "Explore our celestial collection of healing crystals and spiritual jewelry"
+      },
+      {
+        "type": "url",
+        "id": "hero_button_link",
+        "label": "Hero Button Link"
+      },
+      {
+        "type": "text",
+        "id": "hero_button_text",
+        "label": "Hero Button Text",
+        "default": "Shop Now"
+      }
+    ]
+  },
+  {
+    "name": "Blog",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Blog Settings"
+      },
+      {
+        "type": "checkbox",
+        "id": "show_blog_sidebar",
+        "label": "Show Blog Sidebar",
+        "default": true
+      },
+      {
+        "type": "range",
+        "id": "blog_posts_per_page",
+        "label": "Posts per page",
+        "min": 6,
+        "max": 24,
+        "step": 3,
+        "default": 12
+      }
+    ]
+  },
+  {
+    "name": "Email Marketing",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Newsletter Settings"
+      },
+      {
+        "type": "checkbox",
+        "id": "show_newsletter_popup",
+        "label": "Show Newsletter Popup",
+        "default": true
+      },
+      {
+        "type": "range",
+        "id": "popup_delay",
+        "label": "Popup Delay (seconds)",
+        "min": 5,
+        "max": 60,
+        "step": 5,
+        "default": 15
+      },
+      {
+        "type": "text",
+        "id": "newsletter_title",
+        "label": "Newsletter Title",
+        "default": "Join Our Celestial Community"
+      },
+      {
+        "type": "textarea",
+        "id": "newsletter_description",
+        "label": "Newsletter Description",
+        "default": "Get exclusive access to new arrivals, crystal guides, and special offers"
+      }
+    ]
+  },
+  {
+    "name": "Advanced Features",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Advanced Functionality"
+      },
+      {
+        "type": "checkbox",
+        "id": "enable_wishlist",
+        "label": "Enable Wishlist",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "enable_product_comparison",
+        "label": "Enable Product Comparison",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "enable_social_sharing",
+        "label": "Enable Social Sharing",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "enable_live_chat",
+        "label": "Enable Live Chat Widget",
+        "default": false
+      },
+      {
+        "type": "text",
+        "id": "live_chat_code",
+        "label": "Live Chat Embed Code"
+      }
+    ]
+  }
+]

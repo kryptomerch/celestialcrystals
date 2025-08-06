@@ -1,0 +1,95 @@
+{
+  "current": {
+    "primary_color": "#667eea",
+    "secondary_color": "#764ba2",
+    "accent_color": "#a0a0ff",
+    "background_color": "#0a0a0a",
+    "text_color": "#ffffff",
+    "card_background": "#1a1a1a",
+    "heading_font": "assistant_n4",
+    "body_font": "assistant_n4",
+    "base_font_size": 16,
+    "logo_width": 200,
+    "show_search": true,
+    "show_cart_count": true,
+    "products_per_row_desktop": 4,
+    "products_per_row_mobile": 2,
+    "show_product_glow": true,
+    "enable_product_modal": true,
+    "modal_images_count": 4,
+    "hero_title": "Discover Your Perfect Crystal",
+    "hero_description": "Explore our celestial collection of healing crystals and spiritual jewelry",
+    "hero_button_text": "Shop Now",
+    "show_newsletter_popup": true,
+    "popup_delay": 15,
+    "newsletter_title": "Join Our Celestial Community",
+    "newsletter_description": "Get exclusive access to new arrivals, crystal guides, and special offers",
+    "enable_wishlist": true,
+    "enable_product_comparison": true,
+    "enable_social_sharing": true,
+    "enable_live_chat": false,
+    "sections": {
+      "header": {
+        "type": "header",
+        "settings": {
+          "menu": "main-menu",
+          "show_line_separator": true,
+          "enable_sticky_header": true
+        }
+      },
+      "footer": {
+        "type": "footer",
+        "settings": {
+          "contact_email": "hello@nextgenjewelry.com",
+          "contact_phone": "+1 (555) 123-4567",
+          "contact_address": "123 Crystal Lane, Mystic City, MC 12345",
+          "newsletter_title": "Stay Connected",
+          "newsletter_description": "Subscribe to receive updates on new arrivals, special offers, and crystal wisdom.",
+          "footer_menu": "footer"
+        }
+      }
+    }
+  },
+  "presets": {
+    "NextGen Jewelry": {
+      "primary_color": "#667eea",
+      "secondary_color": "#764ba2",
+      "accent_color": "#a0a0ff",
+      "background_color": "#0a0a0a",
+      "text_color": "#ffffff",
+      "card_background": "#1a1a1a"
+    },
+    "Default": {
+      "primary_color": "#667eea",
+      "secondary_color": "#764ba2",
+      "accent_color": "#a0a0ff",
+      "background_color": "#0a0a0a",
+      "text_color": "#ffffff",
+      "card_background": "#1a1a1a"
+    },
+    "Amethyst Dreams": {
+      "primary_color": "#9370db",
+      "secondary_color": "#8a2be2",
+      "accent_color": "#dda0dd",
+      "background_color": "#0f0a1a",
+      "text_color": "#ffffff",
+      "card_background": "#1a0f2e"
+    },
+    "Rose Quartz": {
+      "primary_color": "#ff69b4",
+      "secondary_color": "#ff1493",
+      "accent_color": "#ffb6c1",
+      "background_color": "#1a0a0f",
+      "text_color": "#ffffff",
+      "card_background": "#2e0f1a"
+    },
+    "Turquoise Serenity": {
+      "primary_color": "#40e0d0",
+      "secondary_color": "#00ced1",
+      "accent_color": "#afeeee",
+      "background_color": "#0a1a1a",
+      "text_color": "#ffffff",
+      "card_background": "#0f2e2e"
+    }
+  }
+}

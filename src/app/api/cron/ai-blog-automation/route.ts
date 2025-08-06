@@ -5,8 +5,12 @@ import { AIBlogAutomationService } from '@/lib/ai-blog-automation';
 function verifyCronSecret(request: NextRequest): boolean {
   const authHeader = request.headers.get('authorization');
   const cronSecret = process.env.CRON_SECRET || 'your-cron-secret-key-here';
-  
-  return authHeader === `Bearer ${cronSecret}`;
+
+  // For Vercel cron jobs, check the cron secret header
+  const vercelCronSecret = request.headers.get('x-vercel-cron-secret');
+
+  // Allow both Authorization header (for GitHub Actions) and Vercel cron secret
+  return authHeader === `Bearer ${cronSecret}` || vercelCronSecret === cronSecret;
 }
 
 export async function POST(request: NextRequest) {
@@ -19,65 +23,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { action } = await request.json();
-    let result = {};
-
-    switch (action) {
-      case 'weekly-crystal-post':
-        await AIBlogAutomationService.generateWeeklyCrystalPost();
-        result = { 
-          type: 'weekly-crystal-post',
-          message: 'Weekly crystal guide generated successfully',
-          timestamp: new Date().toISOString()
-        };
-        break;
-      
-      case 'monthly-chakra-post':
-        await AIBlogAutomationService.generateMonthlyChakraPost();
-        result = { 
-          type: 'monthly-chakra-post',
-          message: 'Monthly chakra guide generated successfully',
-          timestamp: new Date().toISOString()
-        };
-        break;
-      
-      case 'seasonal-post':
-        await AIBlogAutomationService.generateSeasonalPost();
-        result = { 
-          type: 'seasonal-post',
-          message: 'Seasonal crystal guide generated successfully',
-          timestamp: new Date().toISOString()
-        };
-        break;
-      
-      case 'generate-all':
-        // Generate multiple posts for content boost
-        await Promise.all([
-          AIBlogAutomationService.generateWeeklyCrystalPost(),
-          generateHowToPost(),
-          generateBirthstonePost()
-        ]);
-        result = { 
-          type: 'generate-all',
-          message: 'Multiple blog posts generated successfully',
-          count: 3,
-          timestamp: new Date().toISOString()
-        };
-        break;
-      
-      default:
-        return NextResponse.json(
-          { error: 'Invalid action. Use: weekly-crystal-post, monthly-chakra-post, seasonal-post, or generate-all' },
-          { status: 400 }
-        );
+    // Get action from POST body (for GitHub Actions and admin calls)
+    let action;
+    try {
+      const body = await request.json();
+      action = body.action;
+    } catch {
+      // If no body, try query parameter (for Vercel cron)
+      const { searchParams } = new URL(request.url);
+      action = searchParams.get('action');
     }
 
-    return NextResponse.json({
-      success: true,
-      action,
-      result,
-      timestamp: new Date().toISOString(),
-    });
+    if (!action) {
+      return NextResponse.json(
+        { error: 'Action parameter is required' },
+        { status: 400 }
+      );
+    }
+
+    // Use shared function to process the action
+    return await processCronAction(action);
 
   } catch (error) {
     console.error('AI Blog automation error:', error);
@@ -107,8 +72,18 @@ async function generateHowToPost(): Promise<void> {
   };
 
   const blogPost = await AIBlogAutomationService.generateBlogPost('howToGuide', variables);
-  
-  // Save the post (implement your save logic)
+
+  // Save the post to database
+  await AIBlogAutomationService.saveBlogPost({
+    ...blogPost,
+    category: 'How-To Guides',
+    featuredImage: '/blog/how-to-crystals.jpg',
+    publishDate: new Date(),
+    status: 'published',
+    author: 'CELESTIAL Team',
+    tags: ['how-to', 'crystal healing', topic.action.replace(' ', '-')]
+  });
+
   console.log(`Generated how-to post: ${blogPost.title}`);
 }
 
@@ -138,22 +113,127 @@ async function generateBirthstonePost(): Promise<void> {
   };
 
   const blogPost = await AIBlogAutomationService.generateBlogPost('birthstoneGuide', variables);
-  
-  // Save the post (implement your save logic)
+
+  // Save the post to database
+  await AIBlogAutomationService.saveBlogPost({
+    ...blogPost,
+    category: 'Birthstone Guides',
+    featuredImage: `/blog/birthstone-${monthData.month.toLowerCase()}.jpg`,
+    publishDate: new Date(),
+    status: 'published',
+    author: 'CELESTIAL Team',
+    tags: ['birthstone', monthData.month.toLowerCase(), 'zodiac', 'astrology']
+  });
+
   console.log(`Generated birthstone post: ${blogPost.title}`);
 }
 
-// Manual trigger endpoint for testing
+// Handle GET requests (for Vercel cron jobs)
 export async function GET(request: NextRequest) {
-  // Simple health check
+  try {
+    // Check if this is a cron job with action parameter
+    const { searchParams } = new URL(request.url);
+    const action = searchParams.get('action');
+
+    if (action) {
+      // This is a Vercel cron job, verify authorization
+      if (!verifyCronSecret(request)) {
+        return NextResponse.json(
+          { error: 'Unauthorized' },
+          { status: 401 }
+        );
+      }
+
+      // Process the cron job action
+      return await processCronAction(action);
+    }
+
+    // Simple health check for manual requests
+    return NextResponse.json({
+      status: 'AI Blog Automation Service Active',
+      timestamp: new Date().toISOString(),
+      availableActions: [
+        'weekly-crystal-post',
+        'monthly-chakra-post',
+        'seasonal-post',
+        'generate-all'
+      ]
+    });
+  } catch (error) {
+    console.error('❌ GET AI Blog automation error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' },
+      { status: 500 }
+    );
+  }
+}
+
+// Shared function to process cron actions
+async function processCronAction(action: string) {
+  console.log(`🤖 AI Blog Automation triggered: ${action}`);
+
+  let result = {};
+
+  switch (action) {
+    case 'weekly-crystal-post':
+      console.log('📝 Generating weekly crystal post...');
+      await AIBlogAutomationService.generateWeeklyCrystalPost();
+      result = {
+        type: 'weekly-crystal-post',
+        message: 'Weekly crystal guide generated successfully',
+        timestamp: new Date().toISOString()
+      };
+      break;
+
+    case 'monthly-chakra-post':
+      console.log('🧘 Generating monthly chakra post...');
+      await AIBlogAutomationService.generateMonthlyChakraPost();
+      result = {
+        type: 'monthly-chakra-post',
+        message: 'Monthly chakra guide generated successfully',
+        timestamp: new Date().toISOString()
+      };
+      break;
+
+    case 'seasonal-post':
+      console.log('🌸 Generating seasonal post...');
+      await AIBlogAutomationService.generateSeasonalPost();
+      result = {
+        type: 'seasonal-post',
+        message: 'Seasonal crystal guide generated successfully',
+        timestamp: new Date().toISOString()
+      };
+      break;
+
+    case 'generate-all':
+      console.log('🚀 Generating multiple posts...');
+      // Generate multiple posts for content boost
+      await Promise.all([
+        AIBlogAutomationService.generateWeeklyCrystalPost(),
+        generateHowToPost(),
+        generateBirthstonePost()
+      ]);
+      result = {
+        type: 'generate-all',
+        message: 'Multiple blog posts generated successfully',
+        count: 3,
+        timestamp: new Date().toISOString()
+      };
+      break;
+
+    default:
+      return NextResponse.json(
+        { error: 'Invalid action. Use: weekly-crystal-post, monthly-chakra-post, seasonal-post, or generate-all' },
+        { status: 400 }
+      );
+  }
+
+  console.log(`✅ AI Blog Automation completed: ${action}`);
+
   return NextResponse.json({
-    status: 'AI Blog Automation Service Active',
+    success: true,
+    action,
+    result,
     timestamp: new Date().toISOString(),
-    availableActions: [
-      'weekly-crystal-post',
-      'monthly-chakra-post', 
-      'seasonal-post',
-      'generate-all'
-    ]
   });
 }

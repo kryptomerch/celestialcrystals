@@ -1,0 +1,93 @@
+{%- liquid
+  assign video_title = section.settings.video_title
+  assign video_url = section.settings.video_url
+-%}
+
+<style>
+  .video-section {
+    padding: 4rem 0;
+    background: var(--color-background);
+  }
+
+  .video-section__container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    text-align: center;
+  }
+
+  .video-section__title {
+    font-size: 2.5rem;
+    margin-bottom: 2rem;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .video-section__wrapper {
+    position: relative;
+    width: 100%;
+    height: 0;
+    padding-bottom: 56.25%; /* 16:9 aspect ratio */
+    border-radius: 1rem;
+    overflow: hidden;
+    background: var(--color-card-background);
+  }
+
+  .video-section__iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+</style>
+
+<section class="video-section">
+  <div class="video-section__container">
+    {%- if video_title != blank -%}
+      <h2 class="video-section__title">
+        {{ video_title | escape }}
+      </h2>
+    {%- endif -%}
+    {%- if video_url != blank -%}
+      <div class="video-section__wrapper">
+        <iframe 
+          src="{{ video_url }}"
+          class="video-section__iframe"
+          allowfullscreen
+          loading="lazy"
+        ></iframe>
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Video",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "video_title",
+      "label": "Heading",
+      "default": "Video"
+    },
+    {
+      "type": "video_url",
+      "id": "video_url",
+      "label": "Video URL",
+      "accept": ["youtube", "vimeo"]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Video"
+    }
+  ]
+}
+{% endschema %}

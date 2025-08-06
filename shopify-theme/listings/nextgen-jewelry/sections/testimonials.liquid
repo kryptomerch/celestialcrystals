@@ -1,0 +1,122 @@
+{%- liquid
+  assign testimonials_title = section.settings.testimonials_title | default: "What Our Customers Say"
+-%}
+
+<style>
+  .testimonials-section {
+    padding: 4rem 0;
+    background: var(--color-background);
+  }
+
+  .testimonials-section__container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    text-align: center;
+  }
+
+  .testimonials-section__title {
+    font-size: 2.5rem;
+    margin-bottom: 3rem;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .testimonials-section__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+  }
+
+  .testimonial-card {
+    background: var(--color-card-background);
+    padding: 2rem;
+    border-radius: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .testimonial-card__text {
+    font-style: italic;
+    margin-bottom: 1rem;
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .testimonial-card__author {
+    font-weight: 600;
+    color: var(--color-accent);
+  }
+</style>
+
+<section class="testimonials-section">
+  <div class="testimonials-section__container">
+    <h2 class="testimonials-section__title">
+      {{ testimonials_title | escape }}
+    </h2>
+    <div class="testimonials-section__grid">
+      {%- for block in section.blocks -%}
+        <div class="testimonial-card">
+          <p class="testimonial-card__text">
+            "{{ block.settings.testimonial_text | escape }}"
+          </p>
+          <div class="testimonial-card__author">
+            {{ block.settings.testimonial_author | escape }}
+          </div>
+        </div>
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Testimonials",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "testimonials_title",
+      "label": "Section Title",
+      "default": "What Our Customers Say"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "testimonial",
+      "name": "Testimonial",
+      "settings": [
+        {
+          "type": "textarea",
+          "id": "testimonial_text",
+          "label": "Testimonial Text",
+          "default": "Amazing quality and beautiful designs!"
+        },
+        {
+          "type": "text",
+          "id": "testimonial_author",
+          "label": "Author Name",
+          "default": "Customer Name"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Testimonials",
+      "blocks": [
+        {
+          "type": "testimonial"
+        },
+        {
+          "type": "testimonial"
+        },
+        {
+          "type": "testimonial"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

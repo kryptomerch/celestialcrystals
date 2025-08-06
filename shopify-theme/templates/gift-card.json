@@ -1,0 +1,14 @@
+{
+  "sections": {
+    "main": {
+      "type": "main-gift-card",
+      "settings": {
+        "color_scheme": "background-1",
+        "logo_position": "middle"
+      }
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

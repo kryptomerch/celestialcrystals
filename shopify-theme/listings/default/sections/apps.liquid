@@ -1,0 +1,72 @@
+{%- liquid
+  assign apps_title = section.settings.apps_title
+-%}
+
+<style>
+  .apps-section {
+    padding: 4rem 0;
+    background: var(--color-background);
+  }
+
+  .apps-section__container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  .apps-section__title {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 3rem;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .apps-section__content {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.8);
+  }
+</style>
+
+<section class="apps-section">
+  <div class="apps-section__container">
+    {%- if apps_title != blank -%}
+      <h2 class="apps-section__title">
+        {{ apps_title | escape }}
+      </h2>
+    {%- endif -%}
+    <div class="apps-section__content">
+      {%- for block in section.blocks -%}
+        {% render block %}
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Apps",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "apps_title",
+      "label": "Heading",
+      "default": "Apps"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "@app"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Apps"
+    }
+  ]
+}
+{% endschema %}

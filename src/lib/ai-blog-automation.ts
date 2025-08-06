@@ -3,7 +3,7 @@ import { crystalDatabase } from '@/data/crystals'
 
 // AI Blog Automation Service
 export class AIBlogAutomationService {
-  
+
   // Blog post templates for different types
   private static blogTemplates = {
     crystalGuide: {
@@ -18,7 +18,7 @@ export class AIBlogAutomationService {
         "Where to Buy Authentic {crystal} Crystals"
       ]
     },
-    
+
     chakraGuide: {
       title: "Best Crystals for {chakra} Chakra Healing: Complete Guide 2025",
       keywords: ["{chakra} chakra", "chakra healing", "chakra crystals", "spiritual healing", "energy healing"],
@@ -31,7 +31,7 @@ export class AIBlogAutomationService {
         "Shop {chakra} Chakra Crystal Bracelets"
       ]
     },
-    
+
     birthstoneGuide: {
       title: "{month} Birthstone Guide: Perfect Crystals for {zodiac} Season",
       keywords: ["{month} birthstone", "{zodiac} crystals", "birthstone jewelry", "zodiac healing", "astrological crystals"],
@@ -44,7 +44,7 @@ export class AIBlogAutomationService {
         "Shop {month} Birthstone Collection"
       ]
     },
-    
+
     howToGuide: {
       title: "How to {action} with Crystals: Beginner's Guide to Crystal Healing",
       keywords: ["crystal healing", "how to use crystals", "{action} crystals", "crystal meditation", "spiritual healing"],
@@ -57,7 +57,7 @@ export class AIBlogAutomationService {
         "Recommended Crystal Sets for {action}"
       ]
     },
-    
+
     seasonalGuide: {
       title: "{season} Crystal Rituals: Seasonal Healing & Energy Alignment",
       keywords: ["{season} crystals", "seasonal healing", "{season} rituals", "crystal energy", "seasonal wellness"],
@@ -93,7 +93,7 @@ export class AIBlogAutomationService {
 
     // Generate content using AI (placeholder for now - integrate with OpenAI/Claude)
     const content = await this.generateAIContent(title, sections, variables);
-    
+
     return {
       title,
       content,
@@ -108,7 +108,7 @@ export class AIBlogAutomationService {
   static async generateWeeklyCrystalPost(): Promise<void> {
     const weekNumber = Math.floor(Date.now() / (7 * 24 * 60 * 60 * 1000));
     const crystal = crystalDatabase[weekNumber % crystalDatabase.length];
-    
+
     const variables = {
       crystal: crystal.name,
       benefit: crystal.properties[0] || 'healing',
@@ -117,7 +117,7 @@ export class AIBlogAutomationService {
     };
 
     const blogPost = await this.generateBlogPost('crystalGuide', variables);
-    
+
     // Save to database
     await this.saveBlogPost({
       ...blogPost,
@@ -137,7 +137,7 @@ export class AIBlogAutomationService {
     const chakras = ['Root', 'Sacral', 'Solar Plexus', 'Heart', 'Throat', 'Third Eye', 'Crown'];
     const monthIndex = new Date().getMonth();
     const chakra = chakras[monthIndex % chakras.length];
-    
+
     const variables = {
       chakra: chakra,
       color: this.getChakraColor(chakra),
@@ -145,7 +145,7 @@ export class AIBlogAutomationService {
     };
 
     const blogPost = await this.generateBlogPost('chakraGuide', variables);
-    
+
     await this.saveBlogPost({
       ...blogPost,
       category: 'Chakra Healing',
@@ -169,7 +169,7 @@ export class AIBlogAutomationService {
       'Winter': [11, 0, 1] // Dec, Jan, Feb
     };
 
-    const currentSeason = Object.keys(seasons).find(season => 
+    const currentSeason = Object.keys(seasons).find(season =>
       seasons[season as keyof typeof seasons].includes(month)
     ) || 'Spring';
 
@@ -180,7 +180,7 @@ export class AIBlogAutomationService {
     };
 
     const blogPost = await this.generateBlogPost('seasonalGuide', variables);
-    
+
     await this.saveBlogPost({
       ...blogPost,
       category: 'Seasonal Healing',
@@ -225,7 +225,7 @@ export class AIBlogAutomationService {
   private static generateTemplateContent(title: string, sections: string[], variables: Record<string, string>): string {
     const crystal = variables.crystal || 'Crystal';
     const benefit = variables.benefit || 'healing';
-    
+
     return `
     <h1>${title}</h1>
     
@@ -298,7 +298,7 @@ export class AIBlogAutomationService {
   private static getChakraColor(chakra: string): string {
     const colors: Record<string, string> = {
       'Root': 'red',
-      'Sacral': 'orange', 
+      'Sacral': 'orange',
       'Solar Plexus': 'yellow',
       'Heart': 'green',
       'Throat': 'blue',
@@ -312,7 +312,7 @@ export class AIBlogAutomationService {
     const elements: Record<string, string> = {
       'Root': 'earth',
       'Sacral': 'water',
-      'Solar Plexus': 'fire', 
+      'Solar Plexus': 'fire',
       'Heart': 'air',
       'Throat': 'sound',
       'Third Eye': 'light',
@@ -325,14 +325,14 @@ export class AIBlogAutomationService {
     const energies: Record<string, string> = {
       'Spring': 'renewal and growth',
       'Summer': 'abundance and vitality',
-      'Fall': 'harvest and gratitude', 
+      'Fall': 'harvest and gratitude',
       'Winter': 'reflection and rest'
     };
     return energies[season] || 'balance';
   }
 
   // Save blog post to database
-  private static async saveBlogPost(postData: {
+  static async saveBlogPost(postData: {
     title: string;
     content: string;
     excerpt: string;
@@ -347,29 +347,31 @@ export class AIBlogAutomationService {
     tags: string[];
   }): Promise<void> {
     try {
-      // This would save to your blog database table
       console.log('Saving blog post:', postData.title);
-      
-      // Example Prisma save (uncomment when blog schema is ready):
-      // await prisma.blogPost.create({
-      //   data: {
-      //     title: postData.title,
-      //     content: postData.content,
-      //     excerpt: postData.excerpt,
-      //     slug: postData.slug,
-      //     metaDescription: postData.metaDescription,
-      //     keywords: postData.keywords.join(','),
-      //     category: postData.category,
-      //     featuredImage: postData.featuredImage,
-      //     publishDate: postData.publishDate,
-      //     status: postData.status,
-      //     author: postData.author,
-      //     tags: postData.tags.join(',')
-      //   }
-      // });
-      
+
+      // Save to database using Prisma
+      await prisma.blogPost.create({
+        data: {
+          title: postData.title,
+          content: postData.content,
+          excerpt: postData.excerpt,
+          slug: postData.slug,
+          category: postData.category,
+          featuredImage: postData.featuredImage,
+          publishedAt: postData.publishDate,
+          status: postData.status,
+          author: postData.author,
+          tags: postData.tags,
+          isAIGenerated: true,
+          readingTime: Math.ceil(postData.content.split(/\s+/).length / 200) // Estimate reading time
+        }
+      });
+
+      console.log('✅ Blog post saved successfully:', postData.title);
+
     } catch (error) {
-      console.error('Failed to save blog post:', error);
+      console.error('❌ Failed to save blog post:', error);
+      throw error;
     }
   }
 }

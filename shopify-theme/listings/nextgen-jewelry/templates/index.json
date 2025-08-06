@@ -1,0 +1,34 @@
+{
+  "sections": {
+    "hero": {
+      "type": "hero-banner",
+      "settings": {
+        "hero_title": "Turquoise Serenity Collection",
+        "hero_description": "Find your inner peace with our turquoise serenity collection. Ocean-inspired blues and teals for a tranquil, calming experience.",
+        "hero_button_text": "Explore Wellness",
+        "hero_button_link": "/collections/all"
+      }
+    },
+    "featured_products": {
+      "type": "featured-products",
+      "settings": {
+        "title": "Featured Collection",
+        "collection": "",
+        "products_to_show": 8,
+        "show_view_all": true
+      }
+    },
+    "newsletter": {
+      "type": "newsletter",
+      "settings": {
+        "title": "Stay Connected",
+        "description": "Subscribe for updates on new arrivals and special offers"
+      }
+    }
+  },
+  "order": [
+    "hero",
+    "featured_products",
+    "newsletter"
+  ]
+}

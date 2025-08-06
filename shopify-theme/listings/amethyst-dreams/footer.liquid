@@ -1,0 +1,411 @@
+<style>
+  .footer {
+    background: var(--color-card-background);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 4rem 0 2rem;
+    margin-top: 4rem;
+    position: relative;
+  }
+
+  .footer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+      radial-gradient(circle at 20% 20%, rgba(102, 126, 234, 0.05) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(118, 75, 162, 0.05) 0%, transparent 50%);
+    pointer-events: none;
+  }
+
+  .footer__container {
+    max-width: var(--page-width);
+    margin: 0 auto;
+    padding: 0 2rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .footer__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 3rem;
+    margin-bottom: 3rem;
+  }
+
+  .footer__section h3 {
+    color: var(--color-text);
+    font-size: 1.25rem;
+    margin-bottom: 1.5rem;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .footer__links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .footer__links li {
+    margin-bottom: 0.75rem;
+  }
+
+  .footer__links a {
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    transition: var(--animation-primary);
+    font-size: 0.875rem;
+  }
+
+  .footer__links a:hover {
+    color: var(--color-accent);
+    padding-left: 0.5rem;
+  }
+
+  .footer__newsletter {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 2rem;
+    border-radius: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .footer__newsletter h3 {
+    margin-bottom: 1rem;
+  }
+
+  .footer__newsletter p {
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 1.5rem;
+    font-size: 0.875rem;
+  }
+
+  .footer__newsletter-form {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .footer__newsletter-input {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 0.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--color-text);
+    font-size: 0.875rem;
+  }
+
+  .footer__newsletter-input::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  .footer__newsletter-button {
+    padding: 0.75rem 1.5rem;
+    background: var(--gradient-primary);
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-weight: 500;
+    transition: var(--animation-primary);
+    white-space: nowrap;
+  }
+
+  .footer__newsletter-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+  }
+
+  .footer__social {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+
+  .footer__social-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    color: var(--color-text);
+    text-decoration: none;
+    transition: var(--animation-primary);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .footer__social-link:hover {
+    background: var(--color-accent);
+    color: var(--color-background);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(160, 160, 255, 0.3);
+  }
+
+  .footer__bottom {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .footer__copyright {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.875rem;
+  }
+
+  .footer__payment {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .footer__payment-icon {
+    width: 32px;
+    height: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 0.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    color: var(--color-text);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .footer__contact-info {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.875rem;
+    line-height: 1.6;
+  }
+
+  .footer__contact-info strong {
+    color: var(--color-text);
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+
+  /* Responsive */
+  @media screen and (max-width: 749px) {
+    .footer {
+      padding: 2rem 0 1rem;
+    }
+
+    .footer__container {
+      padding: 0 1rem;
+    }
+
+    .footer__grid {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+
+    .footer__newsletter-form {
+      flex-direction: column;
+    }
+
+    .footer__bottom {
+      flex-direction: column;
+      text-align: center;
+    }
+
+    .footer__social {
+      justify-content: center;
+    }
+  }
+</style>
+
+<footer class="footer">
+  <div class="footer__container">
+    <div class="footer__grid">
+      <!-- Company Info -->
+      <div class="footer__section">
+        <h3>{{ shop.name }}</h3>
+        <div class="footer__contact-info">
+          <strong>Contact Us</strong>
+          <p>Email: {{ section.settings.contact_email | default: 'hello@example.com' }}</p>
+          <p>Phone: {{ section.settings.contact_phone | default: '+1 (555) 123-4567' }}</p>
+          <p>Address: {{ section.settings.contact_address | default: '123 Crystal Lane, Mystic City, MC 12345' }}</p>
+        </div>
+        
+        <!-- Social Media -->
+        <div class="footer__social">
+          {%- if section.settings.social_facebook != blank -%}
+            <a href="{{ section.settings.social_facebook }}" class="footer__social-link" target="_blank" rel="noopener">
+              <span>f</span>
+            </a>
+          {%- endif -%}
+          {%- if section.settings.social_instagram != blank -%}
+            <a href="{{ section.settings.social_instagram }}" class="footer__social-link" target="_blank" rel="noopener">
+              <span>📷</span>
+            </a>
+          {%- endif -%}
+          {%- if section.settings.social_twitter != blank -%}
+            <a href="{{ section.settings.social_twitter }}" class="footer__social-link" target="_blank" rel="noopener">
+              <span>🐦</span>
+            </a>
+          {%- endif -%}
+          {%- if section.settings.social_youtube != blank -%}
+            <a href="{{ section.settings.social_youtube }}" class="footer__social-link" target="_blank" rel="noopener">
+              <span>▶</span>
+            </a>
+          {%- endif -%}
+        </div>
+      </div>
+
+      <!-- Quick Links -->
+      <div class="footer__section">
+        <h3>Quick Links</h3>
+        <ul class="footer__links">
+          {%- for link in linklists.footer.links -%}
+            <li>
+              <a href="{{ link.url }}">{{ link.title }}</a>
+            </li>
+          {%- else -%}
+            <li><a href="{{ routes.search_url }}">Search</a></li>
+            <li><a href="{{ routes.cart_url }}">Cart</a></li>
+            <li><a href="/pages/about">About Us</a></li>
+            <li><a href="/pages/contact">Contact</a></li>
+          {%- endfor -%}
+        </ul>
+      </div>
+
+      <!-- Customer Care -->
+      <div class="footer__section">
+        <h3>Customer Care</h3>
+        <ul class="footer__links">
+          <li><a href="/pages/shipping">Shipping Info</a></li>
+          <li><a href="/pages/returns">Returns & Exchanges</a></li>
+          <li><a href="/pages/size-guide">Size Guide</a></li>
+          <li><a href="/pages/care-instructions">Care Instructions</a></li>
+          <li><a href="/pages/faq">FAQ</a></li>
+        </ul>
+      </div>
+
+      <!-- Newsletter -->
+      <div class="footer__section">
+        <div class="footer__newsletter">
+          <h3>{{ section.settings.newsletter_title | default: 'Stay Connected' }}</h3>
+          <p>{{ section.settings.newsletter_description | default: 'Subscribe to receive updates on new arrivals, special offers, and crystal wisdom.' }}</p>
+          
+          <form class="footer__newsletter-form" action="{{ routes.cart_add_url }}" method="post">
+            <input 
+              type="email" 
+              class="footer__newsletter-input" 
+              placeholder="Enter your email"
+              name="contact[email]"
+              required
+            >
+            <button type="submit" class="footer__newsletter-button">
+              Subscribe
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer Bottom -->
+    <div class="footer__bottom">
+      <div class="footer__copyright">
+        <p>&copy; {{ 'now' | date: '%Y' }} {{ shop.name }}. All rights reserved.</p>
+        <p>Powered by NextGen Jewelry Theme</p>
+      </div>
+
+      <!-- Payment Icons -->
+      <div class="footer__payment">
+        <span class="footer__payment-icon">💳</span>
+        <span class="footer__payment-icon">🏦</span>
+        <span class="footer__payment-icon">📱</span>
+        <span class="footer__payment-icon">🔒</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+{% schema %}
+{
+  "name": "Footer",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Contact Information"
+    },
+    {
+      "type": "text",
+      "id": "contact_email",
+      "label": "Contact Email",
+      "default": "hello@example.com"
+    },
+    {
+      "type": "text",
+      "id": "contact_phone",
+      "label": "Contact Phone",
+      "default": "+1 (555) 123-4567"
+    },
+    {
+      "type": "textarea",
+      "id": "contact_address",
+      "label": "Contact Address",
+      "default": "123 Crystal Lane, Mystic City, MC 12345"
+    },
+    {
+      "type": "header",
+      "content": "Newsletter"
+    },
+    {
+      "type": "text",
+      "id": "newsletter_title",
+      "label": "Newsletter Title",
+      "default": "Stay Connected"
+    },
+    {
+      "type": "textarea",
+      "id": "newsletter_description",
+      "label": "Newsletter Description",
+      "default": "Subscribe to receive updates on new arrivals, special offers, and crystal wisdom."
+    },
+    {
+      "type": "header",
+      "content": "Social Media"
+    },
+    {
+      "type": "url",
+      "id": "social_facebook",
+      "label": "Facebook URL"
+    },
+    {
+      "type": "url",
+      "id": "social_instagram",
+      "label": "Instagram URL"
+    },
+    {
+      "type": "url",
+      "id": "social_twitter",
+      "label": "Twitter URL"
+    },
+    {
+      "type": "url",
+      "id": "social_youtube",
+      "label": "YouTube URL"
+    },
+    {
+      "type": "header",
+      "content": "Links"
+    },
+    {
+      "type": "link_list",
+      "id": "footer_menu",
+      "label": "Footer Menu",
+      "default": "footer"
+    }
+  ]
+}
+{% endschema %}

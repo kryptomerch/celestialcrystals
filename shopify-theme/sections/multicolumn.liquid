@@ -1,0 +1,150 @@
+{%- liquid
+  assign multicolumn_title = section.settings.multicolumn_title
+-%}
+
+<style>
+  .multicolumn-section {
+    padding: 4rem 0;
+    background: var(--color-background);
+  }
+
+  .multicolumn-section__container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  .multicolumn-section__title {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 3rem;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .multicolumn-section__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+  }
+
+  .multicolumn-item {
+    text-align: center;
+    padding: 2rem;
+    background: var(--color-card-background);
+    border-radius: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .multicolumn-item__image {
+    width: 100px;
+    height: 100px;
+    margin: 0 auto 1.5rem;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .multicolumn-item__title {
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+    color: var(--color-accent);
+  }
+
+  .multicolumn-item__text {
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.6;
+  }
+</style>
+
+<section class="multicolumn-section">
+  <div class="multicolumn-section__container">
+    {%- if multicolumn_title != blank -%}
+      <h2 class="multicolumn-section__title">
+        {{ multicolumn_title | escape }}
+      </h2>
+    {%- endif -%}
+    <div class="multicolumn-section__grid">
+      {%- for block in section.blocks -%}
+        <div class="multicolumn-item">
+          {%- if block.settings.image != blank -%}
+            <img 
+              src="{{ block.settings.image | image_url: width: 200 }}"
+              alt="{{ block.settings.image.alt | escape }}"
+              class="multicolumn-item__image"
+              loading="lazy"
+            >
+          {%- endif -%}
+          {%- if block.settings.title != blank -%}
+            <h3 class="multicolumn-item__title">
+              {{ block.settings.title | escape }}
+            </h3>
+          {%- endif -%}
+          {%- if block.settings.text != blank -%}
+            <div class="multicolumn-item__text">
+              {{ block.settings.text }}
+            </div>
+          {%- endif -%}
+        </div>
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Multicolumn",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "multicolumn_title",
+      "label": "Heading",
+      "default": "Multicolumn"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "column",
+      "name": "Column",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Heading",
+          "default": "Column"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Text",
+          "default": "<p>Pair text with an image to focus on your chosen product, collection, or blog post. Add details on availability, style, or even provide a review.</p>"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Multicolumn",
+      "blocks": [
+        {
+          "type": "column"
+        },
+        {
+          "type": "column"
+        },
+        {
+          "type": "column"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
