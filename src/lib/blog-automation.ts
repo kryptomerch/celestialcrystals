@@ -261,6 +261,13 @@ export async function getAllBlogPosts() {
     return posts;
   } catch (error) {
     console.error('Error fetching blog posts:', error);
+
+    // If database connection fails, return empty array for local development
+    if (error instanceof Error && error.message.includes('password authentication failed')) {
+      console.log('🔄 Database connection failed, returning empty blog posts for local development');
+      return [];
+    }
+
     return [];
   }
 }
