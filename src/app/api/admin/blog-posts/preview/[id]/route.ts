@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -26,6 +26,7 @@ export async function GET(
       );
     }
 
+    const params = await context.params;
     const postId = params.id;
 
     if (!postId) {

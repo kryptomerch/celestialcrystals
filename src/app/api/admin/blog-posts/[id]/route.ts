@@ -5,11 +5,11 @@ import { prisma } from '@/lib/prisma';
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
-    
+
     // Check admin authorization
     if (!session?.user?.id) {
       return NextResponse.json(
@@ -26,6 +26,7 @@ export async function PUT(
       );
     }
 
+    const params = await context.params;
     const postId = params.id;
     const {
       title,
@@ -60,9 +61,9 @@ export async function PUT(
     // Generate slug from title if title changed
     const slug = title !== existingPost.title
       ? title
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, '-')
-          .replace(/(^-|-$)/g, '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '')
       : existingPost.slug;
 
     // Calculate reading time
@@ -84,8 +85,8 @@ export async function PUT(
         readingTime,
         updatedAt: new Date(),
         // Set publishedAt if status changed to published and wasn't published before
-        publishedAt: status === 'published' && existingPost.status !== 'published' 
-          ? new Date() 
+        publishedAt: status === 'published' && existingPost.status !== 'published'
+          ? new Date()
           : existingPost.publishedAt
       }
     });
@@ -107,11 +108,11 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
-    
+
     // Check admin authorization
     if (!session?.user?.id) {
       return NextResponse.json(
@@ -128,6 +129,7 @@ export async function DELETE(
       );
     }
 
+    const params = await context.params;
     const postId = params.id;
 
     // Check if post exists
