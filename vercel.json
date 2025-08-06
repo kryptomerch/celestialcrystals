@@ -5,18 +5,6 @@
       "schedule": "0 9 * * 1"
     },
     {
-      "path": "/api/cron/ai-blog-automation?action=weekly-crystal-post",
-      "schedule": "0 10 * * 2"
-    },
-    {
-      "path": "/api/cron/ai-blog-automation?action=monthly-chakra-post",
-      "schedule": "0 9 1 * *"
-    },
-    {
-      "path": "/api/cron/ai-blog-automation?action=seasonal-post",
-      "schedule": "0 11 1 3,6,9,12 *"
-    },
-    {
       "path": "/api/cron/ai-blog-automation?action=generate-all",
       "schedule": "0 14 * * 5"
     }
