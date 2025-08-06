@@ -26,6 +26,7 @@ export default function AIBlogAutomationPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState<any>(null);
   const [recentPosts, setRecentPosts] = useState<BlogPost[]>([]);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [stats, setStats] = useState<AutomationStats>({
     totalPosts: 0,
     aiGeneratedPosts: 0,
@@ -40,13 +41,36 @@ export default function AIBlogAutomationPage() {
 
   const loadDashboardData = async () => {
     try {
+      console.log('🔄 Loading dashboard data...');
+
       // Fetch real blog posts from API
       const response = await fetch('/api/admin/blog-posts');
       const data = await response.json();
 
-      if (data.success) {
+      console.log('📊 API Response:', { status: response.status, data });
+
+      if (response.status === 401) {
+        console.log('🔒 Not authenticated - showing empty state');
+        // User not authenticated - show empty state
+        setIsAuthenticated(false);
+        setStats({
+          totalPosts: 0,
+          aiGeneratedPosts: 0,
+          avgSeoScore: 0,
+          totalViews: 0,
+          scheduledPosts: 0
+        });
+        setRecentPosts([]);
+        return;
+      }
+
+      if (data.success && data.posts) {
         const posts = data.posts || [];
         const aiPosts = posts.filter((post: any) => post.isAIGenerated);
+
+        console.log('✅ Loaded real data:', { totalPosts: posts.length, aiPosts: aiPosts.length });
+
+        setIsAuthenticated(true);
 
         // Calculate real stats
         setStats({
@@ -73,6 +97,7 @@ export default function AIBlogAutomationPage() {
             }))
         );
       } else {
+        console.log('⚠️ API call failed or no data - showing empty state');
         // Fallback to empty state if API fails
         setStats({
           totalPosts: 0,
@@ -84,7 +109,7 @@ export default function AIBlogAutomationPage() {
         setRecentPosts([]);
       }
     } catch (error) {
-      console.error('Failed to load dashboard data:', error);
+      console.error('❌ Failed to load dashboard data:', error);
       // Set empty state on error
       setStats({
         totalPosts: 0,
@@ -124,6 +149,32 @@ export default function AIBlogAutomationPage() {
       setIsLoading(false);
     }
   };
+
+  // Show login prompt if not authenticated
+  if (isAuthenticated === false) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <Bot className="w-16 h-16 mx-auto text-purple-600 mb-4" />
+            <h1 className="text-3xl font-bold text-gray-900 mb-4">AI Blog Automation</h1>
+            <div className="bg-white p-8 rounded-lg shadow-sm border max-w-md mx-auto">
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">Admin Access Required</h2>
+              <p className="text-gray-600 mb-6">
+                Please sign in with an admin account to access the AI blog automation dashboard.
+              </p>
+              <a
+                href="/auth/signin"
+                className="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+              >
+                Sign In
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
