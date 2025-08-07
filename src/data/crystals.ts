@@ -81,7 +81,58 @@ export const crystalDatabase: Crystal[] = [
       '/images/crystals/7 CHAKRA/LV3.png',
       '/images/crystals/7 CHAKRA/LV4.png',
       '/images/crystals/7 CHAKRA/LV5.png'
-    ]
+    ],
+    // Detailed information about the 7 chakra stones
+    chakraStones: {
+      'Root Chakra': {
+        stone: 'Red Jasper',
+        color: 'Red',
+        properties: ['Grounding', 'Stability', 'Courage', 'Strength'],
+        benefits: 'Provides grounding energy, enhances physical strength, and promotes feelings of safety and security.'
+      },
+      'Sacral Chakra': {
+        stone: 'Carnelian',
+        color: 'Orange',
+        properties: ['Creativity', 'Passion', 'Confidence', 'Vitality'],
+        benefits: 'Stimulates creativity, enhances passion, boosts confidence, and supports reproductive health.'
+      },
+      'Solar Plexus Chakra': {
+        stone: 'Yellow Aventurine',
+        color: 'Yellow',
+        properties: ['Personal Power', 'Confidence', 'Manifestation', 'Willpower'],
+        benefits: 'Enhances personal power, boosts self-confidence, aids in manifestation, and strengthens willpower.'
+      },
+      'Heart Chakra': {
+        stone: 'Green Aventurine',
+        color: 'Green',
+        properties: ['Love', 'Compassion', 'Emotional Healing', 'Heart Opening'],
+        benefits: 'Opens the heart to love, promotes emotional healing, enhances compassion, and attracts prosperity.'
+      },
+      'Throat Chakra': {
+        stone: 'Sodalite',
+        color: 'Blue',
+        properties: ['Communication', 'Truth', 'Expression', 'Clarity'],
+        benefits: 'Enhances communication skills, promotes truthful expression, and brings mental clarity.'
+      },
+      'Third Eye Chakra': {
+        stone: 'Amethyst',
+        color: 'Indigo/Purple',
+        properties: ['Intuition', 'Spiritual Awareness', 'Psychic Abilities', 'Wisdom'],
+        benefits: 'Enhances intuition, promotes spiritual awareness, develops psychic abilities, and brings inner wisdom.'
+      },
+      'Crown Chakra': {
+        stone: 'Clear Quartz',
+        color: 'Violet/Clear',
+        properties: ['Spiritual Connection', 'Divine Wisdom', 'Enlightenment', 'Amplification'],
+        benefits: 'Connects to divine wisdom, promotes spiritual enlightenment, and amplifies the energy of other stones.'
+      }
+    },
+    lavaStoneProperties: {
+      origin: 'Volcanic rock formed from cooled lava',
+      properties: ['Grounding', 'Strength', 'Courage', 'Stability', 'Rebirth'],
+      benefits: 'Provides grounding energy, enhances emotional strength, promotes courage during difficult times, and supports personal transformation.',
+      aromatherapy: 'Porous surface can hold essential oils for aromatherapy benefits'
+    }
   },
   {
     id: 'tiger-eye-1',

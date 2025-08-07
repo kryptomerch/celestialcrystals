@@ -226,14 +226,31 @@ export class AIBlogAutomationService {
     const crystal = variables.crystal || 'Crystal';
     const benefit = variables.benefit || 'healing';
 
+    // Find the specific crystal in our database for detailed information
+    const crystalData = crystalDatabase.find(c =>
+      c.name.toLowerCase().includes(crystal.toLowerCase()) ||
+      crystal.toLowerCase().includes(c.name.toLowerCase().split(' ')[0])
+    );
+
+    // Special handling for Lava 7 Chakra bracelet
+    if (crystal.toLowerCase().includes('lava') && crystal.toLowerCase().includes('chakra')) {
+      return this.generateLava7ChakraContent(title, crystalData);
+    }
+
+    // Generate content based on crystal data if available
+    if (crystalData) {
+      return this.generateSpecificCrystalContent(title, crystalData, benefit);
+    }
+
+    // Fallback to generic content
     return `
     <h1>${title}</h1>
-    
+
     <p>Welcome to your complete guide to ${crystal} crystal healing. In this comprehensive article, we'll explore the powerful healing properties of ${crystal} and how it can enhance your spiritual journey across North America.</p>
-    
+
     <h2>What is ${crystal} Crystal?</h2>
     <p>${crystal} is a powerful healing stone known for its ${benefit} properties. This beautiful crystal has been used for centuries by healers and spiritual practitioners to promote wellness and positive energy.</p>
-    
+
     <h2>Healing Properties of ${crystal}</h2>
     <ul>
       <li>Promotes ${benefit} and emotional balance</li>
@@ -241,7 +258,7 @@ export class AIBlogAutomationService {
       <li>Supports physical wellness and vitality</li>
       <li>Provides protection from negative energies</li>
     </ul>
-    
+
     <h2>How to Use ${crystal} Crystal</h2>
     <p>There are many ways to incorporate ${crystal} into your daily wellness routine:</p>
     <ol>
@@ -373,5 +390,148 @@ export class AIBlogAutomationService {
       console.error('❌ Failed to save blog post:', error);
       throw error;
     }
+  }
+
+  // Generate specific content for Lava 7 Chakra bracelet
+  private static generateLava7ChakraContent(title: string, crystalData: any): string {
+    const chakraStones = crystalData?.chakraStones || {};
+    const lavaProps = crystalData?.lavaStoneProperties || {};
+
+    let chakraContent = '';
+    Object.entries(chakraStones).forEach(([chakra, data]: [string, any]) => {
+      chakraContent += `
+      <h3>${chakra} - ${data.stone}</h3>
+      <p><strong>Color:</strong> ${data.color}</p>
+      <p><strong>Properties:</strong> ${data.properties.join(', ')}</p>
+      <p>${data.benefits}</p>
+      `;
+    });
+
+    return `
+    <h1>${title}</h1>
+
+    <p>The Lava 7 Chakra Bracelet is a powerful combination of volcanic lava stone and seven carefully selected chakra stones. This unique piece brings together the grounding energy of lava rock with the balancing properties of chakra healing crystals, creating a comprehensive tool for spiritual wellness and energy alignment.</p>
+
+    <h2>What Makes Lava 7 Chakra Bracelets Special?</h2>
+    <p>Lava stone, formed from cooled volcanic rock, carries the raw power of the Earth's core. When combined with the seven chakra stones, it creates a perfect balance between grounding energy and spiritual elevation. Each bead in this bracelet serves a specific purpose in your healing journey.</p>
+
+    <h2>The Power of Lava Stone</h2>
+    <p><strong>Origin:</strong> ${lavaProps.origin || 'Volcanic rock formed from cooled lava'}</p>
+    <p><strong>Properties:</strong> ${lavaProps.properties?.join(', ') || 'Grounding, Strength, Courage'}</p>
+    <p>${lavaProps.benefits || 'Lava stone provides incredible grounding energy and emotional strength.'}</p>
+
+    ${lavaProps.aromatherapy ? `<p><strong>Aromatherapy Bonus:</strong> ${lavaProps.aromatherapy}</p>` : ''}
+
+    <h2>The Seven Chakra Stones Explained</h2>
+    <p>Each chakra stone in your Lava 7 Chakra bracelet corresponds to one of the seven main energy centers in your body:</p>
+
+    ${chakraContent}
+
+    <h2>How to Use Your Lava 7 Chakra Bracelet</h2>
+    <ol>
+      <li><strong>Daily Wear:</strong> Wear your bracelet on your left wrist to receive energy, or right wrist to project energy</li>
+      <li><strong>Meditation:</strong> Hold the bracelet during meditation, focusing on each chakra stone individually</li>
+      <li><strong>Aromatherapy:</strong> Add 1-2 drops of essential oil to the lava stones for aromatherapy benefits</li>
+      <li><strong>Intention Setting:</strong> Hold the bracelet while setting daily intentions for balance and healing</li>
+      <li><strong>Chakra Balancing:</strong> Focus on each colored stone while visualizing the corresponding chakra opening and balancing</li>
+    </ol>
+
+    <h2>Benefits of Wearing Lava 7 Chakra Bracelets</h2>
+    <ul>
+      <li><strong>Complete Chakra Alignment:</strong> Balances all seven energy centers simultaneously</li>
+      <li><strong>Grounding Energy:</strong> Lava stone keeps you connected to Earth's stabilizing energy</li>
+      <li><strong>Emotional Strength:</strong> Provides courage and resilience during challenging times</li>
+      <li><strong>Spiritual Growth:</strong> Supports your journey of spiritual development and self-discovery</li>
+      <li><strong>Energy Protection:</strong> Creates a protective shield against negative energies</li>
+      <li><strong>Aromatherapy Benefits:</strong> Porous lava stones hold essential oils for extended aromatherapy</li>
+    </ul>
+
+    <h2>Caring for Your Lava 7 Chakra Bracelet</h2>
+    <p>To maintain the energy and appearance of your bracelet:</p>
+    <ul>
+      <li>Cleanse monthly under running water or with sage smoke</li>
+      <li>Charge under moonlight or with selenite</li>
+      <li>Store in a soft pouch when not wearing</li>
+      <li>Avoid harsh chemicals and excessive moisture</li>
+      <li>Reapply essential oils to lava stones as needed</li>
+    </ul>
+
+    <h2>Who Should Wear Lava 7 Chakra Bracelets?</h2>
+    <p>This powerful bracelet is perfect for:</p>
+    <ul>
+      <li>Anyone seeking complete chakra balance and alignment</li>
+      <li>People going through major life transitions</li>
+      <li>Those who need grounding and emotional stability</li>
+      <li>Spiritual practitioners and energy healers</li>
+      <li>Anyone interested in aromatherapy benefits</li>
+      <li>Individuals looking to enhance their meditation practice</li>
+    </ul>
+
+    <h2>Shop Authentic Lava 7 Chakra Bracelets</h2>
+    <p>Experience the powerful combination of volcanic energy and chakra healing with our authentic Lava 7 Chakra bracelets. Each bracelet is carefully crafted with genuine lava stone and high-quality chakra stones to ensure maximum healing benefits.</p>
+
+    <p><strong>Ready to balance your chakras and ground your energy?</strong> Explore our collection of Lava 7 Chakra bracelets and find the perfect piece for your spiritual journey.</p>
+    `;
+  }
+
+  // Generate specific content for individual crystals
+  private static generateSpecificCrystalContent(title: string, crystalData: any, benefit: string): string {
+    const properties = crystalData.properties?.join(', ') || 'healing and wellness';
+    const colors = crystalData.colors?.join(', ') || 'natural';
+    const chakra = crystalData.chakra || 'energy centers';
+    const origin = crystalData.origin || 'various locations worldwide';
+    const element = crystalData.element || 'Earth';
+
+    return `
+    <h1>${title}</h1>
+
+    <p>Welcome to your comprehensive guide to ${crystalData.name} healing. This powerful crystal has been treasured for centuries for its remarkable ${benefit} properties and spiritual significance. Whether you're new to crystal healing or an experienced practitioner, this guide will help you understand and harness the full potential of ${crystalData.name}.</p>
+
+    <h2>What is ${crystalData.name}?</h2>
+    <p>${crystalData.description}</p>
+    <p><strong>Colors:</strong> ${colors}</p>
+    <p><strong>Origin:</strong> ${origin}</p>
+    <p><strong>Element:</strong> ${element}</p>
+    <p><strong>Chakra Connection:</strong> ${chakra}</p>
+
+    <h2>Healing Properties of ${crystalData.name}</h2>
+    <p>${crystalData.name} is renowned for its powerful healing properties:</p>
+    <ul>
+      ${crystalData.properties?.map((prop: string) => `<li><strong>${prop}:</strong> Enhances ${prop.toLowerCase()} and promotes overall well-being</li>`).join('') || '<li>Promotes healing and positive energy</li>'}
+    </ul>
+
+    <h2>How to Use ${crystalData.name}</h2>
+    <p>There are many effective ways to incorporate ${crystalData.name} into your daily wellness routine:</p>
+    <ol>
+      <li><strong>Wear as Jewelry:</strong> ${crystalData.name} bracelets and necklaces keep the healing energy close to your body throughout the day</li>
+      <li><strong>Meditation Practice:</strong> Hold ${crystalData.name} during meditation to enhance spiritual connection and deepen your practice</li>
+      <li><strong>Home & Office:</strong> Place ${crystalData.name} in your living or working space to create positive energy and protection</li>
+      <li><strong>Sleep Support:</strong> Keep ${crystalData.name} near your bed to promote restful sleep and peaceful dreams</li>
+      <li><strong>Chakra Work:</strong> Use ${crystalData.name} during chakra balancing sessions to align your ${chakra}</li>
+    </ol>
+
+    <h2>${crystalData.name} and Chakra Healing</h2>
+    <p>${crystalData.name} has a special connection to the ${chakra}. When this energy center is balanced, you experience:</p>
+    <ul>
+      <li>Enhanced ${benefit} and emotional stability</li>
+      <li>Improved spiritual connection and intuition</li>
+      <li>Greater sense of purpose and direction</li>
+      <li>Increased energy and vitality</li>
+    </ul>
+
+    <h2>Caring for Your ${crystalData.name}</h2>
+    <p>To maintain the energy and beauty of your ${crystalData.name}:</p>
+    <ul>
+      <li><strong>Cleansing:</strong> Cleanse monthly with running water, sage, or moonlight</li>
+      <li><strong>Charging:</strong> Charge under full moon or with other crystals like selenite</li>
+      <li><strong>Storage:</strong> Store in a soft cloth or pouch to prevent scratches</li>
+      <li><strong>Programming:</strong> Set clear intentions when first using your crystal</li>
+    </ul>
+
+    <h2>Shop Authentic ${crystalData.name} Crystals</h2>
+    <p>Experience the transformative power of genuine ${crystalData.name} crystals. Our collection features high-quality, ethically sourced stones perfect for healing, meditation, and spiritual growth.</p>
+
+    <p><strong>Ready to enhance your spiritual journey with ${crystalData.name}?</strong> Browse our selection of ${crystalData.name} bracelets, stones, and jewelry to find the perfect piece for your needs.</p>
+    `;
   }
 }
