@@ -15,6 +15,21 @@ export interface Crystal {
   rarity: 'Common' | 'Uncommon' | 'Rare' | 'Very Rare';
   image?: string;
   images?: string[];
+  // Optional detailed information for special crystals like Lava 7 Chakra
+  chakraStones?: {
+    [chakraName: string]: {
+      stone: string;
+      color: string;
+      properties: string[];
+      benefits: string;
+    };
+  };
+  lavaStoneProperties?: {
+    origin: string;
+    properties: string[];
+    benefits: string;
+    aromatherapy?: string;
+  };
 }
 
 export const crystalDatabase: Crystal[] = [
