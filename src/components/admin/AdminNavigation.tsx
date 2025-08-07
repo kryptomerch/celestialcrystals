@@ -58,6 +58,12 @@ const navigation: NavItem[] = [
     description: 'Stock management'
   },
   {
+    name: 'Blog Manager',
+    href: '/admin/blog-manager',
+    icon: <FileText className="w-5 h-5" />,
+    description: 'Manage published blogs'
+  },
+  {
     name: 'Orders',
     href: '/admin/orders',
     icon: <FileText className="w-5 h-5" />,
@@ -80,12 +86,6 @@ const navigation: NavItem[] = [
     href: '/admin/email-subscribers',
     icon: <Database className="w-5 h-5" />,
     description: 'Email subscribers'
-  },
-  {
-    name: 'Blog Manager',
-    href: '/admin/blog-manager',
-    icon: <FileText className="w-5 h-5" />,
-    description: 'Manage published blogs'
   },
   {
     name: 'AI Blog',
