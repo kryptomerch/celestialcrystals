@@ -82,6 +82,12 @@ const navigation: NavItem[] = [
     description: 'Email subscribers'
   },
   {
+    name: 'Blog Manager',
+    href: '/admin/blog-manager',
+    icon: <FileText className="w-5 h-5" />,
+    description: 'Manage published blogs'
+  },
+  {
     name: 'AI Blog',
     href: '/admin/ai-blog-automation',
     icon: <Edit className="w-5 h-5" />,

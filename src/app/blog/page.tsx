@@ -318,11 +318,7 @@ export default function BlogPage() {
                       }`}>
                       {article.category}
                     </span>
-                    {(article as any).isAI && (
-                      <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded text-xs font-medium">
-                        AI Generated
-                      </span>
-                    )}
+
                   </div>
                   <div className="flex items-center">
                     <Clock className="w-3 h-3 mr-1" />
