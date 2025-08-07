@@ -47,7 +47,15 @@ export default function BlogManagerPage() {
         console.log('Blog posts API response:', data);
 
         if (data.success) {
-          databasePosts = data.posts || [];
+          // Normalize database posts to ensure tags is always an array
+          databasePosts = (data.posts || []).map((post: any) => ({
+            ...post,
+            tags: Array.isArray(post.tags)
+              ? post.tags
+              : typeof post.tags === 'string'
+                ? post.tags.split(',').map((tag: string) => tag.trim()).filter(Boolean)
+                : []
+          }));
         } else {
           console.error('Failed to fetch database blog posts:', data.error);
         }
@@ -70,7 +78,7 @@ export default function BlogManagerPage() {
         featuredImage: article.featuredImage,
         publishedAt: article.publishDate,
         createdAt: article.publishDate,
-        tags: article.tags
+        tags: Array.isArray(article.tags) ? article.tags : []
       }));
 
       // Combine static articles with database posts
@@ -94,7 +102,7 @@ export default function BlogManagerPage() {
         featuredImage: article.featuredImage,
         publishedAt: article.publishDate,
         createdAt: article.publishDate,
-        tags: article.tags
+        tags: Array.isArray(article.tags) ? article.tags : []
       }));
       setBlogPosts(staticPosts);
     } finally {
@@ -459,7 +467,7 @@ export default function BlogManagerPage() {
                             </div>
 
                             {/* Tags */}
-                            {post.tags && post.tags.length > 0 && (
+                            {post.tags && Array.isArray(post.tags) && post.tags.length > 0 && (
                               <div className="flex flex-wrap gap-1 mb-3">
                                 {post.tags.map((tag, index) => (
                                   <span key={index} className="px-2 py-1 bg-gray-500/20 text-gray-300 rounded text-xs">
@@ -494,8 +502,8 @@ export default function BlogManagerPage() {
                               onClick={() => deleteBlogPost(post.id)}
                               disabled={deleting.includes(post.id) || (!post.isAIGenerated && blogArticles.some(article => article.id === post.id))}
                               className={`p-2 rounded-lg transition-colors disabled:opacity-50 ${(!post.isAIGenerated && blogArticles.some(article => article.id === post.id))
-                                  ? 'text-gray-500 cursor-not-allowed'
-                                  : 'text-red-400 hover:text-red-300 hover:bg-red-500/20'
+                                ? 'text-gray-500 cursor-not-allowed'
+                                : 'text-red-400 hover:text-red-300 hover:bg-red-500/20'
                                 }`}
                               title={(!post.isAIGenerated && blogArticles.some(article => article.id === post.id))
                                 ? "Cannot delete static articles"
