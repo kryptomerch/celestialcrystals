@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET() {
   try {
+    console.log('🔍 Fetching published blog posts...');
+
     // Fetch only published blog posts for public access
     const posts = await prisma.blogPost.findMany({
       where: {
@@ -25,8 +27,14 @@ export async function GET() {
         crystalId: true,
         publishedAt: true,
         createdAt: true,
-        isAIGenerated: true
+        isAIGenerated: true,
+        status: true
       }
+    });
+
+    console.log(`✅ Found ${posts.length} published blog posts`);
+    posts.forEach(post => {
+      console.log(`📝 Post: "${post.title}" - Status: ${post.status} - Published: ${post.publishedAt}`);
     });
 
     return NextResponse.json({
@@ -35,7 +43,19 @@ export async function GET() {
       count: posts.length
     });
   } catch (error) {
-    console.error('Error fetching published blog posts:', error);
+    console.error('❌ Error fetching published blog posts:', error);
+
+    // If database connection fails, return empty state for graceful degradation
+    if (error instanceof Error && error.message.includes('password authentication failed')) {
+      console.log('🔄 Database connection failed, returning empty blog posts for graceful degradation');
+      return NextResponse.json({
+        success: true,
+        posts: [],
+        count: 0,
+        message: 'Blog posts temporarily unavailable'
+      });
+    }
+
     return NextResponse.json(
       {
         success: false,

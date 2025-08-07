@@ -375,7 +375,7 @@ export class AIBlogAutomationService {
           slug: postData.slug,
           category: postData.category,
           featuredImage: postData.featuredImage,
-          publishedAt: postData.publishDate,
+          publishedAt: postData.status === 'published' ? postData.publishDate : null,
           status: postData.status,
           author: postData.author,
           tags: postData.tags,
@@ -383,6 +383,8 @@ export class AIBlogAutomationService {
           readingTime: Math.ceil(postData.content.split(/\s+/).length / 200) // Estimate reading time
         }
       });
+
+      console.log(`✅ Blog post saved successfully: "${postData.title}" with status: ${postData.status}`);
 
       console.log('✅ Blog post saved successfully:', postData.title);
 
