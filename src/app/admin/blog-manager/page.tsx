@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Trash2, Eye, Edit, Search, Filter, Calendar, User, BookOpen, AlertTriangle, RefreshCw } from 'lucide-react';
+import { blogArticles } from '@/data/blog-articles';
 
 interface BlogPost {
   id: string;
@@ -36,22 +37,79 @@ export default function BlogManagerPage() {
   const fetchBlogPosts = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/admin/blog-posts');
-      const data = await response.json();
 
-      if (data.success) {
-        setBlogPosts(data.posts || []);
+      // Fetch database posts
+      const response = await fetch('/api/admin/blog-posts');
+      let databasePosts: BlogPost[] = [];
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Blog posts API response:', data);
+
+        if (data.success) {
+          databasePosts = data.posts || [];
+        } else {
+          console.error('Failed to fetch database blog posts:', data.error);
+        }
       } else {
-        console.error('Failed to fetch blog posts:', data.error);
+        console.error('API response not ok:', response.status, response.statusText);
       }
+
+      // Convert static articles to BlogPost format
+      const staticPosts: BlogPost[] = blogArticles.map(article => ({
+        id: article.id,
+        title: article.title,
+        slug: article.slug,
+        excerpt: article.excerpt,
+        content: article.content,
+        author: article.author,
+        category: article.category,
+        status: 'published', // Static articles are always published
+        isAIGenerated: false,
+        readingTime: article.readTime,
+        featuredImage: article.featuredImage,
+        publishedAt: article.publishDate,
+        createdAt: article.publishDate,
+        tags: article.tags
+      }));
+
+      // Combine static articles with database posts
+      const allPosts = [...staticPosts, ...databasePosts];
+      setBlogPosts(allPosts);
+
     } catch (error) {
       console.error('Error fetching blog posts:', error);
+      // If there's an error, at least show static articles
+      const staticPosts: BlogPost[] = blogArticles.map(article => ({
+        id: article.id,
+        title: article.title,
+        slug: article.slug,
+        excerpt: article.excerpt,
+        content: article.content,
+        author: article.author,
+        category: article.category,
+        status: 'published',
+        isAIGenerated: false,
+        readingTime: article.readTime,
+        featuredImage: article.featuredImage,
+        publishedAt: article.publishDate,
+        createdAt: article.publishDate,
+        tags: article.tags
+      }));
+      setBlogPosts(staticPosts);
     } finally {
       setLoading(false);
     }
   };
 
   const deleteBlogPost = async (postId: string) => {
+    // Check if this is a static article (cannot be deleted)
+    const post = blogPosts.find(p => p.id === postId);
+    if (post && !post.isAIGenerated && blogArticles.some(article => article.id === postId)) {
+      alert('Cannot delete static blog articles. These are part of the website content.');
+      return;
+    }
+
     if (!confirm('Are you sure you want to delete this blog post? This action cannot be undone.')) {
       return;
     }
@@ -81,21 +139,35 @@ export default function BlogManagerPage() {
   const bulkDelete = async () => {
     if (selectedPosts.length === 0) return;
 
-    if (!confirm(`Are you sure you want to delete ${selectedPosts.length} blog posts? This action cannot be undone.`)) {
+    // Filter out static articles from selection
+    const staticArticleIds = blogArticles.map(article => article.id);
+    const deletablePosts = selectedPosts.filter(postId => !staticArticleIds.includes(postId));
+    const staticPostsCount = selectedPosts.length - deletablePosts.length;
+
+    if (staticPostsCount > 0) {
+      alert(`${staticPostsCount} static blog articles cannot be deleted. Only ${deletablePosts.length} posts will be deleted.`);
+    }
+
+    if (deletablePosts.length === 0) {
+      alert('No posts can be deleted. Static blog articles are protected.');
+      return;
+    }
+
+    if (!confirm(`Are you sure you want to delete ${deletablePosts.length} blog posts? This action cannot be undone.`)) {
       return;
     }
 
     try {
-      setDeleting(prev => [...prev, ...selectedPosts]);
+      setDeleting(prev => [...prev, ...deletablePosts]);
 
-      const deletePromises = selectedPosts.map(postId =>
+      const deletePromises = deletablePosts.map(postId =>
         fetch(`/api/admin/blog-posts/${postId}`, { method: 'DELETE' })
       );
 
       await Promise.all(deletePromises);
 
-      setBlogPosts(prev => prev.filter(post => !selectedPosts.includes(post.id)));
-      setSelectedPosts([]);
+      setBlogPosts(prev => prev.filter(post => !deletablePosts.includes(post.id)));
+      setSelectedPosts(prev => prev.filter(id => !deletablePosts.includes(id)));
     } catch (error) {
       console.error('Error bulk deleting posts:', error);
       alert('Error deleting some posts');
@@ -329,8 +401,8 @@ export default function BlogManagerPage() {
 
                               {/* Status Badge */}
                               <span className={`px-2 py-1 text-xs font-medium rounded-full ${post.status === 'published'
-                                  ? 'bg-green-500/20 text-green-300 border border-green-500/30'
-                                  : 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30'
+                                ? 'bg-green-500/20 text-green-300 border border-green-500/30'
+                                : 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30'
                                 }`}>
                                 {post.status}
                               </span>
@@ -340,6 +412,17 @@ export default function BlogManagerPage() {
                                 <span className="px-2 py-1 text-xs font-medium rounded-full bg-red-500/20 text-red-300 border border-red-500/30 flex items-center gap-1">
                                   <AlertTriangle className="h-3 w-3" />
                                   Issues
+                                </span>
+                              )}
+
+                              {/* AI/Static Badge */}
+                              {post.isAIGenerated ? (
+                                <span className="px-2 py-1 text-xs font-medium rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                                  AI Generated
+                                </span>
+                              ) : (
+                                <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                                  Static Article
                                 </span>
                               )}
                             </div>
@@ -409,9 +492,15 @@ export default function BlogManagerPage() {
 
                             <button
                               onClick={() => deleteBlogPost(post.id)}
-                              disabled={deleting.includes(post.id)}
-                              className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/20 rounded-lg transition-colors disabled:opacity-50"
-                              title="Delete Post"
+                              disabled={deleting.includes(post.id) || (!post.isAIGenerated && blogArticles.some(article => article.id === post.id))}
+                              className={`p-2 rounded-lg transition-colors disabled:opacity-50 ${(!post.isAIGenerated && blogArticles.some(article => article.id === post.id))
+                                  ? 'text-gray-500 cursor-not-allowed'
+                                  : 'text-red-400 hover:text-red-300 hover:bg-red-500/20'
+                                }`}
+                              title={(!post.isAIGenerated && blogArticles.some(article => article.id === post.id))
+                                ? "Cannot delete static articles"
+                                : "Delete Post"
+                              }
                             >
                               {deleting.includes(post.id) ? (
                                 <div className="animate-spin h-4 w-4 border-2 border-red-400 border-t-transparent rounded-full" />
