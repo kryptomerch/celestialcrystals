@@ -194,31 +194,33 @@ export class AIBlogAutomationService {
     console.log(`Generated seasonal post: ${blogPost.title}`);
   }
 
-  // AI Content Generation (integrate with OpenAI/Claude API)
+  // AI Content Generation using DeepSeek API
   private static async generateAIContent(title: string, sections: string[], variables: Record<string, string>): Promise<string> {
-    // This is a placeholder - integrate with actual AI API
-    const prompt = `
-    Write a comprehensive, SEO-optimized blog post about crystal healing for North American audience.
-    
-    Title: ${title}
-    Sections: ${sections.join(', ')}
-    Target Keywords: healing crystals, crystal bracelets, spiritual wellness
-    Audience: North American crystal enthusiasts, wellness seekers
-    Tone: Educational, spiritual, trustworthy
-    Length: 1500-2000 words
-    
-    Include:
-    - Scientific backing where appropriate
-    - Practical usage tips
-    - Safety considerations
-    - Call-to-action to shop crystals
-    - Internal links to related products
-    
-    Format in HTML with proper headings (H2, H3), paragraphs, and lists.
-    `;
+    try {
+      // Import DeepSeek AI service
+      const { deepseekAI } = await import('./deepseek-ai');
 
-    // For now, return a template - replace with actual AI API call
-    return this.generateTemplateContent(title, sections, variables);
+      // Create a detailed, specific prompt based on the content type
+      let detailedPrompt = '';
+
+      if (title.includes('Chakra')) {
+        detailedPrompt = this.createChakraGuidePrompt(title, variables);
+      } else if (title.includes('Seasonal') || title.includes('Spring') || title.includes('Summer') || title.includes('Fall') || title.includes('Winter')) {
+        detailedPrompt = this.createSeasonalPrompt(title, variables);
+      } else if (title.includes('Birthstone')) {
+        detailedPrompt = this.createBirthstonePrompt(title, variables);
+      } else {
+        detailedPrompt = this.createCrystalGuidePrompt(title, variables);
+      }
+
+      // Generate content using AI
+      const result = await deepseekAI.generateCustomContent(detailedPrompt, 'blog');
+      return result.content;
+
+    } catch (error) {
+      console.error('AI content generation failed, using fallback:', error);
+      return this.generateTemplateContent(title, sections, variables);
+    }
   }
 
   // Template content generator (fallback)
@@ -535,5 +537,161 @@ export class AIBlogAutomationService {
 
     <p><strong>Ready to enhance your spiritual journey with ${crystalData.name}?</strong> Browse our selection of ${crystalData.name} bracelets, stones, and jewelry to find the perfect piece for your needs.</p>
     `;
+  }
+
+  // Create detailed chakra guide prompt
+  private static createChakraGuidePrompt(title: string, variables: Record<string, string>): string {
+    const chakra = variables.chakra || 'Root';
+    const currentMonth = new Date().toLocaleString('default', { month: 'long' });
+
+    return `Write a comprehensive, expert-level guide about ${chakra} Chakra healing for ${currentMonth}. This should be a detailed, practical guide that crystal enthusiasts in North America will find valuable.
+
+TITLE: ${title}
+
+REQUIREMENTS:
+- 1800-2200 words of high-quality, original content
+- Include specific crystal recommendations for ${chakra} Chakra
+- Provide detailed meditation techniques and practices
+- Include seasonal relevance for ${currentMonth}
+- Add practical daily exercises and affirmations
+- Mention specific crystal bracelets and jewelry
+- Include scientific backing where appropriate
+- Use a warm, knowledgeable, spiritual tone
+
+STRUCTURE:
+1. Introduction to ${chakra} Chakra and its importance in ${currentMonth}
+2. Signs of ${chakra} Chakra imbalance and how to recognize them
+3. Best crystals for ${chakra} Chakra healing (at least 5 specific stones)
+4. Detailed meditation techniques for ${chakra} Chakra activation
+5. Daily practices and affirmations for ${currentMonth}
+6. How to use crystal bracelets for ${chakra} Chakra healing
+7. Seasonal considerations for ${currentMonth} chakra work
+8. Advanced techniques for experienced practitioners
+9. Common mistakes to avoid
+10. Conclusion with actionable next steps
+
+KEYWORDS TO INCLUDE: ${chakra.toLowerCase()} chakra, chakra healing, crystal bracelets, meditation, spiritual wellness, energy healing, ${currentMonth.toLowerCase()} healing
+
+Make this guide practical, detailed, and genuinely helpful for someone wanting to work with their ${chakra} Chakra this month.`;
+  }
+
+  // Create detailed seasonal content prompt
+  private static createSeasonalPrompt(title: string, variables: Record<string, string>): string {
+    const currentSeason = this.getCurrentSeason();
+    const currentMonth = new Date().toLocaleString('default', { month: 'long' });
+
+    return `Write an in-depth seasonal crystal guide for ${currentSeason} ${currentMonth}. This should be a comprehensive resource for crystal enthusiasts in North America.
+
+TITLE: ${title}
+
+REQUIREMENTS:
+- 1600-2000 words of original, detailed content
+- Focus on crystals that align with ${currentSeason} energy
+- Include specific seasonal rituals and practices
+- Provide practical advice for ${currentMonth} crystal work
+- Include information about crystal bracelets for the season
+- Add seasonal meditation techniques
+- Include moon phase considerations for ${currentMonth}
+- Use an inspiring, knowledgeable tone
+
+STRUCTURE:
+1. Introduction to ${currentSeason} crystal energy and ${currentMonth} significance
+2. Top 7 crystals for ${currentSeason} (detailed descriptions)
+3. Seasonal crystal rituals and ceremonies
+4. ${currentMonth} moon phase crystal work
+5. Creating a ${currentSeason} crystal altar
+6. Seasonal crystal bracelet combinations
+7. Weather-specific crystal care for ${currentSeason}
+8. ${currentSeason} manifestation techniques with crystals
+9. Seasonal cleansing and charging methods
+10. Planning ahead for the next season
+
+KEYWORDS: ${currentSeason.toLowerCase()} crystals, seasonal healing, crystal bracelets, ${currentMonth.toLowerCase()} rituals, seasonal energy, crystal altar
+
+Make this guide specific to ${currentSeason} ${currentMonth} with practical, actionable advice that readers can implement immediately.`;
+  }
+
+  // Create detailed birthstone guide prompt
+  private static createBirthstonePrompt(title: string, variables: Record<string, string>): string {
+    const month = variables.month || new Date().toLocaleString('default', { month: 'long' });
+    const zodiac = variables.zodiac || 'Aquarius';
+
+    return `Write a comprehensive birthstone guide for ${month} focusing on ${zodiac} energy and crystal healing. This should be an authoritative resource for North American crystal enthusiasts.
+
+TITLE: ${title}
+
+REQUIREMENTS:
+- 1700-2100 words of expert-level content
+- Cover both traditional and modern ${month} birthstones
+- Include detailed ${zodiac} zodiac connections
+- Provide specific healing properties and uses
+- Include crystal bracelet and jewelry recommendations
+- Add meditation and ritual practices
+- Include gift-giving suggestions for ${month} birthdays
+- Use an authoritative yet accessible tone
+
+STRUCTURE:
+1. Introduction to ${month} birthstones and ${zodiac} energy
+2. Traditional vs. modern ${month} birthstones (detailed comparison)
+3. Healing properties of each ${month} birthstone
+4. ${zodiac} zodiac connections and personality traits
+5. How to choose the right ${month} birthstone for you
+6. ${month} birthstone jewelry and crystal bracelets
+7. Meditation practices with ${month} birthstones
+8. ${month} birthday rituals and celebrations
+9. Caring for your ${month} birthstones
+10. Gift guide: ${month} birthstone presents
+11. Conclusion and ${month} affirmations
+
+KEYWORDS: ${month.toLowerCase()} birthstone, ${zodiac.toLowerCase()} crystals, birthstone jewelry, crystal bracelets, zodiac healing, ${month.toLowerCase()} birthday
+
+Create a definitive guide that someone born in ${month} or interested in ${zodiac} energy would bookmark and reference regularly.`;
+  }
+
+  // Create detailed crystal guide prompt
+  private static createCrystalGuidePrompt(title: string, variables: Record<string, string>): string {
+    const crystal = variables.crystal || variables.name || 'Amethyst';
+
+    return `Write an expert-level comprehensive guide about ${crystal} crystal. This should be the definitive resource for ${crystal} that crystal enthusiasts in North America will find invaluable.
+
+TITLE: ${title}
+
+REQUIREMENTS:
+- 1800-2200 words of detailed, original content
+- Include geological and metaphysical properties
+- Provide specific healing applications and techniques
+- Include historical and cultural significance
+- Add practical usage instructions
+- Include crystal bracelet and jewelry information
+- Provide care and maintenance instructions
+- Use an expert, trustworthy tone
+
+STRUCTURE:
+1. Introduction to ${crystal} and why it's special
+2. Geological formation and physical properties of ${crystal}
+3. Historical significance and cultural uses
+4. Metaphysical properties and energy signature
+5. Specific healing benefits (physical, emotional, spiritual)
+6. Chakra connections and energy work with ${crystal}
+7. How to use ${crystal} in meditation and daily practice
+8. ${crystal} jewelry and crystal bracelets
+9. Cleansing, charging, and caring for ${crystal}
+10. ${crystal} combinations with other stones
+11. Common myths and misconceptions about ${crystal}
+12. Where to buy authentic ${crystal} and what to look for
+13. Conclusion and ${crystal} affirmations
+
+KEYWORDS: ${crystal.toLowerCase()} crystal, ${crystal.toLowerCase()} healing, crystal bracelets, ${crystal.toLowerCase()} properties, crystal healing, spiritual wellness
+
+Make this the most comprehensive ${crystal} guide available, with practical advice that both beginners and experienced practitioners will find valuable.`;
+  }
+
+  // Get current season
+  private static getCurrentSeason(): string {
+    const month = new Date().getMonth();
+    if (month >= 2 && month <= 4) return 'Spring';
+    if (month >= 5 && month <= 7) return 'Summer';
+    if (month >= 8 && month <= 10) return 'Fall';
+    return 'Winter';
   }
 }
