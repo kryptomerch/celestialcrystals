@@ -1,12 +1,19 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import '../styles/editor.css';
+import { useEditor, EditorContent } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import Link from '@tiptap/extension-link';
+import Image from '@tiptap/extension-image';
+import TextAlign from '@tiptap/extension-text-align';
+import Underline from '@tiptap/extension-underline';
 import {
   Bold,
   Italic,
-  Underline,
-  Link,
-  Image,
+  Underline as UnderlineIcon,
+  Link as LinkIcon,
+  Image as ImageIcon,
   Quote,
   List,
   ListOrdered,
@@ -18,7 +25,12 @@ import {
   Save,
   Eye,
   Upload,
-  X
+  X,
+  Heading1,
+  Heading2,
+  Heading3,
+  Undo,
+  Redo
 } from 'lucide-react';
 
 interface BlogEditorProps {
@@ -28,22 +40,20 @@ interface BlogEditorProps {
   onPreview?: (content: { title: string; content: string; excerpt: string }) => void;
 }
 
-export default function BlogEditor({ 
-  initialContent = '', 
+export default function BlogEditor({
+  initialContent = '',
   initialTitle = '',
   onSave,
-  onPreview 
+  onPreview
 }: BlogEditorProps) {
   const [title, setTitle] = useState(initialTitle);
-  const [content, setContent] = useState(initialContent);
   const [isUploading, setIsUploading] = useState(false);
   const [showImageUpload, setShowImageUpload] = useState(false);
-  const contentRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Auto-resize title input
   const titleRef = useRef<HTMLTextAreaElement>(null);
-  
+
   useEffect(() => {
     if (titleRef.current) {
       titleRef.current.style.height = 'auto';
@@ -51,10 +61,58 @@ export default function BlogEditor({
     }
   }, [title]);
 
-  const executeCommand = (command: string, value?: string) => {
-    document.execCommand(command, false, value);
-    if (contentRef.current) {
-      setContent(contentRef.current.innerHTML);
+  // Initialize TipTap editor
+  const editor = useEditor({
+    extensions: [
+      StarterKit,
+      Underline,
+      Link.configure({
+        openOnClick: false,
+        HTMLAttributes: {
+          class: 'text-blue-600 underline hover:text-blue-800',
+        },
+      }),
+      Image.configure({
+        HTMLAttributes: {
+          class: 'max-w-full h-auto rounded-lg shadow-sm my-4',
+        },
+      }),
+      TextAlign.configure({
+        types: ['heading', 'paragraph'],
+      }),
+    ],
+    content: initialContent,
+    editorProps: {
+      attributes: {
+        class: 'prose prose-lg max-w-none focus:outline-none min-h-[400px] px-4 py-2',
+        'data-placeholder': 'Start writing your blog post...',
+      },
+    },
+  });
+
+  useEffect(() => {
+    if (editor && initialContent !== editor.getHTML()) {
+      editor.commands.setContent(initialContent);
+    }
+  }, [initialContent, editor]);
+
+  // Toolbar button handlers
+  const addImage = (url: string) => {
+    if (editor) {
+      editor.chain().focus().setImage({ src: url }).run();
+    }
+  };
+
+  const addLink = () => {
+    const url = window.prompt('Enter the URL:');
+    if (url && editor) {
+      editor.chain().focus().setLink({ href: url }).run();
+    }
+  };
+
+  const removeLink = () => {
+    if (editor) {
+      editor.chain().focus().unsetLink().run();
     }
   };
 
@@ -72,22 +130,8 @@ export default function BlogEditor({
       const data = await response.json();
 
       if (data.success) {
-        // Insert image into content
-        const imageHtml = `<div class="image-container my-6">
-          <img src="${data.imageUrl}" alt="Blog image" class="w-full rounded-lg shadow-sm" />
-        </div>`;
-        
-        if (contentRef.current) {
-          const selection = window.getSelection();
-          if (selection && selection.rangeCount > 0) {
-            const range = selection.getRangeAt(0);
-            range.deleteContents();
-            range.insertNode(document.createRange().createContextualFragment(imageHtml));
-          } else {
-            contentRef.current.innerHTML += imageHtml;
-          }
-          setContent(contentRef.current.innerHTML);
-        }
+        // Insert image into editor
+        addImage(data.imageUrl);
         setShowImageUpload(false);
       } else {
         alert('Failed to upload image: ' + data.error);
@@ -114,27 +158,22 @@ export default function BlogEditor({
   };
 
   const handleSave = () => {
+    if (!editor) return;
+    const content = editor.getHTML();
     const excerpt = generateExcerpt(content);
     onSave?.({ title, content, excerpt });
   };
 
   const handlePreview = () => {
+    if (!editor) return;
+    const content = editor.getHTML();
     const excerpt = generateExcerpt(content);
     onPreview?.({ title, content, excerpt });
   };
 
-  const toolbarButtons = [
-    { icon: Bold, command: 'bold', title: 'Bold' },
-    { icon: Italic, command: 'italic', title: 'Italic' },
-    { icon: Underline, command: 'underline', title: 'Underline' },
-    { icon: Quote, command: 'formatBlock', value: 'blockquote', title: 'Quote' },
-    { icon: List, command: 'insertUnorderedList', title: 'Bullet List' },
-    { icon: ListOrdered, command: 'insertOrderedList', title: 'Numbered List' },
-    { icon: Code, command: 'formatBlock', value: 'pre', title: 'Code Block' },
-    { icon: AlignLeft, command: 'justifyLeft', title: 'Align Left' },
-    { icon: AlignCenter, command: 'justifyCenter', title: 'Align Center' },
-    { icon: AlignRight, command: 'justifyRight', title: 'Align Right' },
-  ];
+  if (!editor) {
+    return <div>Loading editor...</div>;
+  }
 
   return (
     <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-sm border">
@@ -161,50 +200,168 @@ export default function BlogEditor({
         </div>
 
         {/* Formatting Toolbar */}
-        <div className="flex items-center space-x-1 flex-wrap">
-          {toolbarButtons.map((button, index) => (
-            <button
-              key={index}
-              onClick={() => executeCommand(button.command, button.value)}
-              className="p-2 rounded hover:bg-gray-100 text-gray-600 hover:text-gray-900"
-              title={button.title}
-            >
-              <button.icon className="w-4 h-4" />
-            </button>
-          ))}
-          
+        <div className="flex items-center space-x-1 flex-wrap gap-1">
+          {/* Undo/Redo */}
+          <button
+            onClick={() => editor.chain().focus().undo().run()}
+            disabled={!editor.can().undo()}
+            className="p-2 rounded hover:bg-gray-100 text-gray-600 hover:text-gray-900 disabled:opacity-50"
+            title="Undo"
+          >
+            <Undo className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => editor.chain().focus().redo().run()}
+            disabled={!editor.can().redo()}
+            className="p-2 rounded hover:bg-gray-100 text-gray-600 hover:text-gray-900 disabled:opacity-50"
+            title="Redo"
+          >
+            <Redo className="w-4 h-4" />
+          </button>
+
           <div className="w-px h-6 bg-gray-300 mx-2" />
-          
+
+          {/* Headings */}
+          <button
+            onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+            className={`p-2 rounded hover:bg-gray-100 text-gray-600 hover:text-gray-900 ${editor.isActive('heading', { level: 1 }) ? 'bg-gray-200' : ''
+              }`}
+            title="Heading 1"
+          >
+            <Heading1 className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+            className={`p-2 rounded hover:bg-gray-100 text-gray-600 hover:text-gray-900 ${editor.isActive('heading', { level: 2 }) ? 'bg-gray-200' : ''
+              }`}
+            title="Heading 2"
+          >
+            <Heading2 className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+            className={`p-2 rounded hover:bg-gray-100 text-gray-600 hover:text-gray-900 ${editor.isActive('heading', { level: 3 }) ? 'bg-gray-200' : ''
+              }`}
+            title="Heading 3"
+          >
+            <Heading3 className="w-4 h-4" />
+          </button>
+
+          <div className="w-px h-6 bg-gray-300 mx-2" />
+
+          {/* Text Formatting */}
+          <button
+            onClick={() => editor.chain().focus().toggleBold().run()}
+            className={`p-2 rounded hover:bg-gray-100 text-gray-600 hover:text-gray-900 ${editor.isActive('bold') ? 'bg-gray-200' : ''
+              }`}
+            title="Bold"
+          >
+            <Bold className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => editor.chain().focus().toggleItalic().run()}
+            className={`p-2 rounded hover:bg-gray-100 text-gray-600 hover:text-gray-900 ${editor.isActive('italic') ? 'bg-gray-200' : ''
+              }`}
+            title="Italic"
+          >
+            <Italic className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => editor.chain().focus().toggleUnderline().run()}
+            className={`p-2 rounded hover:bg-gray-100 text-gray-600 hover:text-gray-900 ${editor.isActive('underline') ? 'bg-gray-200' : ''
+              }`}
+            title="Underline"
+          >
+            <UnderlineIcon className="w-4 h-4" />
+          </button>
+
+          <div className="w-px h-6 bg-gray-300 mx-2" />
+
+          {/* Lists */}
+          <button
+            onClick={() => editor.chain().focus().toggleBulletList().run()}
+            className={`p-2 rounded hover:bg-gray-100 text-gray-600 hover:text-gray-900 ${editor.isActive('bulletList') ? 'bg-gray-200' : ''
+              }`}
+            title="Bullet List"
+          >
+            <List className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => editor.chain().focus().toggleOrderedList().run()}
+            className={`p-2 rounded hover:bg-gray-100 text-gray-600 hover:text-gray-900 ${editor.isActive('orderedList') ? 'bg-gray-200' : ''
+              }`}
+            title="Numbered List"
+          >
+            <ListOrdered className="w-4 h-4" />
+          </button>
+
+          <div className="w-px h-6 bg-gray-300 mx-2" />
+
+          {/* Quote and Code */}
+          <button
+            onClick={() => editor.chain().focus().toggleBlockquote().run()}
+            className={`p-2 rounded hover:bg-gray-100 text-gray-600 hover:text-gray-900 ${editor.isActive('blockquote') ? 'bg-gray-200' : ''
+              }`}
+            title="Quote"
+          >
+            <Quote className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+            className={`p-2 rounded hover:bg-gray-100 text-gray-600 hover:text-gray-900 ${editor.isActive('codeBlock') ? 'bg-gray-200' : ''
+              }`}
+            title="Code Block"
+          >
+            <Code className="w-4 h-4" />
+          </button>
+
+          <div className="w-px h-6 bg-gray-300 mx-2" />
+
+          {/* Alignment */}
+          <button
+            onClick={() => editor.chain().focus().setTextAlign('left').run()}
+            className={`p-2 rounded hover:bg-gray-100 text-gray-600 hover:text-gray-900 ${editor.isActive({ textAlign: 'left' }) ? 'bg-gray-200' : ''
+              }`}
+            title="Align Left"
+          >
+            <AlignLeft className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => editor.chain().focus().setTextAlign('center').run()}
+            className={`p-2 rounded hover:bg-gray-100 text-gray-600 hover:text-gray-900 ${editor.isActive({ textAlign: 'center' }) ? 'bg-gray-200' : ''
+              }`}
+            title="Align Center"
+          >
+            <AlignCenter className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => editor.chain().focus().setTextAlign('right').run()}
+            className={`p-2 rounded hover:bg-gray-100 text-gray-600 hover:text-gray-900 ${editor.isActive({ textAlign: 'right' }) ? 'bg-gray-200' : ''
+              }`}
+            title="Align Right"
+          >
+            <AlignRight className="w-4 h-4" />
+          </button>
+
+          <div className="w-px h-6 bg-gray-300 mx-2" />
+
+          {/* Media */}
           <button
             onClick={() => setShowImageUpload(true)}
             className="p-2 rounded hover:bg-gray-100 text-gray-600 hover:text-gray-900"
             title="Insert Image"
           >
-            <Image className="w-4 h-4" />
-          </button>
-          
-          <button
-            onClick={() => {
-              const url = prompt('Enter link URL:');
-              if (url) executeCommand('createLink', url);
-            }}
-            className="p-2 rounded hover:bg-gray-100 text-gray-600 hover:text-gray-900"
-            title="Insert Link"
-          >
-            <Link className="w-4 h-4" />
+            <ImageIcon className="w-4 h-4" />
           </button>
 
-          <select
-            onChange={(e) => executeCommand('formatBlock', e.target.value)}
-            className="ml-2 px-2 py-1 border rounded text-sm"
-            defaultValue=""
+          <button
+            onClick={editor.isActive('link') ? removeLink : addLink}
+            className={`p-2 rounded hover:bg-gray-100 text-gray-600 hover:text-gray-900 ${editor.isActive('link') ? 'bg-gray-200' : ''
+              }`}
+            title={editor.isActive('link') ? 'Remove Link' : 'Add Link'}
           >
-            <option value="">Format</option>
-            <option value="h1">Heading 1</option>
-            <option value="h2">Heading 2</option>
-            <option value="h3">Heading 3</option>
-            <option value="p">Paragraph</option>
-          </select>
+            <LinkIcon className="w-4 h-4" />
+          </button>
         </div>
       </div>
 
@@ -221,24 +378,12 @@ export default function BlogEditor({
         />
 
         {/* Content Editor */}
-        <div
-          ref={contentRef}
-          contentEditable
-          onInput={(e) => setContent(e.currentTarget.innerHTML)}
-          className="min-h-[400px] text-gray-800 leading-relaxed outline-none prose prose-lg max-w-none"
-          style={{ 
-            fontSize: '18px',
-            lineHeight: '1.6'
-          }}
-          dangerouslySetInnerHTML={{ __html: content }}
-          suppressContentEditableWarning={true}
-        />
-
-        {content.length === 0 && (
-          <div className="absolute top-32 left-6 text-gray-400 text-lg pointer-events-none">
-            Start writing your blog post...
-          </div>
-        )}
+        <div className="min-h-[400px] border border-gray-200 rounded-lg">
+          <EditorContent
+            editor={editor}
+            className="min-h-[400px] text-gray-800 leading-relaxed"
+          />
+        </div>
       </div>
 
       {/* Image Upload Modal */}

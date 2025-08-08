@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
 
     // Initialize Stripe
     const stripe = new Stripe(secretKey, {
-      apiVersion: '2025-06-30.basil',
+      apiVersion: '2025-07-30.basil',
     });
 
     // Test creating a payment intent
@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('Stripe test failed:', error);
-    
+
     return NextResponse.json({
       success: false,
       error: 'Stripe test failed',

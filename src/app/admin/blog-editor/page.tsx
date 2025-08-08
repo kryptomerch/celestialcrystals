@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import BlogEditor from '@/components/BlogEditor';
 import { ArrowLeft, Save, Eye, Globe } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 
 export default function BlogEditorPage() {
   const { data: session } = useSession();
@@ -179,8 +180,8 @@ export default function BlogEditorPage() {
                 <button
                   onClick={handlePublish}
                   className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium ${blogData.status === 'published'
-                      ? 'bg-yellow-600 hover:bg-yellow-700 text-white'
-                      : 'bg-green-600 hover:bg-green-700 text-white'
+                    ? 'bg-yellow-600 hover:bg-yellow-700 text-white'
+                    : 'bg-green-600 hover:bg-green-700 text-white'
                     }`}
                 >
                   <Globe className="w-4 h-4" />
@@ -189,8 +190,8 @@ export default function BlogEditorPage() {
               )}
 
               <span className={`px-3 py-1 rounded-full text-sm font-medium ${blogData.status === 'published'
-                  ? 'bg-green-100 text-green-700'
-                  : 'bg-yellow-100 text-yellow-700'
+                ? 'bg-green-100 text-green-700'
+                : 'bg-yellow-100 text-yellow-700'
                 }`}>
                 {blogData.status}
               </span>
@@ -317,10 +318,48 @@ export default function BlogEditorPage() {
                 {previewData.excerpt}
               </p>
 
-              <div
-                className="prose prose-lg max-w-none"
-                dangerouslySetInnerHTML={{ __html: previewData.content }}
-              />
+              <div className="prose prose-lg max-w-none">
+                <ReactMarkdown
+                  components={{
+                    img: ({ node, ...props }) => (
+                      <img
+                        {...props}
+                        className="w-full h-auto rounded-lg shadow-lg my-8"
+                        loading="lazy"
+                      />
+                    ),
+                    h1: ({ node, ...props }) => (
+                      <h1 {...props} className="text-4xl font-bold mb-6 text-gray-900" />
+                    ),
+                    h2: ({ node, ...props }) => (
+                      <h2 {...props} className="text-3xl font-semibold mb-4 mt-8 text-gray-900" />
+                    ),
+                    h3: ({ node, ...props }) => (
+                      <h3 {...props} className="text-2xl font-medium mb-3 mt-6 text-gray-900" />
+                    ),
+                    p: ({ node, ...props }) => (
+                      <p {...props} className="mb-4 leading-relaxed text-gray-800" />
+                    ),
+                    ul: ({ node, ...props }) => (
+                      <ul {...props} className="mb-4 pl-6 space-y-2 text-gray-800" />
+                    ),
+                    ol: ({ node, ...props }) => (
+                      <ol {...props} className="mb-4 pl-6 space-y-2 text-gray-800" />
+                    ),
+                    li: ({ node, ...props }) => (
+                      <li {...props} className="list-disc" />
+                    ),
+                    strong: ({ node, ...props }) => (
+                      <strong {...props} className="font-semibold text-gray-900" />
+                    ),
+                    blockquote: ({ node, ...props }) => (
+                      <blockquote {...props} className="border-l-4 border-purple-500 pl-4 italic my-6 text-gray-800" />
+                    ),
+                  }}
+                >
+                  {previewData.content}
+                </ReactMarkdown>
+              </div>
 
               {previewData.tags && (
                 <div className="mt-8 pt-6 border-t">

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Bot, Calendar, FileText, TrendingUp, Zap, Clock, Target, Globe, Eye, CheckCircle, XCircle, Plus, Edit } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 
 interface BlogPost {
   id: string;
@@ -556,10 +557,46 @@ export default function AIBlogAutomationPage() {
 
               {/* Article Content */}
               <div className="prose prose-lg max-w-none">
-                <div
-                  dangerouslySetInnerHTML={{ __html: previewPost.content }}
-                  className="text-gray-800 leading-relaxed"
-                />
+                <ReactMarkdown
+                  components={{
+                    img: ({ node, ...props }) => (
+                      <img
+                        {...props}
+                        className="w-full h-auto rounded-lg shadow-lg my-8"
+                        loading="lazy"
+                      />
+                    ),
+                    h1: ({ node, ...props }) => (
+                      <h1 {...props} className="text-4xl font-bold mb-6 text-gray-900" />
+                    ),
+                    h2: ({ node, ...props }) => (
+                      <h2 {...props} className="text-3xl font-semibold mb-4 mt-8 text-gray-900" />
+                    ),
+                    h3: ({ node, ...props }) => (
+                      <h3 {...props} className="text-2xl font-medium mb-3 mt-6 text-gray-900" />
+                    ),
+                    p: ({ node, ...props }) => (
+                      <p {...props} className="mb-4 leading-relaxed text-gray-800" />
+                    ),
+                    ul: ({ node, ...props }) => (
+                      <ul {...props} className="mb-4 pl-6 space-y-2 text-gray-800" />
+                    ),
+                    ol: ({ node, ...props }) => (
+                      <ol {...props} className="mb-4 pl-6 space-y-2 text-gray-800" />
+                    ),
+                    li: ({ node, ...props }) => (
+                      <li {...props} className="list-disc" />
+                    ),
+                    strong: ({ node, ...props }) => (
+                      <strong {...props} className="font-semibold text-gray-900" />
+                    ),
+                    blockquote: ({ node, ...props }) => (
+                      <blockquote {...props} className="border-l-4 border-purple-500 pl-4 italic my-6 text-gray-800" />
+                    ),
+                  }}
+                >
+                  {previewPost.content}
+                </ReactMarkdown>
               </div>
 
               {/* Tags */}

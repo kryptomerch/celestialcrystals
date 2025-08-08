@@ -18,6 +18,7 @@ import {
   Calendar,
   Tag
 } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 
 interface AIBlogPost {
   id: string;
@@ -27,7 +28,7 @@ interface AIBlogPost {
   tags: string[];
   status: 'draft' | 'review' | 'published';
   createdAt: string;
-  isAIGenerated: boolean;
+  isAIGenerated?: boolean;
 }
 
 export default function AIContentManager() {
@@ -250,8 +251,8 @@ export default function AIContentManager() {
       {/* Custom Prompt Section */}
       {showCustomPrompt && (
         <div className={`p-6 rounded-2xl shadow-sm border ${isDark
-            ? 'bg-gray-800/80 border-gray-700/50'
-            : 'bg-white/80 border-gray-200/50'
+          ? 'bg-gray-800/80 border-gray-700/50'
+          : 'bg-white/80 border-gray-200/50'
           }`}>
           <h3 className={`text-lg font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
             🎯 Custom AI Prompt
@@ -267,8 +268,8 @@ export default function AIContentManager() {
                 onChange={(e) => setCustomPrompt(e.target.value)}
                 placeholder="Example: Write a comprehensive guide about using crystals for meditation, including specific techniques for different crystals and how to create a crystal meditation space..."
                 className={`w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 transition-all duration-200 ${isDark
-                    ? 'border-gray-600 bg-gray-700/50 text-white placeholder-gray-400 focus:ring-purple-500 focus:border-purple-500'
-                    : 'border-gray-300 bg-white text-gray-900 placeholder-gray-500 focus:ring-indigo-500 focus:border-indigo-500'
+                  ? 'border-gray-600 bg-gray-700/50 text-white placeholder-gray-400 focus:ring-purple-500 focus:border-purple-500'
+                  : 'border-gray-300 bg-white text-gray-900 placeholder-gray-500 focus:ring-indigo-500 focus:border-indigo-500'
                   }`}
               />
             </div>
@@ -277,8 +278,8 @@ export default function AIContentManager() {
                 onClick={() => generateNewPost(true)}
                 disabled={loading || !customPrompt.trim()}
                 className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 disabled:opacity-50 ${isDark
-                    ? 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white'
-                    : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white'
+                  ? 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white'
+                  : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white'
                   }`}
               >
                 <Sparkles className="w-5 h-5" />
@@ -290,8 +291,8 @@ export default function AIContentManager() {
                   setCustomPrompt('');
                 }}
                 className={`px-4 py-3 rounded-lg font-medium transition-all duration-200 ${isDark
-                    ? 'bg-gray-600 hover:bg-gray-700 text-white'
-                    : 'bg-gray-600 hover:bg-gray-700 text-white'
+                  ? 'bg-gray-600 hover:bg-gray-700 text-white'
+                  : 'bg-gray-600 hover:bg-gray-700 text-white'
                   }`}
               >
                 Cancel
@@ -490,7 +491,46 @@ export default function AIContentManager() {
                   </div>
 
                   <div className={`prose max-w-none ${isDark ? 'prose-invert' : ''}`}>
-                    <div dangerouslySetInnerHTML={{ __html: selectedPost.content.replace(/\n/g, '<br>') }} />
+                    <ReactMarkdown
+                      components={{
+                        img: ({ node, ...props }) => (
+                          <img
+                            {...props}
+                            className="w-full h-auto rounded-lg shadow-lg my-8"
+                            loading="lazy"
+                          />
+                        ),
+                        h1: ({ node, ...props }) => (
+                          <h1 {...props} className={`text-4xl font-bold mb-6 ${isDark ? 'text-white' : 'text-gray-900'}`} />
+                        ),
+                        h2: ({ node, ...props }) => (
+                          <h2 {...props} className={`text-3xl font-semibold mb-4 mt-8 ${isDark ? 'text-white' : 'text-gray-900'}`} />
+                        ),
+                        h3: ({ node, ...props }) => (
+                          <h3 {...props} className={`text-2xl font-medium mb-3 mt-6 ${isDark ? 'text-white' : 'text-gray-900'}`} />
+                        ),
+                        p: ({ node, ...props }) => (
+                          <p {...props} className={`mb-4 leading-relaxed ${isDark ? 'text-gray-300' : 'text-gray-700'}`} />
+                        ),
+                        ul: ({ node, ...props }) => (
+                          <ul {...props} className={`mb-4 pl-6 space-y-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`} />
+                        ),
+                        ol: ({ node, ...props }) => (
+                          <ol {...props} className={`mb-4 pl-6 space-y-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`} />
+                        ),
+                        li: ({ node, ...props }) => (
+                          <li {...props} className="list-disc" />
+                        ),
+                        strong: ({ node, ...props }) => (
+                          <strong {...props} className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`} />
+                        ),
+                        blockquote: ({ node, ...props }) => (
+                          <blockquote {...props} className={`border-l-4 border-purple-500 pl-4 italic my-6 ${isDark ? 'text-gray-300' : 'text-gray-700'}`} />
+                        ),
+                      }}
+                    >
+                      {selectedPost.content}
+                    </ReactMarkdown>
                   </div>
 
                   <div className="flex flex-wrap gap-2">

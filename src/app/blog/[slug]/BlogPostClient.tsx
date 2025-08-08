@@ -65,11 +65,7 @@ export default function BlogPostClient({ article }: BlogPostClientProps) {
             <span className={`px-3 py-1 text-sm font-medium rounded-full ${isDark ? 'bg-blue-500/20 text-blue-300' : 'bg-blue-100 text-blue-800'}`}>
               {article.category}
             </span>
-            {article.isAI && (
-              <span className={`px-3 py-1 text-sm font-medium rounded-full ${isDark ? 'bg-green-500/20 text-green-300' : 'bg-green-100 text-green-800'}`}>
-                AI Generated
-              </span>
-            )}
+
           </div>
 
           {/* Title */}
@@ -115,7 +111,46 @@ export default function BlogPostClient({ article }: BlogPostClientProps) {
           ? 'prose-invert prose-headings:text-white prose-p:text-gray-300 prose-strong:text-white prose-em:text-gray-300 prose-blockquote:text-gray-300 prose-code:text-purple-300 prose-pre:bg-gray-800 prose-pre:text-gray-300'
           : 'prose-headings:text-gray-900 prose-p:text-gray-700 prose-strong:text-gray-900 prose-em:text-gray-700 prose-blockquote:text-gray-700 prose-code:text-purple-600 prose-pre:bg-gray-100'
           }`}>
-          <ReactMarkdown>{article.content}</ReactMarkdown>
+          <ReactMarkdown
+            components={{
+              img: ({ node, ...props }) => (
+                <img
+                  {...props}
+                  className="w-full h-auto rounded-lg shadow-lg my-8"
+                  loading="lazy"
+                />
+              ),
+              h1: ({ node, ...props }) => (
+                <h1 {...props} className={`text-4xl font-bold mb-6 ${isDark ? 'text-white' : 'text-gray-900'}`} />
+              ),
+              h2: ({ node, ...props }) => (
+                <h2 {...props} className={`text-3xl font-semibold mb-4 mt-8 ${isDark ? 'text-white' : 'text-gray-900'}`} />
+              ),
+              h3: ({ node, ...props }) => (
+                <h3 {...props} className={`text-2xl font-medium mb-3 mt-6 ${isDark ? 'text-white' : 'text-gray-900'}`} />
+              ),
+              p: ({ node, ...props }) => (
+                <p {...props} className={`mb-4 leading-relaxed ${isDark ? 'text-gray-300' : 'text-gray-700'}`} />
+              ),
+              ul: ({ node, ...props }) => (
+                <ul {...props} className={`mb-4 pl-6 space-y-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`} />
+              ),
+              ol: ({ node, ...props }) => (
+                <ol {...props} className={`mb-4 pl-6 space-y-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`} />
+              ),
+              li: ({ node, ...props }) => (
+                <li {...props} className="list-disc" />
+              ),
+              strong: ({ node, ...props }) => (
+                <strong {...props} className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`} />
+              ),
+              blockquote: ({ node, ...props }) => (
+                <blockquote {...props} className={`border-l-4 border-purple-500 pl-4 italic my-6 ${isDark ? 'text-gray-300' : 'text-gray-700'}`} />
+              ),
+            }}
+          >
+            {article.content}
+          </ReactMarkdown>
         </div>
 
         {/* Tags */}
