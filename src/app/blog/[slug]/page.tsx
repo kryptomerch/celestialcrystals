@@ -32,6 +32,14 @@ export default function BlogArticlePage() {
   const fetchAIBlogPost = async () => {
     try {
       const response = await fetch('/api/public/blog-posts');
+
+      // Check if response is HTML (authentication page) instead of JSON
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        console.log('API endpoint is protected by authentication, skipping AI blog posts');
+        return;
+      }
+
       const data = await response.json();
 
       if (data.success) {
@@ -48,7 +56,8 @@ export default function BlogArticlePage() {
         }
       }
     } catch (error) {
-      console.error('Error fetching AI blog post:', error);
+      console.error('Error fetching AI blog post (API may be protected):', error);
+      // Gracefully continue with static articles only
     } finally {
       setLoading(false);
     }
