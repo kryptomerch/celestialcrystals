@@ -491,46 +491,63 @@ export default function AIContentManager() {
                   </div>
 
                   <div className={`prose max-w-none ${isDark ? 'prose-invert' : ''}`}>
-                    <ReactMarkdown
-                      components={{
-                        img: ({ node, ...props }) => (
-                          <img
-                            {...props}
-                            className="w-full h-auto rounded-lg shadow-lg my-8"
-                            loading="lazy"
-                          />
-                        ),
-                        h1: ({ node, ...props }) => (
-                          <h1 {...props} className={`text-4xl font-bold mb-6 ${isDark ? 'text-white' : 'text-gray-900'}`} />
-                        ),
-                        h2: ({ node, ...props }) => (
-                          <h2 {...props} className={`text-3xl font-semibold mb-4 mt-8 ${isDark ? 'text-white' : 'text-gray-900'}`} />
-                        ),
-                        h3: ({ node, ...props }) => (
-                          <h3 {...props} className={`text-2xl font-medium mb-3 mt-6 ${isDark ? 'text-white' : 'text-gray-900'}`} />
-                        ),
-                        p: ({ node, ...props }) => (
-                          <p {...props} className={`mb-4 leading-relaxed ${isDark ? 'text-gray-300' : 'text-gray-700'}`} />
-                        ),
-                        ul: ({ node, ...props }) => (
-                          <ul {...props} className={`mb-4 pl-6 space-y-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`} />
-                        ),
-                        ol: ({ node, ...props }) => (
-                          <ol {...props} className={`mb-4 pl-6 space-y-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`} />
-                        ),
-                        li: ({ node, ...props }) => (
-                          <li {...props} className="list-disc" />
-                        ),
-                        strong: ({ node, ...props }) => (
-                          <strong {...props} className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`} />
-                        ),
-                        blockquote: ({ node, ...props }) => (
-                          <blockquote {...props} className={`border-l-4 border-purple-500 pl-4 italic my-6 ${isDark ? 'text-gray-300' : 'text-gray-700'}`} />
-                        ),
-                      }}
-                    >
-                      {selectedPost.content}
-                    </ReactMarkdown>
+                    {(() => {
+                      // Function to detect if content is HTML or Markdown
+                      const isHtmlContent = (content: string): boolean => {
+                        const htmlTagRegex = /<\/?[a-z][\s\S]*>/i;
+                        return htmlTagRegex.test(content);
+                      };
+
+                      return isHtmlContent(selectedPost.content) ? (
+                        // Render HTML content (for AI-generated articles)
+                        <div
+                          dangerouslySetInnerHTML={{ __html: selectedPost.content }}
+                          className={`html-content ${isDark ? 'html-content-dark' : 'html-content-light'}`}
+                        />
+                      ) : (
+                        // Render Markdown content
+                        <ReactMarkdown
+                          components={{
+                            img: ({ node, ...props }) => (
+                              <img
+                                {...props}
+                                className="w-full h-auto rounded-lg shadow-lg my-8"
+                                loading="lazy"
+                              />
+                            ),
+                            h1: ({ node, ...props }) => (
+                              <h1 {...props} className={`text-4xl font-bold mb-6 ${isDark ? 'text-white' : 'text-gray-900'}`} />
+                            ),
+                            h2: ({ node, ...props }) => (
+                              <h2 {...props} className={`text-3xl font-semibold mb-4 mt-8 ${isDark ? 'text-white' : 'text-gray-900'}`} />
+                            ),
+                            h3: ({ node, ...props }) => (
+                              <h3 {...props} className={`text-2xl font-medium mb-3 mt-6 ${isDark ? 'text-white' : 'text-gray-900'}`} />
+                            ),
+                            p: ({ node, ...props }) => (
+                              <p {...props} className={`mb-4 leading-relaxed ${isDark ? 'text-gray-300' : 'text-gray-700'}`} />
+                            ),
+                            ul: ({ node, ...props }) => (
+                              <ul {...props} className={`mb-4 pl-6 space-y-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`} />
+                            ),
+                            ol: ({ node, ...props }) => (
+                              <ol {...props} className={`mb-4 pl-6 space-y-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`} />
+                            ),
+                            li: ({ node, ...props }) => (
+                              <li {...props} className="list-disc" />
+                            ),
+                            strong: ({ node, ...props }) => (
+                              <strong {...props} className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`} />
+                            ),
+                            blockquote: ({ node, ...props }) => (
+                              <blockquote {...props} className={`border-l-4 border-purple-500 pl-4 italic my-6 ${isDark ? 'text-gray-300' : 'text-gray-700'}`} />
+                            ),
+                          }}
+                        >
+                          {selectedPost.content}
+                        </ReactMarkdown>
+                      );
+                    })()}
                   </div>
 
                   <div className="flex flex-wrap gap-2">
