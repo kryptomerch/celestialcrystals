@@ -38,10 +38,10 @@ async function getBlogPosts() {
       excerpt: post.excerpt || '',
       author: post.author,
       category: post.category,
-      tags: Array.isArray(post.tags) ? post.tags : [],
+      tags: Array.isArray(post.tags) ? post.tags.filter((tag): tag is string => typeof tag === 'string') : [],
       readTime: post.readingTime,
-      featuredImage: post.featuredImage,
-      publishDate: post.publishedAt || post.createdAt,
+      featuredImage: post.featuredImage || undefined,
+      publishDate: post.publishedAt?.toISOString() || post.createdAt.toISOString(),
       isAI: true
     }));
   } catch (error) {
