@@ -55,13 +55,13 @@ async function getBlogPost(slug: string) {
 }
 
 interface PageProps {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }
 
 export default async function BlogArticlePage({ params }: PageProps) {
-  const { slug } = params;
+  const { slug } = await params;
 
   // First try to get static article
   const staticArticle = getBlogArticleBySlug(slug);
