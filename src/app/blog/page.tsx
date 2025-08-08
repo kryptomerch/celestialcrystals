@@ -63,7 +63,7 @@ export default function BlogPage() {
 
   const fetchAIBlogPosts = async () => {
     try {
-      const response = await fetch('/api/blog-posts');
+      const response = await fetch('/api/public/blog-posts');
       const data = await response.json();
 
       if (data.success) {
