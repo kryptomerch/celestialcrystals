@@ -50,7 +50,7 @@ export default function BlogPostClient({ article }: BlogPostClientProps) {
           className={`inline-flex items-center text-sm font-medium transition-colors ${isDark
             ? 'text-purple-400 hover:text-purple-300'
             : 'text-purple-600 hover:text-purple-500'
-          }`}
+            }`}
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Blog
@@ -111,10 +111,10 @@ export default function BlogPostClient({ article }: BlogPostClientProps) {
         )}
 
         {/* Article Content */}
-        <div className={`prose prose-lg max-w-none mb-12 ${isDark 
+        <div className={`prose prose-lg max-w-none mb-12 ${isDark
           ? 'prose-invert prose-headings:text-white prose-p:text-gray-300 prose-strong:text-white prose-em:text-gray-300 prose-blockquote:text-gray-300 prose-code:text-purple-300 prose-pre:bg-gray-800 prose-pre:text-gray-300'
           : 'prose-headings:text-gray-900 prose-p:text-gray-700 prose-strong:text-gray-900 prose-em:text-gray-700 prose-blockquote:text-gray-700 prose-code:text-purple-600 prose-pre:bg-gray-100'
-        }`}>
+          }`}>
           <ReactMarkdown>{article.content}</ReactMarkdown>
         </div>
 
@@ -129,7 +129,7 @@ export default function BlogPostClient({ article }: BlogPostClientProps) {
                   className={`inline-flex items-center px-3 py-1 text-sm rounded-full ${isDark
                     ? 'bg-gray-700 text-gray-300'
                     : 'bg-gray-100 text-gray-700'
-                  }`}
+                    }`}
                 >
                   <Tag className="w-3 h-3 mr-1" />
                   {tag}
@@ -144,9 +144,10 @@ export default function BlogPostClient({ article }: BlogPostClientProps) {
           <h3 className={`text-lg font-medium mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>Share this article</h3>
           <SocialMediaShare
             title={article.title}
-            excerpt={article.excerpt}
+            content={article.excerpt}
             url={`/blog/${article.slug}`}
-            featuredImage={article.featuredImage}
+            image={article.featuredImage}
+            hashtags={article.tags}
           />
         </div>
 
@@ -157,7 +158,7 @@ export default function BlogPostClient({ article }: BlogPostClientProps) {
             className={`inline-flex items-center px-6 py-3 text-sm font-medium rounded-lg transition-colors ${isDark
               ? 'bg-purple-600 text-white hover:bg-purple-700'
               : 'bg-black text-white hover:bg-gray-800'
-            }`}
+              }`}
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to All Articles
