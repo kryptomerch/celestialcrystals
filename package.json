@@ -36,6 +36,7 @@
     "@types/nodemailer": "^6.4.17",
     "@types/pg": "^8.15.4",
     "@vercel/postgres": "^0.10.0",
+    "@vercel/speed-insights": "^1.2.0",
     "axios": "^1.10.0",
     "bcryptjs": "^3.0.2",
     "jsonwebtoken": "^9.0.2",

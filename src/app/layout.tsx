@@ -11,6 +11,7 @@ import Header from '@/components/Header';
 import AnalyticsTracker from '@/components/AnalyticsTracker';
 import GoogleAnalytics from '@/components/GoogleAnalytics';
 import WebVitalsReporter from '@/components/WebVitalsReporter';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 
 const inter = Inter({ subsets: ['latin'] });
@@ -202,6 +203,7 @@ export default function RootLayout({
             <CartProvider>
               <GoogleAnalytics />
               <WebVitalsReporter />
+              <SpeedInsights />
               <AnalyticsTracker />
               <Header />
               <main className="min-h-screen bg-background">{children}</main>
