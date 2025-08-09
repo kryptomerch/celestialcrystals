@@ -223,6 +223,13 @@ export class AIBlogAutomationService {
         console.warn('AI content below quality threshold, regenerating with stricter prompt');
         const strictPrompt = detailedPrompt + '\n\nSTRICT REQUIREMENTS:\n- Minimum 1800 words\n- Include 3+ specific rituals with steps\n- Include 5+ specific crystal names with reasons\n- Include a 7-day practice plan with time breakdown\n- No generic fluff or vague statements\n- NEVER use placeholders like "Crystal" as a name; use specific stones (e.g., Black Tourmaline, Amethyst).';
         const retry = await deepseekAI.generateCustomContent(strictPrompt, 'guide');
+        const retryTooShort = (retry.content || '').replace(/<[^>]*>/g, '').split(/\s+/).length < 900;
+        if (!retry.content || retryTooShort || tooGeneric.test(retry.content)) {
+          // Final safety: curated fallbacks for chakra/seasonal/crystal
+          if (title.includes('Chakra')) return this.generateChakraFallbackContent(this.normalizeChakraName(variables.chakra || 'Root'));
+          if (title.includes('Season')) return this.generateSeasonalFallbackContent(this.getCurrentSeason());
+          return this.generateTemplateContent(title, sections, variables);
+        }
         return retry.content;
       }
 
@@ -407,6 +414,20 @@ export class AIBlogAutomationService {
       .trim();
   }
 
+  private static async ensureUniqueSlug(baseSlug: string): Promise<string> {
+    let slug = baseSlug;
+    let suffix = 2;
+    // Check for existing slug and append -2, -3 ... if necessary
+    // Limit loop to avoid infinite in worst case
+    while (suffix < 100) {
+      const exists = await prisma.blogPost.findUnique({ where: { slug } }).catch(() => null);
+      if (!exists) return slug;
+      slug = `${baseSlug}-${suffix}`;
+      suffix += 1;
+    }
+    return `${baseSlug}-${Date.now()}`;
+  }
+
   private static getChakraColor(chakra: string): string {
     const colors: Record<string, string> = {
       'Root': 'red',
@@ -443,6 +464,53 @@ export class AIBlogAutomationService {
     return energies[season] || 'balance';
   }
 
+  private static seasonalTopCrystals: Record<string, string[]> = {
+    'Spring': ['Green Aventurine', 'Moss Agate', 'Rose Quartz', 'Amazonite', 'Clear Quartz'],
+    'Summer': ['Citrine', 'Carnelian', 'Sunstone', 'Aquamarine', 'Turquoise'],
+    'Fall': ['Smoky Quartz', 'Tiger\'s Eye', 'Red Jasper', 'Obsidian', 'Garnet'],
+    'Winter': ['Amethyst', 'Selenite', 'Labradorite', 'Black Tourmaline', 'Clear Quartz']
+  };
+
+  private static generateSeasonalFallbackContent(season: string): string {
+    const s = this.getCurrentSeason();
+    const month = new Date().toLocaleString('default', { month: 'long' });
+    const crystals = this.seasonalTopCrystals[s] || [];
+    return `
+    <h1>${s} Crystal Rituals: ${month} Seasonal Guide</h1>
+
+    <p>This is a practical ${s} guide tailored for ${month}. You’ll get specific stones, rituals with steps, and a simple 7-day plan.</p>
+
+    <h2>Top ${s} Crystals</h2>
+    <ol>
+      ${crystals.map(c => `<li><strong>${c}:</strong> A precise use-case for ${s.toLowerCase()} season (bracelet stack, altar grid, meditation).</li>`).join('\n')}
+    </ol>
+
+    <h2>${s} Rituals</h2>
+    <ol>
+      <li><strong>Morning Practice (10 min):</strong> Breath + stone hold; set a ${s.toLowerCase()} intention.</li>
+      <li><strong>Evening Wind-down (8 min):</strong> Journal + gentle meditation with your primary stone.</li>
+      <li><strong>Weekly Reset (20 min):</strong> Cleanse, recharge, and refresh your altar grid.</li>
+    </ol>
+
+    <h2>7-Day Plan (${month})</h2>
+    <ul>
+      <li><strong>Day 1–2:</strong> Primary stone focus with intention setting</li>
+      <li><strong>Day 3–4:</strong> Add bracelet stack for daytime, meditation at night</li>
+      <li><strong>Day 5–6:</strong> Introduce grid or home placement</li>
+      <li><strong>Day 7:</strong> Review, refine, and recharge</li>
+    </ul>
+
+    <h2>Care & Charging</h2>
+    <ul>
+      <li>Safe cleansing for the stones above</li>
+      <li>Charging options: moonlight, sunlight (if safe), selenite</li>
+    </ul>
+
+    <h2>Shop ${s} Collections</h2>
+    <p>Explore curated bracelets and stones aligned with ${s} energy.</p>
+    `;
+  }
+
   // Save blog post to database
   static async saveBlogPost(postData: {
     title: string;
@@ -461,13 +529,17 @@ export class AIBlogAutomationService {
     try {
       console.log('Saving blog post:', postData.title);
 
+      // Ensure unique slug
+      const baseSlug = postData.slug;
+      const slug = await this.ensureUniqueSlug(baseSlug);
+
       // Save to database using Prisma
       await prisma.blogPost.create({
         data: {
           title: postData.title,
           content: postData.content,
           excerpt: postData.excerpt,
-          slug: postData.slug,
+          slug,
           category: postData.category,
           featuredImage: postData.featuredImage,
           publishedAt: postData.status === 'published' ? postData.publishDate : null,
