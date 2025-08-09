@@ -62,7 +62,7 @@ export default async function BlogPage() {
   const databasePosts = await getBlogPosts();
 
   // Combine static articles with database posts (hide static in production)
-  const includeStatic = process.env.NEXT_PUBLIC_INCLUDE_STATIC_BLOG === 'true';
+  const includeStatic = process.env.NEXT_PUBLIC_INCLUDE_STATIC_BLOG === 'true' || true; // force include until sync
   const allArticles = [
     ...(includeStatic ? blogArticles.map(article => ({
       id: article.id,

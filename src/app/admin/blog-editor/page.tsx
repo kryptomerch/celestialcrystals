@@ -12,6 +12,7 @@ export default function BlogEditorPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const editId = searchParams.get('edit');
+  const fromStaticSlug = searchParams.get('fromStaticSlug');
 
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -31,8 +32,10 @@ export default function BlogEditorPage() {
   useEffect(() => {
     if (editId) {
       loadBlogPost(editId);
+    } else if (fromStaticSlug) {
+      importStaticAndLoad(fromStaticSlug);
     }
-  }, [editId]);
+  }, [editId, fromStaticSlug]);
 
   const loadBlogPost = async (id: string) => {
     setIsLoading(true);
@@ -59,6 +62,25 @@ export default function BlogEditorPage() {
       alert('Failed to load blog post');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const importStaticAndLoad = async (slug: string) => {
+    try {
+      // call sync endpoint first to ensure static posts exist in DB
+      await fetch('/api/admin/sync-blog-posts', { method: 'POST' });
+      // now find the post ID by slug
+      const res = await fetch('/api/admin/blog-posts');
+      const data = await res.json();
+      const match = (data.posts || []).find((p: any) => p.slug === slug);
+      if (match) {
+        router.replace(`/admin/blog-editor?edit=${match.id}`);
+      } else {
+        alert('Failed to import static article.');
+      }
+    } catch (e) {
+      console.error('Import static error', e);
+      alert('Failed to import static article');
     }
   };
 

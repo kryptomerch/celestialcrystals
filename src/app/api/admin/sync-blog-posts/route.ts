@@ -1,20 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { getServerSession } from 'next-auth';
+import { authOptions, isUserAdmin, isAdminEmail } from '@/lib/auth';
+import { revalidatePath } from 'next/cache';
 import { blogArticles } from '@/data/blog-articles';
-
-const prisma = new PrismaClient({
-  datasources: {
-    db: {
-      url: process.env.DATABASE_URL || "postgresql://neondb_owner:npg_6h1jKNvgDCVE@ep-divine-sunset-ad5sal24-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
-    }
-  }
-});
+import { prisma } from '@/lib/prisma';
 
 export async function POST(request: NextRequest) {
   try {
+    // Admin auth
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+    const isAdmin = await isUserAdmin(session.user.id) || isAdminEmail(session.user.email);
+    if (!isAdmin) {
+      return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
+    }
+
     console.log('🔄 Syncing static blog posts to database...');
 
-    const syncedPosts = [];
+    const syncedPosts: Array<{ id: string; title: string; slug: string; status: string }> = [];
 
     for (const article of blogArticles) {
       // Check if post already exists
@@ -36,10 +41,10 @@ export async function POST(request: NextRequest) {
           excerpt: article.excerpt,
           author: article.author,
           category: article.category,
-          tags: JSON.stringify(article.tags),
+          tags: Array.isArray(article.tags) ? article.tags : [],
           readingTime: article.readTime,
           featuredImage: article.featuredImage,
-          images: JSON.stringify([article.featuredImage]),
+          images: article.featuredImage ? [article.featuredImage] : [],
           status: 'published',
           isAIGenerated: false,
           publishedAt: new Date(article.publishDate),
@@ -119,3 +124,5 @@ export async function GET() {
     await prisma.$disconnect();
   }
 }
+
+

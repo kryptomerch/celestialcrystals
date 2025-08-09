@@ -491,12 +491,13 @@ export default function BlogManagerPage() {
                             </a>
 
                             {blogArticles.some(article => article.id === post.id) ? (
-                              <span
-                                className="p-2 text-gray-500 cursor-not-allowed rounded-lg border border-gray-600/30"
-                                title="Static article (view-only)"
+                              <a
+                                href={`/admin/blog-editor?fromStaticSlug=${post.slug}`}
+                                className="p-2 text-yellow-400 hover:text-yellow-300 hover:bg-yellow-500/20 rounded-lg transition-colors"
+                                title="Import static article to DB and edit"
                               >
                                 <Edit className="h-4 w-4" />
-                              </span>
+                              </a>
                             ) : (
                               <a
                                 href={`/admin/blog-editor?edit=${post.id}`}
