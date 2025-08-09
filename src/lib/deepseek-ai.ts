@@ -215,7 +215,8 @@ MEDITATION GUIDE REQUIREMENTS:
           'Authorization': `Bearer ${this.apiKey}`,
         },
         body: JSON.stringify({
-          model: 'mistralai/Mixtral-8x7B-Instruct-v0.1',
+          // prefer a stronger model if configured
+          model: process.env.DEEPSEEK_MODEL || 'meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo',
           messages: [
             {
               role: 'system',
@@ -223,11 +224,11 @@ MEDITATION GUIDE REQUIREMENTS:
             },
             {
               role: 'user',
-              content: `${prompt}\n\nFormat the response as JSON with: {"title": "...", "content": "...", "excerpt": "...", "tags": [...]}`
+              content: `${prompt}\n\nCRITICAL: Use specific crystal names. Do not output placeholders like "Crystal" or repeated words like "Crystal crystal". Include concrete rituals, timings, and North America context.\n\nFormat the response as STRICT JSON with keys: {"title": "...", "content": "<html or markdown>", "excerpt": "...", "tags": ["...", "..."]}`
             }
           ],
-          temperature: 0.7,
-          max_tokens: 3000
+          temperature: 0.5,
+          max_tokens: 3500
         }),
       });
 

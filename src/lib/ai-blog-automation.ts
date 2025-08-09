@@ -217,10 +217,11 @@ export class AIBlogAutomationService {
       const result = await deepseekAI.generateCustomContent(detailedPrompt, 'blog');
 
       // Quality gate: reject generic/low-info outputs
-      const tooGeneric = /lorem ipsum|insert|generic|as an ai|[0-9]{3,}\s*words|this article will|in conclusion/i;
-      if (!result.content || result.content.length < 1500 || tooGeneric.test(result.content)) {
+      const tooGeneric = /lorem ipsum|insert|generic|as an ai|\bcrystal crystal\b|\bin conclusion\b/i;
+      const tooShort = (result.content || '').replace(/<[^>]*>/g, '').split(/\s+/).length < 900; // ~> 1800 words usually ~1200 tokens; we enforce 900+ words
+      if (!result.content || tooShort || tooGeneric.test(result.content)) {
         console.warn('AI content below quality threshold, regenerating with stricter prompt');
-        const strictPrompt = detailedPrompt + '\n\nSTRICT REQUIREMENTS:\n- Minimum 1800 words\n- Include 3+ specific rituals with steps\n- Include 5+ specific crystal names with reasons\n- Include a 7-day practice plan with time breakdown\n- No generic fluff or vague statements';
+        const strictPrompt = detailedPrompt + '\n\nSTRICT REQUIREMENTS:\n- Minimum 1800 words\n- Include 3+ specific rituals with steps\n- Include 5+ specific crystal names with reasons\n- Include a 7-day practice plan with time breakdown\n- No generic fluff or vague statements\n- NEVER use placeholders like "Crystal" as a name; use specific stones (e.g., Black Tourmaline, Amethyst).';
         const retry = await deepseekAI.generateCustomContent(strictPrompt, 'guide');
         return retry.content;
       }
@@ -235,6 +236,12 @@ export class AIBlogAutomationService {
 
   // Template content generator (fallback)
   private static generateTemplateContent(title: string, sections: string[], variables: Record<string, string>): string {
+    // Chakra-aware fallback first
+    const detectedChakra = variables.chakra || (title.match(/Root|Sacral|Solar Plexus|Heart|Throat|Third Eye|Crown/i)?.[0] ?? '');
+    if (detectedChakra) {
+      return this.generateChakraFallbackContent(this.normalizeChakraName(detectedChakra));
+    }
+
     const crystal = variables.crystal || 'Crystal';
     const benefit = variables.benefit || 'healing';
 
@@ -279,10 +286,10 @@ export class AIBlogAutomationService {
       <li><strong>Home Placement:</strong> Place ${crystal} in your living space to create positive energy</li>
       <li><strong>Crystal Grids:</strong> Use ${crystal} in crystal grids for amplified healing</li>
     </ol>
-    
+
     <h2>Caring for Your ${crystal} Crystal</h2>
     <p>To maintain the healing properties of your ${crystal}, regular cleansing and charging is essential. Here are the best methods:</p>
-    
+
     <h3>Cleansing Methods:</h3>
     <ul>
       <li>Moonlight cleansing under the full moon</li>
@@ -290,13 +297,89 @@ export class AIBlogAutomationService {
       <li>Sound cleansing with singing bowls</li>
       <li>Running water cleansing (if safe for the crystal)</li>
     </ul>
-    
+
     <h2>Shop Authentic ${crystal} Crystals</h2>
     <p>Ready to experience the healing power of ${crystal}? Browse our collection of authentic ${crystal} crystal bracelets, carefully sourced and energetically cleansed for maximum healing potential.</p>
-    
+
     <p><strong>Free shipping across North America on orders over $50!</strong></p>
-    
+
     <p><em>Disclaimer: Crystal healing is a complementary practice and should not replace professional medical advice. Always consult healthcare providers for medical concerns.</em></p>
+    `;
+  }
+
+  private static normalizeChakraName(ch: string): string {
+    const m = ch.toLowerCase();
+    const map: Record<string, string> = {
+      'root': 'Root',
+      'sacral': 'Sacral',
+      'solar plexus': 'Solar Plexus',
+      'heart': 'Heart',
+      'throat': 'Throat',
+      'third eye': 'Third Eye',
+      'crown': 'Crown'
+    };
+    return map[m] || (Object.values(map).find(v => v.toLowerCase() === m) || 'Root');
+  }
+
+  private static chakraTopCrystals: Record<string, string[]> = {
+    'Root': ['Red Jasper', 'Black Tourmaline', 'Hematite', 'Smoky Quartz', 'Garnet'],
+    'Sacral': ['Carnelian', 'Sunstone', 'Orange Calcite', "Tiger's Eye", 'Amber'],
+    'Solar Plexus': ['Citrine', "Tiger's Eye", 'Yellow Jasper', 'Pyrite', 'Amber'],
+    'Heart': ['Rose Quartz', 'Green Aventurine', 'Malachite', 'Rhodonite', 'Jade'],
+    'Throat': ['Aquamarine', 'Blue Lace Agate', 'Sodalite', 'Lapis Lazuli', 'Amazonite'],
+    'Third Eye': ['Amethyst', 'Lapis Lazuli', 'Sodalite', 'Fluorite', 'Labradorite'],
+    'Crown': ['Clear Quartz', 'Amethyst', 'Selenite', 'Lepidolite', 'Howlite']
+  };
+
+  private static generateChakraFallbackContent(chakra: string): string {
+    const crystals = this.chakraTopCrystals[chakra] || [];
+    const month = new Date().toLocaleString('default', { month: 'long' });
+    return `
+    <h1>Best Crystals for ${chakra} Chakra Healing: ${month} Guide</h1>
+
+    <p>This practical ${chakra} Chakra guide is tailored for ${month}. Learn clear signs of imbalance, the exact crystals to use, and a 7-day practice plan that actually works.</p>
+
+    <h2>Understanding the ${chakra} Chakra</h2>
+    <p>The ${chakra} Chakra governs specific aspects of your energy system. When balanced, you experience stability, clarity, and flow appropriate to this center.</p>
+
+    <h2>Signs of ${chakra} Chakra Imbalance</h2>
+    <ul>
+      <li>Physical and emotional cues that this center needs attention</li>
+      <li>Behavioral patterns common with ${chakra.toLowerCase()} chakra blocks</li>
+      <li>What balance feels like for this chakra</li>
+    </ul>
+
+    <h2>Top Crystals for ${chakra} Chakra</h2>
+    <ol>
+      ${crystals.map(c => `<li><strong>${c}:</strong> Why practitioners use ${c} for ${chakra.toLowerCase()} chakra work, with one practical example (bracelet, palm stone, or grid).</li>`).join('\n')}
+    </ol>
+
+    <h2>How to Use ${chakra} Chakra Crystals</h2>
+    <ol>
+      <li><strong>Bracelet Method:</strong> Wear on the left wrist to receive energy; right wrist to project. Reaffirm intention hourly.</li>
+      <li><strong>Meditation:</strong> 10–15 minutes placing the stone on the ${chakra.toLowerCase()} center while breathing in its color.</li>
+      <li><strong>Home Placement:</strong> Create a focused altar with 3 stones and a written affirmation.</li>
+    </ol>
+
+    <h2>7-Day Practice Plan (${month})</h2>
+    <ul>
+      <li><strong>Day 1–2:</strong> Grounding breath + 10 min crystal meditation</li>
+      <li><strong>Day 3–4:</strong> Add journaling prompt and affirmation</li>
+      <li><strong>Day 5–6:</strong> Introduce short movement or yoga flow</li>
+      <li><strong>Day 7:</strong> Reflection and re-setting intention</li>
+    </ul>
+
+    <h2>Affirmations</h2>
+    <p>Use 3 precise affirmations tailored to the ${chakra.toLowerCase()} chakra, repeated morning and night.</p>
+
+    <h2>Care & Charging</h2>
+    <ul>
+      <li>Safe cleansing for these stones (avoid water for soft minerals)</li>
+      <li>Charging options: moonlight, selenite plate, or sunlight (if safe)</li>
+    </ul>
+
+    <h2>Shop ${chakra} Chakra Bracelets</h2>
+    <p>Explore authentic bracelets and stones aligned with the ${chakra} Chakra. Ethically sourced, ready for practice.</p>
     `;
   }
 
