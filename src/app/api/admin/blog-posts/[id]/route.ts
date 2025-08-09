@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions, isUserAdmin, isAdminEmail } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { revalidatePath } from 'next/cache';
 
 export async function PUT(
   request: NextRequest,
@@ -91,6 +92,13 @@ export async function PUT(
       }
     });
 
+    try {
+      revalidatePath('/blog');
+      revalidatePath(`/blog/${updatedPost.slug}`);
+    } catch (e) {
+      console.warn('revalidatePath failed (non-blocking):', e);
+    }
+
     return NextResponse.json({
       success: true,
       message: 'Blog post updated successfully',
@@ -145,9 +153,16 @@ export async function DELETE(
     }
 
     // Delete the blog post
-    await prisma.blogPost.delete({
+    const deleted = await prisma.blogPost.delete({
       where: { id: postId }
     });
+
+    try {
+      revalidatePath('/blog');
+      revalidatePath(`/blog/${deleted.slug}`);
+    } catch (e) {
+      console.warn('revalidatePath failed (non-blocking):', e);
+    }
 
     return NextResponse.json({
       success: true,

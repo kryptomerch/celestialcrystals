@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions, isUserAdmin, isAdminEmail } from '@/lib/auth';
 import { getAllBlogPosts } from '@/lib/blog-automation';
 import { prisma } from '@/lib/prisma';
+import { revalidatePath } from 'next/cache';
 
 export async function GET() {
   try {
@@ -120,6 +121,14 @@ export async function POST(request: NextRequest) {
       }
     });
 
+    // Revalidate blog listing and article paths
+    try {
+      revalidatePath('/blog');
+      revalidatePath(`/blog/${post.slug}`);
+    } catch (e) {
+      console.warn('revalidatePath failed (non-blocking):', e);
+    }
+
     return NextResponse.json({
       success: true,
       message: 'Blog post created successfully',
@@ -148,6 +157,13 @@ export async function PUT(request: NextRequest) {
         ...(status === 'published' && !await prisma.blogPost.findFirst({ where: { id, publishedAt: { not: null } } }) && { publishedAt: new Date() })
       }
     });
+
+    try {
+      revalidatePath('/blog');
+      revalidatePath(`/blog/${updatedPost.slug}`);
+    } catch (e) {
+      console.warn('revalidatePath failed (non-blocking):', e);
+    }
 
     return NextResponse.json({
       success: true,
@@ -179,9 +195,16 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    await prisma.blogPost.delete({
+    const deleted = await prisma.blogPost.delete({
       where: { id }
     });
+
+    try {
+      revalidatePath('/blog');
+      revalidatePath(`/blog/${deleted.slug}`);
+    } catch (e) {
+      console.warn('revalidatePath failed (non-blocking):', e);
+    }
 
     return NextResponse.json({
       success: true,

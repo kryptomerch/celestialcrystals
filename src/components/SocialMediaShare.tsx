@@ -2,6 +2,7 @@
 
 import { Share2, Facebook, Instagram } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useState } from 'react';
 
 interface SocialMediaShareProps {
   title: string;
@@ -32,11 +33,20 @@ export default function SocialMediaShare({ title, content, image, url, hashtags 
   const FB_SHARE_URL = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(canonicalUrl)}&quote=${encodeURIComponent(title)}`;
   const IG_APP_URL = 'https://www.instagram.com/';
 
+  const openPopup = (href: string) => {
+    if (typeof window !== 'undefined') {
+      window.open(href, '_blank', 'noopener,noreferrer');
+    }
+  };
+
+  const handleXShare = () => openPopup(X_SHARE_URL);
+  const handleFacebookShare = () => openPopup(FB_SHARE_URL);
+
   const handleInstagramShare = () => {
     if (typeof navigator !== 'undefined' && (navigator as any).share) {
       (navigator as any).share({ title, url: canonicalUrl }).catch(() => { });
     } else if (typeof window !== 'undefined') {
-      window.open(IG_APP_URL, '_blank', 'noopener,noreferrer');
+      openPopup(IG_APP_URL);
     }
   };
 
@@ -53,6 +63,7 @@ export default function SocialMediaShare({ title, content, image, url, hashtags 
       href: X_SHARE_URL,
       icon: (className: string) => <XIcon className={className} />,
       bg: 'bg-black hover:bg-gray-900',
+      onClick: () => openPopup(X_SHARE_URL),
     },
     {
       name: 'Instagram',

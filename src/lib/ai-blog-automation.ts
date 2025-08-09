@@ -215,6 +215,16 @@ export class AIBlogAutomationService {
 
       // Generate content using AI
       const result = await deepseekAI.generateCustomContent(detailedPrompt, 'blog');
+
+      // Quality gate: reject generic/low-info outputs
+      const tooGeneric = /lorem ipsum|insert|generic|as an ai|[0-9]{3,}\s*words|this article will|in conclusion/i;
+      if (!result.content || result.content.length < 1500 || tooGeneric.test(result.content)) {
+        console.warn('AI content below quality threshold, regenerating with stricter prompt');
+        const strictPrompt = detailedPrompt + '\n\nSTRICT REQUIREMENTS:\n- Minimum 1800 words\n- Include 3+ specific rituals with steps\n- Include 5+ specific crystal names with reasons\n- Include a 7-day practice plan with time breakdown\n- No generic fluff or vague statements';
+        const retry = await deepseekAI.generateCustomContent(strictPrompt, 'guide');
+        return retry.content;
+      }
+
       return result.content;
 
     } catch (error) {

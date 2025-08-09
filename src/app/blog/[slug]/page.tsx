@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma';
 import BlogPostClient from './BlogPostClient';
 import { notFound } from 'next/navigation';
 
+export const dynamic = 'force-dynamic';
+
 // Server-side data fetching
 async function getBlogPost(slug: string) {
   try {

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions, isUserAdmin, isAdminEmail } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { revalidatePath } from 'next/cache';
 
 export async function POST(request: NextRequest) {
   try {
@@ -67,6 +68,13 @@ export async function POST(request: NextRequest) {
       where: { id: postId },
       data: updateData
     });
+
+    try {
+      revalidatePath('/blog');
+      revalidatePath(`/blog/${updatedPost.slug}`);
+    } catch (e) {
+      console.warn('revalidatePath failed (non-blocking):', e);
+    }
 
     return NextResponse.json({
       success: true,

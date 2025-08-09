@@ -2,6 +2,8 @@ import { blogArticles } from '@/data/blog-articles';
 import { prisma } from '@/lib/prisma';
 import BlogPageClient from './BlogPageClient';
 
+export const dynamic = 'force-dynamic';
+
 // Server-side data fetching
 async function getBlogPosts() {
   try {
@@ -54,9 +56,10 @@ export default async function BlogPage() {
   // Fetch database posts server-side
   const databasePosts = await getBlogPosts();
 
-  // Combine static articles with database posts
+  // Combine static articles with database posts (hide static in production)
+  const includeStatic = process.env.NEXT_PUBLIC_INCLUDE_STATIC_BLOG === 'true';
   const allArticles = [
-    ...blogArticles.map(article => ({
+    ...(includeStatic ? blogArticles.map(article => ({
       id: article.id,
       title: article.title,
       slug: article.slug,
@@ -68,7 +71,7 @@ export default async function BlogPage() {
       featuredImage: article.featuredImage,
       publishDate: article.publishDate,
       isAI: false
-    })),
+    })) : []),
     ...databasePosts
   ];
 
