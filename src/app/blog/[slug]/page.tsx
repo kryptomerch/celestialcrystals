@@ -11,7 +11,12 @@ async function getBlogPost(slug: string) {
     const post = await prisma.blogPost.findFirst({
       where: {
         slug: slug,
-        status: 'published'
+        OR: [
+          { status: 'published' },
+          { status: 'Published' },
+          { status: 'PUBLISHED' },
+          { publishedAt: { not: null } }
+        ]
       },
       select: {
         id: true,

@@ -490,13 +490,22 @@ export default function BlogManagerPage() {
                               <Eye className="h-4 w-4" />
                             </a>
 
-                            <a
-                              href={`/admin/blog-editor?edit=${post.id}`}
-                              className="p-2 text-green-400 hover:text-green-300 hover:bg-green-500/20 rounded-lg transition-colors"
-                              title="Edit Post"
-                            >
-                              <Edit className="h-4 w-4" />
-                            </a>
+                            {blogArticles.some(article => article.id === post.id) ? (
+                              <span
+                                className="p-2 text-gray-500 cursor-not-allowed rounded-lg border border-gray-600/30"
+                                title="Static article (view-only)"
+                              >
+                                <Edit className="h-4 w-4" />
+                              </span>
+                            ) : (
+                              <a
+                                href={`/admin/blog-editor?edit=${post.id}`}
+                                className="p-2 text-green-400 hover:text-green-300 hover:bg-green-500/20 rounded-lg transition-colors"
+                                title="Edit Post"
+                              >
+                                <Edit className="h-4 w-4" />
+                              </a>
+                            )}
 
                             <button
                               onClick={() => deleteBlogPost(post.id)}

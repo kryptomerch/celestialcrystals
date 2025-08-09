@@ -9,7 +9,12 @@ async function getBlogPosts() {
   try {
     const posts = await prisma.blogPost.findMany({
       where: {
-        status: 'published'
+        OR: [
+          { status: 'published' },
+          { status: 'Published' },
+          { status: 'PUBLISHED' },
+          { publishedAt: { not: null } }
+        ]
       },
       orderBy: {
         publishedAt: 'desc'
