@@ -14,17 +14,27 @@ interface SocialMediaShareProps {
 export default function SocialMediaShare({ title, content, image, url, hashtags }: SocialMediaShareProps) {
   const { isDark } = useTheme();
 
-  // Build share URLs for this article
-  const pageUrl = typeof window !== 'undefined' ? (url || window.location.href) : (url || '');
-  const shareText = encodeURIComponent(title);
+  // Build share URLs for this article (ensure absolute URL with site origin)
+  const origin = typeof window !== 'undefined' ? window.location.origin : '';
+  const siteOrigin = (process.env.NEXT_PUBLIC_SITE_URL && process.env.NEXT_PUBLIC_SITE_URL.trim().length)
+    ? process.env.NEXT_PUBLIC_SITE_URL!
+    : origin;
+  const toAbsolute = (u: string) => {
+    if (!u) return '';
+    if (u.startsWith('http://') || u.startsWith('https://')) return u;
+    if (u.startsWith('/')) return `${siteOrigin}${u}`;
+    return `${siteOrigin}/${u}`;
+  };
+  const canonicalUrl = typeof window !== 'undefined' ? toAbsolute(url || window.location.href) : (url || '');
   const hashtagParam = hashtags && hashtags.length ? `&hashtags=${encodeURIComponent(hashtags.join(','))}` : '';
-  const X_SHARE_URL = `https://twitter.com/intent/tweet?text=${shareText}&url=${encodeURIComponent(pageUrl)}${hashtagParam}`;
-  const FB_SHARE_URL = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(pageUrl)}`;
+  const xText = encodeURIComponent(`${title} ${canonicalUrl}`);
+  const X_SHARE_URL = `https://twitter.com/intent/tweet?text=${xText}&url=${encodeURIComponent(canonicalUrl)}${hashtagParam}`;
+  const FB_SHARE_URL = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(canonicalUrl)}&quote=${encodeURIComponent(title)}`;
   const IG_APP_URL = 'https://www.instagram.com/';
 
   const handleInstagramShare = () => {
     if (typeof navigator !== 'undefined' && (navigator as any).share) {
-      (navigator as any).share({ title, url: pageUrl }).catch(() => { });
+      (navigator as any).share({ title, url: canonicalUrl }).catch(() => { });
     } else if (typeof window !== 'undefined') {
       window.open(IG_APP_URL, '_blank', 'noopener,noreferrer');
     }
